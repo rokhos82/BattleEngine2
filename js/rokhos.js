@@ -72,6 +72,12 @@ rokhos.ui.textField.prototype.initialize = function() {
 	this.dom.setAttribute("onblur","this.ui.onblur();");
 };
 
+rokhos.ui.textField.prototype.setCallback = function(obj,func) {
+	this.callback = {};
+	this.callback.obj = obj;
+	this.callback.func = func;
+};
+
 rokhos.ui.textField.prototype.setData = function(obj,key) {
 	this.data = {};
 	this.data.obj = obj;
@@ -79,5 +85,42 @@ rokhos.ui.textField.prototype.setData = function(obj,key) {
 };
 
 rokhos.ui.textField.prototype.onblur = function() {
-	this.data.obj[this.data.key] = this.dom.value;
+	if(this.callback) {
+		var obj = this.callback.obj;
+		var func = this.callback.func;
+		var value = this.dom.value;
+		func.call(obj,value);
+	}
+};
+
+rokhos.ui.textField.prototype.refresh = function() {
+	if(this.data) {
+		var obj = this.data.obj;
+		var key = this.data.key;
+		this.dom.value = obj[key];
+	}
+};
+
+// UI Linking --------------------------------------------------------------------------------------
+rokhos.nexus = function() {
+	this.channels = {};
+};
+
+rokhos.nexus.prototype.addElement = function(channel,object,func) {
+	if(!this.channels[channel]) {
+		this.channels[channel] = new Array();
+	}
+	this.channels[channel].push([object,func]);
+};
+
+rokhos.nexus.prototype.refreshChannel = function(channel) {
+	if(this.channels[channel]) {
+		var c = this.channels[channel];
+		for(var i in c) {
+			var e = c[i];
+			var obj = e[0];
+			var func = e[1];
+			func.call(obj);
+		}
+	}
 };

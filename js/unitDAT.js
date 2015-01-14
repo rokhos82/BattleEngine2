@@ -1,7 +1,7 @@
 be2.unitDAT = function() {
 	this.version = be2.unitDAT.currentVersion;
 	this.type = "starship";
-	this.udl = array();
+	this.udl = new Array();
 	this.udlText = "";
 };
 

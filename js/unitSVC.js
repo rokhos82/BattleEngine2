@@ -22,3 +22,7 @@ be2.unitSVC.prototype.parseUDL = function(udl) {
 	this.dat.udl = tags;
 	this.dat.udlText = udl;
 };
+
+be2.unitSVC.prototype.getDataObj = function() {
+	return this.dat;
+};

@@ -28,6 +28,7 @@ be2.unitSVC.prototype.stringifyJSON = function() {
 // parseUDL ----------------------------------------------------------------------------------------
 be2.unitSVC.prototype.parseUDL = function(udl) {
 	be2.log("be2.unitSVC.parseUDL","Function Call",be2.debugLevelVerbose);
+	udl = udl.toLowerCase();
 	be2.log("be2.unitSVC.parseUDL","UDL Text: " + udl,be2.debugLevelInfo);
 	var tags = udl.split("[");
 	for(var i in tags) {
@@ -56,25 +57,45 @@ be2.unitSVC.prototype.buildUnitFromUDL = function() {
 		var subtags = tag.split(" ");
 		var type = subtags.shift();
 		if(type == "hull") {
-			var size = subtags.shift();
-			this.dat.hull.size = size;
+			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Hull",be2.debugLevelInfo);
+			var base = subtags.shift();
+			var max = subtags.shift();
+			this.dat.hull.base = base;
+			this.dat.hull.max = max;
+			be2.log("be2.unitSVC.buildUnitFromUDL","Hull: " + base + "(" + max + ")",be2.debugLevelInfo);
+			this.buildFromTag(this.dat.hull,type,subtags);
 		}
 		else if(type == "beam") {
+			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Beam",be2.debugLevelInfo);
 			var size = subtags.shift();
 			var beam = new be2.weaponDAT(size,0,0,0);
 			this.dat.beam.push(beam);
 		}
 		else if(type == "shield") {
+			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Shield",be2.debugLevelInfo);
 		}
 		else if(type == "missile") {
+			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Missile",be2.debugLevelInfo);
 		}
 		else if(type == "flag") {
 		}
 		else if(type == "command") {
 		}
 		else {
+			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Base Unit",be2.debugLevelInfo);
 			this.dat.type = type;
+			this.buildFromTag(this.dat,type,subtags);
 		}
 	}
 	be2.log("be2.unitSVC.buildUnitFromUDL","End Building Unit",be2.debugLevelInfo);
+};
+
+be2.unitSVC.prototype.buildFromTag = function(obj,tag,subtags) {
+	be2.log("be2.unitSVC.buildFromTag","Function Call",be2.debugLevelVerbose);
+	while(subtags.length > 0) {
+		var t = subtags.shift();
+		be2.log("be2.unitSVC.buildFromTag","Processing Tag: " + t,be2.debugLevelInfo);
+		be2.log("be2.unitSVC.buildFromTag","Code: " + be2.tags[t],be2.debugLevelInfo);
+		eval(be2.tags[t]);
+	}
 };

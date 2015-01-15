@@ -4,3 +4,9 @@ be2.weaponDAT = function(size,target,yield,dl) {
 	this.yield = 0;
 	this.dl = 0;
 };
+
+be2.hullDAT = function(base,max) {
+	this.base = base;
+	this.max = max;
+	this.current = max;
+};

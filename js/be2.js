@@ -20,3 +20,11 @@ be2.log = function(title,text,level) {
 		be2.logHandler.add(e);
 	}
 };
+
+be2.tags = {};
+be2.tags["defense"] = "obj.defense = subtags.shift();";
+be2.tags["target"] = "obj.target = subtags.shift();";
+be2.tags["ecm"] = "";
+be2.tags["yield"] = "";
+be2.tags["resist"] = "";
+be2.tags["eccm"] = "";

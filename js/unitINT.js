@@ -33,10 +33,22 @@ be2.unitINT.prototype.initialize = function() {
 	type.className(this.cssClass + "INPUT");
 	this.appendChild(type);
 
+	var hull = new rokhos.ui.textField();
+	hull.setData(this.svc.getDataObj().hull,"max");
+	hull.className(this.cssClass + "INPUT");
+	this.appendChild(hull);
+
+	var hull_def = new rokhos.ui.textField();
+	hull_def.setData(this.svc.getDataObj().hull,"defense");
+	hull_def.className(this.cssClass + "INPUT");
+	this.appendChild(hull_def);
+
 	this.nexus = new rokhos.nexus();
 	this.nexus.addElement("UNIT_UDL",udl,udl.refresh);
 	this.nexus.addElement("UNIT_UDL",name,name.refresh);
 	this.nexus.addElement("UNIT_UDL",type,type.refresh);
+	this.nexus.addElement("UNIT_UDL",hull,hull.refresh);
+	this.nexus.addElement("UNIT_UDL",hull_def,hull_def.refresh);
 };
 
 // setParent ---------------------------------------------------------------------------------------

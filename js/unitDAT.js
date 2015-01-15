@@ -3,9 +3,7 @@ be2.unitDAT = function() {
 	this.type = "starship";
 	this.udl = new Array();
 	this.udlText = "";
-	this.hull = {
-		size: 0
-	};
+	this.hull = new be2.hullDAT(10,15);
 	this.beam = new Array();
 	this.shield = {};
 	this.missile = new Array();

@@ -9,28 +9,21 @@ be2.unitINT = function(svc) {
 	this.initialize();
 };
 
+// Nexus Channels
+// UNIT_UDL - For handling updates to the Unit Description Line
+
 // initialize --------------------------------------------------------------------------------------
 be2.unitINT.prototype.initialize = function() {
 	be2.log("be2.unitINT","Calling initialize",be2.debugLevelVerbose);
 	this.dom = document.createElement("div");
-	var head = document.createElement("h1");
-	head.appendChild(document.createTextNode("BE2 Unit Interface"));
-	this.dom.appendChild(head);
 	this.dom.ui = this;
+	this.dom.className = this.cssClass + "INFO";
 
-	var udl = new rokhos.ui.textField();
-	udl.setCallback(this,this.updateUDL);
-	udl.className(this.cssClass + "INPUT");
-	this.appendChild(udl);
-
-	var name = new rokhos.ui.textField();
-	name.setData(this.svc.getDataObj(),"name");
-	name.className(this.cssClass + "INPUT");
-	this.appendChild(name);
-
+	var b = new rokhos.ui.button("Get UDL");
+	b.setCallback(this,this.getUDL);
+	this.dom.appendChild(b.dom);
+	
 	this.nexus = new rokhos.nexus();
-	this.nexus.addElement("UNIT_UDL",udl,udl.refresh);
-	this.nexus.addElement("UNIT_UDL",name,name.refresh);
 };
 
 // setParent ---------------------------------------------------------------------------------------
@@ -69,8 +62,20 @@ be2.unitINT.prototype.removeChild = function(child) {
 
 // updateUDL ---------------------------------------------------------------------------------------
 be2.unitINT.prototype.updateUDL = function(udlText) {
-	be2.log("be2.unitINT","Calling updateUDL",be2.debugLevelVerbose);
-	be2.log("be2.unitINT","updateUDL - " + udlText,be2.debugLevelInfo);
+	be2.log("be2.unitINT.updateUDL","Function Call",be2.debugLevelVerbose);
+	be2.log("be2.unitINT.updateUDL","New UDL: " + udlText,be2.debugLevelInfo);
 	this.svc.parseUDL(udlText);
 	this.nexus.refreshChannel("UNIT_UDL");
+};
+
+// drawUDL -----------------------------------------------------------------------------------------
+be2.unitINT.prototype.drawUnit = function() {
+	be2.log("be2.unitINT.drawUnit","Function Call",be2.debugLevelVerbose);
+};
+
+// getUDL ------------------------------------------------------------------------------------------
+be2.unitINT.prototype.getUDL = function() {
+	be2.log("be2.unitINT.getUDL","Function Call",be2.debugLevelVerbose);
+	var udl = prompt("Enter a UDL");
+	this.updateUDL(udl);
 };

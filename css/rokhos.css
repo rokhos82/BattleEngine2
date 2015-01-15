@@ -1,13 +1,13 @@
 div.rokhos_log_main {
-	border: 1px solid #FF0000;
-	color: #FF0000;
+	border: 2px solid #888888;
+	color: #FC923A;
 	background-color: #000000;
 	position: fixed;
 	right: 10px;
 	bottom: 10px;
 	width: 25%;
 	height: 20%;
-	box-shadow: 5px 5px 5px #888888;
+	box-shadow: 5px 5px 5px #B03F00;
 	margin: 0;
 	padding: 2px;
 	overflow: auto;

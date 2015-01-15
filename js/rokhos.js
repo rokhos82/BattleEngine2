@@ -16,7 +16,9 @@ rokhos.isArray = function(obj) {
 	}
 }
 
-// Runtime Logging ---------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Runtime Logging
+////////////////////////////////////////////////////////////////////////////////////////////////////
 rokhos.log = function(parent) {
 	this.parent = null;
 	this.dom = null;
@@ -69,35 +71,46 @@ rokhos.logEntry = function(title,text,level) {
 	this.level = level;
 };
 
-// UI Elements -------------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// UI Elements
+////////////////////////////////////////////////////////////////////////////////////////////////////
 rokhos.ui = {};
 
-rokhos.ui.textField = function() {
-	this.dom = null;
-
-	this.initialize();
-};
-
-rokhos.ui.textField.prototype.initialize = function() {
-	this.dom = document.createElement("input");
-	this.dom.setAttribute("type","text");
-	this.dom.ui = this;
-	this.dom.setAttribute("onblur","this.ui.onblur();");
-};
-
-rokhos.ui.textField.prototype.setCallback = function(obj,func) {
-	this.callback = {};
-	this.callback.obj = obj;
-	this.callback.func = func;
-};
-
-rokhos.ui.textField.prototype.setData = function(obj,key) {
+// Generic UI Functions ----------------------------------------------------------------------------
+rokhos.ui.func = {};
+rokhos.ui.func.setData = function(obj,key) {
 	this.data = {};
 	this.data.obj = obj;
 	this.data.key = key;
 };
 
-rokhos.ui.textField.prototype.onblur = function() {
+rokhos.ui.func.refreshValue = function() {
+	if(this.data) {
+		var obj = this.data.obj;
+		var key = this.data.key;
+		this.dom.value = obj[key];
+	}
+};
+
+rokhos.ui.func.refreshInner = function() {
+	if(this.data) {
+		var obj = this.data.obj;
+		var key = this.data.key;
+		this.dom.innerHTML = this.text + obj[key];
+	}
+};
+
+rokhos.ui.func.className = function(klass) {
+	this.dom.className = klass;
+};
+
+rokhos.ui.func.setCallback = function(obj,func) {
+	this.callback = {};
+	this.callback.obj = obj;
+	this.callback.func = func;
+};
+
+rokhos.ui.func.envokeCallback = function() {
 	if(this.callback) {
 		var obj = this.callback.obj;
 		var func = this.callback.func;
@@ -106,19 +119,69 @@ rokhos.ui.textField.prototype.onblur = function() {
 	}
 };
 
-rokhos.ui.textField.prototype.refresh = function() {
-	if(this.data) {
-		var obj = this.data.obj;
-		var key = this.data.key;
-		this.dom.value = obj[key];
+// textField ---------------------------------------------------------------------------------------
+rokhos.ui.textField = function() {
+	this.dom = null;
+
+	this.initialize();
+};
+
+rokhos.ui.textField.prototype.setCallback = rokhos.ui.func.setCallback;
+rokhos.ui.textField.prototype.setData = rokhos.ui.func.setData;
+rokhos.ui.textField.prototype.refresh = rokhos.ui.func.refreshValue;
+rokhos.ui.textField.prototype.className = rokhos.ui.func.className;
+rokhos.ui.textField.prototype.onblur = rokhos.ui.func.envokeCallback;
+
+rokhos.ui.textField.prototype.initialize = function() {
+	this.dom = document.createElement("input");
+	this.dom.setAttribute("type","text");
+	this.dom.ui = this;
+	this.dom.setAttribute("onblur","this.ui.onblur();");
+};
+
+// simpleText --------------------------------------------------------------------------------------
+rokhos.ui.simpleText = function(text) {
+	this.text = text;
+	this.dom = null;
+
+	this.initialize();
+};
+
+rokhos.ui.simpleText.prototype.setData = rokhos.ui.func.setData;
+rokhos.ui.simpleText.prototype.className = rokhos.ui.func.className;
+rokhos.ui.simpleText.prototype.refresh = rokhos.ui.func.refreshInner;
+
+rokhos.ui.simpleText.prototype.initialize = function() {
+	this.dom = document.createElement("span");
+	if(this.text) {
+		this.dom.appendChild(document.createTextNode(this.text));
 	}
+	this.dom.ui = this;
 };
 
-rokhos.ui.textField.prototype.className = function(klass) {
-	this.dom.className = klass;
+// button ------------------------------------------------------------------------------------------
+rokhos.ui.button = function(text) {
+	this.dom = null;
+	this.text = text;
+
+	this.initialize();
 };
 
-// UI Linking --------------------------------------------------------------------------------------
+rokhos.ui.button.prototype.className = rokhos.ui.func.className;
+rokhos.ui.button.prototype.setCallback = rokhos.ui.func.setCallback;
+rokhos.ui.button.prototype.refresh = rokhos.ui.func.refreshInner;
+rokhos.ui.button.prototype.onClick = rokhos.ui.func.envokeCallback;
+
+rokhos.ui.button.prototype.initialize = function() {
+	this.dom = document.createElement("button");
+	this.dom.innerHTML = this.text;
+	this.dom.ui = this;
+	this.dom.setAttribute("onclick","this.ui.onClick();");
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// UI Linking
+////////////////////////////////////////////////////////////////////////////////////////////////////
 rokhos.nexus = function() {
 	this.channels = {};
 };

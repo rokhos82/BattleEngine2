@@ -8,7 +8,7 @@ be2.bootstrap = function(root) {
 be2.cssClass = "BE2_";
 
 be2.debug = true;
-be2.debugLevel = 1;
+be2.debugLevel = 0;
 be2.debugLevelVerbose = 0;
 be2.debugLevelInfo = 1;
 be2.debugLevelWarning = 2;
@@ -36,7 +36,6 @@ be2.unit.components = {
 		"target": "dat.target = parseInt(tags.shift());",
 		"ecm": "dat.ecm = parseInt(tags.shift()); dat.ecmQaulity = parseInt(tags.shift());",
 		"eccm": "dat.eccm = parseInt(tags.shift()); dat.ecmQaulity = parseInt(tags.shift());",
-		"name": "dat.name = parseInt(tags.shift());"
 	},
 	"beam": {
 		"volley": "dat.volley = parseInt(tags.shift());",

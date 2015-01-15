@@ -58,8 +58,10 @@ be2.unitSVC.prototype.parseComponents = function() {
 		var type = tags.shift();
 		be2.log("be2.unitSVC.parseComponents","Processing Component: " + type,be2.debugLevelInfo);
 		if(be2.unit.components[type]) {
-			if(!this.dat.hasOwnProperty(type))
+			if(!this.dat.hasOwnProperty(type)) {
 				this.dat[type] = {};
+				this.dat.type = type;
+			}
 			if(rokhos.isArray(this.dat[type])) {
 				var dat = {};
 				this.parseTags(dat,be2.unit.components[type],tags);

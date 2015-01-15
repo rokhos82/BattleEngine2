@@ -7,11 +7,20 @@ rokhos.trim = function(str,x) {
 	return str.substr(0,str.length-x);
 };
 
+rokhos.isArray = function(obj) {
+	if(typeof obj === "object" && obj.hasOwnProperty("length")) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 // Runtime Logging ---------------------------------------------------------------------------------
 rokhos.log = function(parent) {
 	this.parent = null;
 	this.dom = null;
-	this.logArray = new Array();
+	this.logArray = [];
 	this.display = null;
 
 	this.initialize(parent);
@@ -116,7 +125,7 @@ rokhos.nexus = function() {
 
 rokhos.nexus.prototype.addElement = function(channel,object,func) {
 	if(!this.channels[channel]) {
-		this.channels[channel] = new Array();
+		this.channels[channel] = [];
 	}
 	this.channels[channel].push([object,func]);
 };

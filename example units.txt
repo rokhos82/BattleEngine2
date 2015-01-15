@@ -1,0 +1,1 @@
+GTU Hawkings [starship ecm 15 1 defense 5 target 5][hull base 10 max 106 resist 10][beam volley 10 target 5][beam volley 15 target 10]

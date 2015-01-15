@@ -24,18 +24,25 @@ be2.log = function(title,text,level) {
 be2.unit = {};
 be2.unit.components = {
 	"hull": {
-		"base": "dat.base = subtags.shift();",
-		"max": "dat.max = subtags.shift();",
-		"current": "dat.current = subtags.shift();",
-		"defense": "dat.defense = subtags.shift();",
-		"target": "dat.target = subtags.shift();",
-		"resist": "dat.target = subtags.shift();"
+		"base": "dat.base = parseInt(tags.shift());",
+		"max": "dat.max = parseInt(tags.shift());",
+		"current": "dat.current = parseInt(tags.shift());",
+		"defense": "dat.defense = parseInt(tags.shift());",
+		"target": "dat.target = parseInt(tags.shift());",
+		"resist": "dat.resist = parseInt(tags.shift());"
 	},
 	"starship": {
-		"defense": "dat.defense = subtags.shift();",
-		"target": "dat.target = subtags.shift();",
-		"ecm": "dat.ecm = subtags.shift();",
-		"eccm": "dat.eccm = subtags.shift();",
-		"name": "dat.name = subtags.shift();"
+		"defense": "dat.defense = parseInt(tags.shift());",
+		"target": "dat.target = parseInt(tags.shift());",
+		"ecm": "dat.ecm = parseInt(tags.shift()); dat.ecmQaulity = parseInt(tags.shift());",
+		"eccm": "dat.eccm = parseInt(tags.shift()); dat.ecmQaulity = parseInt(tags.shift());",
+		"name": "dat.name = parseInt(tags.shift());"
+	},
+	"beam": {
+		"volley": "dat.volley = parseInt(tags.shift());",
+		"target": "dat.target = parseInt(tags.shift());",
+		"yield": "dat.yield = parseInt(tags.shift());",
+		"eccm": "dat.eccm = parseInt(tags.shift());",
+		"link": "dat.link = tags.shift();"
 	}
 };

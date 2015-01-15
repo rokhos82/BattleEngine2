@@ -28,7 +28,6 @@ be2.unitSVC.prototype.stringifyJSON = function() {
 // parseUDL ----------------------------------------------------------------------------------------
 be2.unitSVC.prototype.parseUDL = function(udl) {
 	be2.log("be2.unitSVC.parseUDL","Function Call",be2.debugLevelVerbose);
-	udl = udl.toLowerCase();
 	be2.log("be2.unitSVC.parseUDL","UDL Text: " + udl,be2.debugLevelInfo);
 	var tags = udl.split("[");
 	for(var i in tags) {
@@ -38,7 +37,7 @@ be2.unitSVC.prototype.parseUDL = function(udl) {
 	this.dat.udl = tags;
 	this.dat.udlText = udl;
 
-	this.buildUnitFromUDL();
+	this.parseComponents();
 };
 
 // getDataObj --------------------------------------------------------------------------------------
@@ -47,57 +46,48 @@ be2.unitSVC.prototype.getDataObj = function() {
 	return this.dat;
 };
 
-be2.unitSVC.prototype.buildUnitFromUDL = function() {
-	be2.log("be2.unitSVC.buildUnitFromUDL","Function Call",be2.debugLevelVerbose);
-	be2.log("be2.unitSVC.buildUnitFromUDL","Building Unit",be2.debugLevelInfo);
-	var tags = this.dat.udl;
-	this.dat.name = tags.shift();
-	while(tags.length > 0) {
-		var tag = tags.shift();
-		var subtags = tag.split(" ");
-		var type = subtags.shift();
-		if(type == "hull") {
-			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Hull",be2.debugLevelInfo);
-			var base = subtags.shift();
-			var max = subtags.shift();
-			this.dat.hull.base = base;
-			this.dat.hull.max = max;
-			be2.log("be2.unitSVC.buildUnitFromUDL","Hull: " + base + "(" + max + ")",be2.debugLevelInfo);
-			this.buildFromTag(this.dat.hull,type,subtags);
-		}
-		else if(type == "beam") {
-			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Beam",be2.debugLevelInfo);
-			var size = subtags.shift();
-			var beam = new be2.weaponDAT(size,0,0,0);
-			this.dat.beam.push(beam);
-		}
-		else if(type == "shield") {
-			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Shield",be2.debugLevelInfo);
-		}
-		else if(type == "missile") {
-			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Missile",be2.debugLevelInfo);
-		}
-		else if(type == "flag") {
-		}
-		else if(type == "command") {
+// parseComponents ---------------------------------------------------------------------------------
+be2.unitSVC.prototype.parseComponents = function() {
+	be2.log("be2.unitSVC.parseComponents","Function Call",be2.debugLevelVerbose);
+	var components = this.dat.udl;
+	this.dat.name = components.shift();
+	be2.log("be2.unitSVC.parseComponents","Parsing Unit: " + this.dat.name,be2.debugLevelInfo);
+	while(components.length > 0) {
+		var component = components.shift().toLowerCase();
+		var tags = component.split(" ");
+		var type = tags.shift();
+		be2.log("be2.unitSVC.parseComponents","Processing Component: " + type,be2.debugLevelInfo);
+		if(be2.unit.components[type]) {
+			if(!this.dat.hasOwnProperty(type))
+				this.dat[type] = {};
+			if(rokhos.isArray(this.dat[type])) {
+				var dat = {};
+				this.parseTags(dat,be2.unit.components[type],tags);
+				this.dat[type].push(dat);
+			}
+			else {
+				this.parseTags(this.dat[type],be2.unit.components[type],tags);
+			}
+			be2.log("be2.unitSVC.parseComponents","Done Processing Component",be2.debugLevelInfo);
 		}
 		else {
-			be2.log("be2.unitSVC.buildUnitFromUDL","Processing Base Unit",be2.debugLevelInfo);
-			this.dat.type = type;
-			this.buildFromTag(this.dat,type,subtags);
+			be2.log("be2.unitSVC.parseComponents","Unknown Component: " + type,be2.debugLevelWarning);
 		}
 	}
-	be2.log("be2.unitSVC.buildUnitFromUDL","End Building Unit",be2.debugLevelInfo);
+	be2.log("be2.unitSVC.parseComponents","Done Parsing Unit",be2.debugLevelInfo);
 };
 
-be2.unitSVC.prototype.parseComponent = function() {
-};
-
-be2.unitSVC.prototype.buildFromTag = function(obj,tag,subtags) {
-	be2.log("be2.unitSVC.buildFromTag","Function Call",be2.debugLevelVerbose);
-	while(subtags.length > 0) {
-		var t = subtags.shift();
-		be2.log("be2.unitSVC.buildFromTag","Processing Tag: " + t,be2.debugLevelInfo);
-		eval(be2.tags[t]);
+// parseTags ---------------------------------------------------------------------------------------
+be2.unitSVC.prototype.parseTags = function(dat,proc,tags) {
+	be2.log("be2.unitSVC.parseTags","Function Call",be2.debugLevelVerbose);
+	while(tags.length > 0) {
+		var t = tags.shift();
+		be2.log("be2.unitSVC.parseTags","Processing Tag: " + t,be2.debugLevelInfo);
+		if(proc[t]) {
+			eval(proc[t]);
+		}
+		else {
+			be2.log("be2.unitSVC.parseTags","Unknown Tag: " + t,be2.debugLevelWarning);
+		}
 	}
 };

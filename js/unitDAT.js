@@ -1,14 +1,12 @@
 be2.unitDAT = function() {
 	this.version = be2.unitDAT.currentVersion;
-	this.type = "starship";
-	this.udl = new Array();
+	this.udl = [];
 	this.udlText = "";
-	this.hull = new be2.hullDAT(10,15);
-	this.beam = new Array();
+	this.hull = {};
+	this.beam = [];
 	this.shield = {};
-	this.missile = new Array();
+	this.missile = [];
 	this.name = "";
-	this.type = "";
 };
 
 be2.unitDAT.currentVersion = "201501131650";

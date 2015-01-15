@@ -46,11 +46,22 @@ be2.unitSVC.prototype.getDataObj = function() {
 	return this.dat;
 };
 
+be2.unitSVC.prototype.getDefinition = function() {
+	be2.log("be2.unitSVC.getDefinition","Function Call",be2.debugLevelVerbose);
+	return this.dat.definition;
+};
+
+be2.unitSVC.prototype.getName = function() {
+	be2.log("be2.unitSVC.getName","Function Call",be2.debugLevelVerbose);
+	return this.dat.name;
+}
+
 // parseComponents ---------------------------------------------------------------------------------
 be2.unitSVC.prototype.parseComponents = function() {
 	be2.log("be2.unitSVC.parseComponents","Function Call",be2.debugLevelVerbose);
 	var components = this.dat.udl;
 	this.dat.name = components.shift();
+	var def = this.getDefinition();
 	be2.log("be2.unitSVC.parseComponents","Parsing Unit: " + this.dat.name,be2.debugLevelInfo);
 	while(components.length > 0) {
 		var component = components.shift().toLowerCase();
@@ -58,17 +69,16 @@ be2.unitSVC.prototype.parseComponents = function() {
 		var type = tags.shift();
 		be2.log("be2.unitSVC.parseComponents","Processing Component: " + type,be2.debugLevelInfo);
 		if(be2.unit.components[type]) {
-			if(!this.dat.hasOwnProperty(type)) {
-				this.dat[type] = {};
-				this.dat.type = type;
+			if(!def.hasOwnProperty(type)) {
+				def[type] = {};
 			}
-			if(rokhos.isArray(this.dat[type])) {
+			if(rokhos.isArray(def[type])) {
 				var dat = {};
 				this.parseTags(dat,be2.unit.components[type],tags);
-				this.dat[type].push(dat);
+				def[type].push(dat);
 			}
 			else {
-				this.parseTags(this.dat[type],be2.unit.components[type],tags);
+				this.parseTags(def[type],be2.unit.components[type],tags);
 			}
 			be2.log("be2.unitSVC.parseComponents","Done Processing Component",be2.debugLevelInfo);
 		}

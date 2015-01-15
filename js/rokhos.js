@@ -82,6 +82,7 @@ rokhos.ui.func.setData = function(obj,key) {
 	this.data = {};
 	this.data.obj = obj;
 	this.data.key = key;
+	this.refresh();
 };
 
 rokhos.ui.func.refreshValue = function() {

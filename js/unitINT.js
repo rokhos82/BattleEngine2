@@ -24,6 +24,7 @@ be2.unitINT.prototype.initialize = function() {
 	this.dom.appendChild(b.dom);
 	
 	this.nexus = new rokhos.nexus();
+	this.nexus.addElement("UNIT_UDL",this,this.drawUnit);
 };
 
 // setParent ---------------------------------------------------------------------------------------
@@ -71,6 +72,53 @@ be2.unitINT.prototype.updateUDL = function(udlText) {
 // drawUDL -----------------------------------------------------------------------------------------
 be2.unitINT.prototype.drawUnit = function() {
 	be2.log("be2.unitINT.drawUnit","Function Call",be2.debugLevelVerbose);
+
+	if(this.hasOwnProperty("unitInterface")) {
+		this.dom.removeChild(this.unitInterface);
+		delete this.unitInterface;
+	}
+	this.unitInterface = document.createElement("div");
+	this.dom.appendChild(this.unitInterface);
+
+	var def = this.svc.getDefinition();
+	var name = this.svc.getName();
+
+	var ui = new rokhos.ui.simpleText("Name: " + name);
+	this.unitInterface.appendChild(ui.dom);
+
+	for(var k in def) {
+		be2.log("be2.unitINT.drawUnit","Drawing Interface for Component:" + k,be2.debugLevelInfo);
+		if(k == "udl" || k == "udlText") {
+			continue;
+		}
+		var component = def[k];
+		if(!be2.unit.interface[k]) {
+			be2.log("be2.unitINT.drawUnit","No Defined Interface for Component: " + k,be2.debugLevelWarning);
+		}
+
+		var interface = be2.unit.interface[k];
+		for(var i in interface) {
+			var intDef = interface[i];
+			var type = intDef.shift();
+			var info = intDef.shift();
+			
+			if(typeof info == "object") {
+				var ui = new rokhos.ui[type](info.label);
+				if(rokhos.isArray(info.key)) {
+				}
+				else {
+					ui.setData(component,info.key);
+				}
+				this.unitInterface.appendChild(ui.dom);
+			}
+			else {
+				var ui = new rokhos.ui[type](info);
+				this.unitInterface.appendChild(ui.dom);
+			}
+		}
+
+		be2.log("be2.unitINT.drawUnit","Done Drawing Component Interface",be2.debugLevelInfo);
+	}
 };
 
 // getUDL ------------------------------------------------------------------------------------------

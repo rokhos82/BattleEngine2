@@ -2,10 +2,12 @@ be2.unitDAT = function() {
 	this.version = be2.unitDAT.currentVersion;
 	this.udl = [];
 	this.udlText = "";
-	this.hull = {};
-	this.beam = [];
-	this.shield = {};
-	this.missile = [];
+	this.definition = {
+		"hull": {},
+		"beam": [],
+		"shield": {},
+		"missile": []
+	};
 	this.name = "";
 };
 

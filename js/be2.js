@@ -45,3 +45,18 @@ be2.unit.components = {
 		"link": "dat.link = tags.shift();"
 	}
 };
+
+be2.unit.interface = {
+	"name" : {
+		"name": ["simpleText",{"label":"Name: ","key":"name"}]
+	},
+	"starship": {
+		"type": ["simpleText","Type: Starship"],
+		"ecm": ["simpleText",{"label":"ECM: ","key":"ecm"}],
+		"defense": ["simpleText",{"label":"Defense: ","key":"defense"}],
+		"totalDefense": ["simpleText",{"label":"Total Defense: ","key":["ecm","defense"]}],
+		"eccm": ["simpleText",{"label":"ECCM: ","key":"eccm"}],
+		"target": ["simpleText",{"label":"Target: ","key":"target"}],
+		"totalTarget": ["simpleText",{"label":"Total Target: ","key":["eccm","target"]}]
+	}
+};

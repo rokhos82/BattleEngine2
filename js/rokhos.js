@@ -3,6 +3,10 @@ var rokhos = {};
 rokhos.deepCopy = function() {	
 };
 
+rokhos.trim = function(str,x) {
+	return str.substr(0,str.length-x);
+};
+
 // Runtime Logging ---------------------------------------------------------------------------------
 rokhos.log = function(parent) {
 	this.parent = null;

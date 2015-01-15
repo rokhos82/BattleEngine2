@@ -5,6 +5,8 @@ be2.bootstrap = function(root) {
 	be2.logHandler = new rokhos.log(root);
 };
 
+be2.cssClass = "BE2_";
+
 be2.debug = true;
 be2.debugLevel = 1;
 be2.debugLevelVerbose = 0;

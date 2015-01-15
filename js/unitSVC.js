@@ -31,16 +31,50 @@ be2.unitSVC.prototype.parseUDL = function(udl) {
 	be2.log("be2.unitSVC.parseUDL","UDL Text: " + udl,be2.debugLevelInfo);
 	var tags = udl.split("[");
 	for(var i in tags) {
-		var str = tags[i];
-		tags[i] = str.substring(0,str.length-1);
+		tags[i] = rokhos.trim(tags[i],1);
 	}
 	be2.log("be2.unitSVC.parseUDL","Tags: " + tags.toString(),be2.debugLevelInfo);
 	this.dat.udl = tags;
 	this.dat.udlText = udl;
+
+	this.buildUnitFromUDL();
 };
 
 // getDataObj --------------------------------------------------------------------------------------
 be2.unitSVC.prototype.getDataObj = function() {
 	be2.log("be2.unitSVC","Calling getDataObj",be2.debugLevelVerbose);
 	return this.dat;
+};
+
+be2.unitSVC.prototype.buildUnitFromUDL = function() {
+	be2.log("be2.unitSVC.buildUnitFromUDL","Function Call",be2.debugLevelVerbose);
+	be2.log("be2.unitSVC.buildUnitFromUDL","Building Unit",be2.debugLevelInfo);
+	var tags = this.dat.udl;
+	this.dat.name = tags.shift();
+	while(tags.length > 0) {
+		var tag = tags.shift();
+		var subtags = tag.split(" ");
+		var type = subtags.shift();
+		if(type == "hull") {
+			var size = subtags.shift();
+			this.dat.hull.size = size;
+		}
+		else if(type == "beam")
+			var size = subtags.shift();
+			var beam = new be2.weaponDAT(size,0,0,0);
+			this.dat.beam.push(beam);
+		}
+		else if(type == "shield") {
+		}
+		else if(type == "missile") {
+		}
+		else if(type == "flag") {
+		}
+		else if(type == "command") {
+		}
+		else {
+			this.dat.type = type;
+		}
+	}
+	be2.log("be2.unitSVC.buildUnitFromUDL","End Building Unit",be2.debugLevelInfo);
 };

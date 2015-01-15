@@ -4,6 +4,7 @@ be2.unitINT = function(svc) {
 	this.parent = null;
 	this.dom = null;
 	this.children = {};
+	this.cssClass = be2.cssClass + "UNIT_";
 
 	this.initialize();
 };
@@ -19,15 +20,23 @@ be2.unitINT.prototype.initialize = function() {
 
 	var udl = new rokhos.ui.textField();
 	udl.setCallback(this,this.updateUDL);
+	udl.className = this.cssClass;
 	this.appendChild(udl);
 
-	var tags = new rokhos.ui.textField();
-	tags.setData(this.svc.getDataObj(),"udlText");
-	this.appendChild(tags);
+	var name = new rokhos.ui.textField();
+	name.setData(this.svc.getDataObj(),"name");
+	name.className = this.cssClass;
+	this.appendChild(name);
+
+	var type = new rokhos.ui.textField();
+	type.setData(this.svc.getDataObj(),"type");
+	type.className = this.cssClass;
+	this.appendChild(type);
 
 	this.nexus = new rokhos.nexus();
 	this.nexus.addElement("UNIT_UDL",udl,udl.refresh);
-	this.nexus.addElement("UNIT_UDL",tags,tags.refresh);
+	this.nexus.addElement("UNIT_UDL",name,name.refresh);
+	this.nexus.addElement("UNIT_UDL",type,type.refresh);
 };
 
 // setParent ---------------------------------------------------------------------------------------
@@ -64,6 +73,7 @@ be2.unitINT.prototype.removeChild = function(child) {
 	this.dom.removeChild(child.dom);
 };
 
+// updateUDL ---------------------------------------------------------------------------------------
 be2.unitINT.prototype.updateUDL = function(udlText) {
 	be2.log("be2.unitINT","Calling updateUDL",be2.debugLevelVerbose);
 	be2.log("be2.unitINT","updateUDL - " + udlText,be2.debugLevelInfo);

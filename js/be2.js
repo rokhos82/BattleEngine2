@@ -21,10 +21,21 @@ be2.log = function(title,text,level) {
 	}
 };
 
-be2.tags = {};
-be2.tags["defense"] = "obj.defense = subtags.shift();";
-be2.tags["target"] = "obj.target = subtags.shift();";
-be2.tags["ecm"] = "";
-be2.tags["yield"] = "";
-be2.tags["resist"] = "";
-be2.tags["eccm"] = "";
+be2.unit = {};
+be2.unit.components = {
+	"hull": {
+		"base": "dat.base = subtags.shift();",
+		"max": "dat.max = subtags.shift();",
+		"current": "dat.current = subtags.shift();",
+		"defense": "dat.defense = subtags.shift();",
+		"target": "dat.target = subtags.shift();",
+		"resist": "dat.target = subtags.shift();"
+	},
+	"starship": {
+		"defense": "dat.defense = subtags.shift();",
+		"target": "dat.target = subtags.shift();",
+		"ecm": "dat.ecm = subtags.shift();",
+		"eccm": "dat.eccm = subtags.shift();",
+		"name": "dat.name = subtags.shift();"
+	}
+};

@@ -90,12 +90,14 @@ be2.unitSVC.prototype.buildUnitFromUDL = function() {
 	be2.log("be2.unitSVC.buildUnitFromUDL","End Building Unit",be2.debugLevelInfo);
 };
 
+be2.unitSVC.prototype.parseComponent = function() {
+};
+
 be2.unitSVC.prototype.buildFromTag = function(obj,tag,subtags) {
 	be2.log("be2.unitSVC.buildFromTag","Function Call",be2.debugLevelVerbose);
 	while(subtags.length > 0) {
 		var t = subtags.shift();
 		be2.log("be2.unitSVC.buildFromTag","Processing Tag: " + t,be2.debugLevelInfo);
-		be2.log("be2.unitSVC.buildFromTag","Code: " + be2.tags[t],be2.debugLevelInfo);
 		eval(be2.tags[t]);
 	}
 };

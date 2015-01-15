@@ -105,6 +105,10 @@ rokhos.ui.textField.prototype.refresh = function() {
 	}
 };
 
+rokhos.ui.textField.prototype.className = function(klass) {
+	this.dom.className = klass;
+};
+
 // UI Linking --------------------------------------------------------------------------------------
 rokhos.nexus = function() {
 	this.channels = {};

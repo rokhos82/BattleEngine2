@@ -20,17 +20,17 @@ be2.unitINT.prototype.initialize = function() {
 
 	var udl = new rokhos.ui.textField();
 	udl.setCallback(this,this.updateUDL);
-	udl.className = this.cssClass;
+	udl.className(this.cssClass + "INPUT");
 	this.appendChild(udl);
 
 	var name = new rokhos.ui.textField();
 	name.setData(this.svc.getDataObj(),"name");
-	name.className = this.cssClass;
+	name.className(this.cssClass + "INPUT");
 	this.appendChild(name);
 
 	var type = new rokhos.ui.textField();
 	type.setData(this.svc.getDataObj(),"type");
-	type.className = this.cssClass;
+	type.className(this.cssClass + "INPUT");
 	this.appendChild(type);
 
 	this.nexus = new rokhos.nexus();

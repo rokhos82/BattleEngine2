@@ -59,7 +59,7 @@ be2.unitSVC.prototype.buildUnitFromUDL = function() {
 			var size = subtags.shift();
 			this.dat.hull.size = size;
 		}
-		else if(type == "beam")
+		else if(type == "beam") {
 			var size = subtags.shift();
 			var beam = new be2.weaponDAT(size,0,0,0);
 			this.dat.beam.push(beam);

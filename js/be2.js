@@ -22,27 +22,50 @@ be2.log = function(title,text,level) {
 };
 
 be2.unit = {};
+be2.unit.generics = {
+	"volley": "dat.volley = parseInt(tags.shift());",
+	"target": "dat.target = parseInt(tags.shift());",
+	"yield": "dat.yield = parseInt(tags.shift());",
+	"ecm": "dat.ecm = parseInt(tags.shift()); dat.ecmQaulity = parseInt(tags.shift());",
+	"eccm": "dat.eccm = parseInt(tags.shift()); dat.ecmQaulity = parseInt(tags.shift());",
+	"defense": "dat.defense = parseInt(tags.shift());",
+	"resist": "dat.resist = parseInt(tags.shift());",
+	"flicker": "dat.resist = parseInt(tags.shift());"
+};
 be2.unit.components = {
 	"hull": {
 		"base": "dat.base = parseInt(tags.shift());",
 		"max": "dat.max = parseInt(tags.shift());",
 		"current": "dat.current = parseInt(tags.shift());",
-		"defense": "dat.defense = parseInt(tags.shift());",
-		"target": "dat.target = parseInt(tags.shift());",
-		"resist": "dat.resist = parseInt(tags.shift());"
+		"defense": be.unit.generics["defense"],
+		"target": be2.unit.generics["target"],
+		"resist": be2.unit.generics["resist"]
 	},
 	"starship": {
-		"defense": "dat.defense = parseInt(tags.shift());",
-		"target": "dat.target = parseInt(tags.shift());",
-		"ecm": "dat.ecm = parseInt(tags.shift()); dat.ecmQaulity = parseInt(tags.shift());",
-		"eccm": "dat.eccm = parseInt(tags.shift()); dat.ecmQaulity = parseInt(tags.shift());",
+		"defense": be2.unit.generics["defense"],
+		"target": be2.unit.generics["target"],
+		"ecm": be2.unit.generics["ecm"],
+		"eccm": be2.unit.generics["eccm"]		
 	},
 	"beam": {
-		"volley": "dat.volley = parseInt(tags.shift());",
-		"target": "dat.target = parseInt(tags.shift());",
-		"yield": "dat.yield = parseInt(tags.shift());",
-		"eccm": "dat.eccm = parseInt(tags.shift());",
+		"volley": be2.unit.generics["volley"],
+		"target": be2.unit.generics["target"],
+		"yield": be2.unit.generics["yield"],
+		"eccm": be2.unit.generics["eccm"],
 		"link": "dat.link = tags.shift();"
+	},
+	"missile": {
+		"volley": be2.unit.generics["volley"],
+		"target": be2.unit.generics["target"],
+		"yield": be2.unit.generics["yield"],
+		"eccm": be2.unit.generics["eccm"]
+	},
+	"shield": {
+		"max": "",
+		"current": "",
+		"ecm": be2.unit.generics["ecm"],
+		"resist": be2.unit.generics["resist"],
+		"flicker": be2.unit.generics["flicker"]
 	}
 };
 

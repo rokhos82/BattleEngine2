@@ -1,27 +1,63 @@
-<html>
-<head>
-	<title>BattleEngine2</title>
-	<script type="text/javascript" src="js/rokhos.js"></script>
-	<script type="text/javascript" src="js/be2.js"></script>
-	<script type="text/javascript" src="js/weaponDAT.js"></script>
-	<script type="text/javascript" src="js/mainDAT.js"></script>
-	<script type="text/javascript" src="js/mainSVC.js"></script>
-	<script type="text/javascript" src="js/mainINT.js"></script>
-	<script type="text/javascript" src="js/unitDAT.js"></script>
-	<script type="text/javascript" src="js/unitSVC.js"></script>
-	<script type="text/javascript" src="js/unitINT.js"></script>
-	<link href="css/rokhos.css" rel="stylesheet" type="text/css" />
-	<link href="css/be2.css" rel="stylesheet" type="text/css" />
-</head>
-<body>
-	<div id="BE2_Root">
-	</div>
-	<script type="text/javascript">
-		var root = document.getElementById("BE2_Root");
-		be2.bootstrap(root);
-		var ui = new be2.mainINT();
-		ui.initialize();
-		ui.setParent(root);
-	</script>
-</body>
+<html ng-app="be2" lang="en">
+	<head>
+		<title>BattleEngine2</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" type="text/css" href="css\bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="css\starter-template.css" />
+		<link rel="stylesheet" type="text/css" href="css\be2.ang.css" />
+		<!--<script type="text/javascript" src="js/rokhos.js"></script>
+		<script type="text/javascript" src="js/be2.js"></script>
+		<script type="text/javascript" src="js/weaponDAT.js"></script>
+		<script type="text/javascript" src="js/mainDAT.js"></script>
+		<script type="text/javascript" src="js/mainSVC.js"></script>
+		<script type="text/javascript" src="js/mainINT.js"></script>
+		<script type="text/javascript" src="js/unitDAT.js"></script>
+		<script type="text/javascript" src="js/unitSVC.js"></script>
+		<script type="text/javascript" src="js/unitINT.js"></script>
+		<link href="css/rokhos.css" rel="stylesheet" type="text/css" />
+		<link href="css/be2.css" rel="stylesheet" type="text/css" />-->
+	</head>
+	<body ng-controller="be2MainController as main">
+		<!--<div id="BE2_Root">
+		</div>
+		<script type="text/javascript">
+			var root = document.getElementById("BE2_Root");
+			be2.bootstrap(root);
+			var ui = new be2.mainINT();
+			ui.initialize();
+			ui.setParent(root);
+		</script>-->
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#">BattleEngine 2</a>
+				</div>
+				<div id="navbar" class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li ng-class="{active:state === states.units}"><a href="" ng-click="state =states.units">Units</a></li>
+						<li ng-class="{active:state === states.fleets}"><a href="" ng-click="state = states.fleets">Fleets</a></li>
+						<li ng-class="{active:state === states.combat}"><a href="" ng-click="state = states.combat">Combat</a></li>
+					</ul>
+				</div><!--/.nav-collapse -->
+			</div>
+		</nav>
+		<div class="container" ng-show="state === states.units">
+			<unit-panel></unit-panel>
+		</div>
+		<div class="container" ng-show="state === states.fleets">
+			<fleet-panel></fleet-panel>
+		</div>
+		<div class="container" ng-show="state === states.combat">
+		</div>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="angular.min.js"></script>
+		<script type="text/javascript" src="be2.ang.js"></script>
+	</body>
 </html>

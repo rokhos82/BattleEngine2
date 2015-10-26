@@ -9,6 +9,18 @@
 		};
 		$scope.state = $scope.states.units;
 		$scope.udl = "{name: \"\"}";
+
+		var units = [];
+		$scope.units = units;
+		// Some example units
+		units.push({
+			"name": "GTVA Wasp",
+			"type": "fighter",
+			"beam": 1,
+			"missile": 4,
+			"shield": 0,
+			"hull": 1
+		});
 	}]);
 
 	app.directive('unitPanel',function() {

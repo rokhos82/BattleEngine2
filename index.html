@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html ng-app="be2" lang="en">
+	<head>
+		<title>BattleEngine2</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta charset="utf-8">
+		<link rel="stylesheet" type="text/css" href="css\bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="css\starter-template.css" />
+		<link rel="stylesheet" type="text/css" href="css\be2.ang.css" />
+	</head>
+	<body ng-controller="be2MainController as main">
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#">BattleEngine 2</a>
+				</div>
+				<div id="navbar" class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li ng-class="{active:state === states.units}"><a href="" ng-click="state =states.units">Units</a></li>
+						<li ng-class="{active:state === states.fleets}"><a href="" ng-click="state = states.fleets">Fleets</a></li>
+						<li ng-class="{active:state === states.combat}"><a href="" ng-click="state = states.combat">Combat</a></li>
+					</ul>
+				</div><!--/.nav-collapse -->
+			</div>
+		</nav>
+		<div class="container" ng-show="state === states.units">
+			<unit-panel></unit-panel>
+		</div>
+		<div class="container" ng-show="state === states.fleets">
+			<fleet-panel></fleet-panel>
+		</div>
+		<div class="container" ng-show="state === states.combat">
+			<combat-panel></combat-panel>
+		</div>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="angular.min.js"></script>
+		<script type="text/javascript" src="be2.ang.js"></script>
+	</body>
+</html>

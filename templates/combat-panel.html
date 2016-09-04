@@ -4,7 +4,7 @@
 <div class="row">
 	<div class="col-sm-12">
 		<div ng-repeat="fleet in fleets">
-			{{fleet.name}}
+			<h1>{{fleet.name}} [{{fleet.empire}}]</h1>
 			<ul>
 				<li ng-repeat="unit in fleet.units">{{unit.unit.name}} - {{unit.unit.type}}</li>
 			</ul>

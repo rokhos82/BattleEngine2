@@ -26,8 +26,11 @@
 		};
 		$scope.state = $scope.states.combat;
 
+		// Where is the git exec for GitHub?
+
 		FleetService.add({
 			"name": "The Heavy",
+			"empire": "Torr Combine",
 			"units": [{
 				"unit": {
 					"name": "Emma Rose",
@@ -45,11 +48,18 @@
 					"volley": 4,
 					"target": 15
 				}]
+			},{
+				"unit": {
+					"name": "Kaylee Gwenyth",
+					"type": "fighter",
+					"defense": 45
+				}
 			}]
 		});
 
 		FleetService.add({
 			"name": "The Scourge",
+			"empire": "Torr Combine",
 			"units": [{
 				"unit": {
 					"name": "Scourge A",

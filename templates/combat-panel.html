@@ -3,11 +3,11 @@
 </div>
 <div class="row">
 	<div class="col-sm-12">
-		<p ng-repeat="f in fleets">
-			{{f.name}}
+		<div ng-repeat="fleet in fleets">
+			{{fleet.name}}
 			<ul>
-				<li ng-repeat="u in f.units">{{u.unit.name}}</li>
+				<li ng-repeat="unit in fleet.units">{{unit.unit.name}} - {{unit.unit.type}}</li>
 			</ul>
-		</p>
+		</div>
 	</div>
 </div>

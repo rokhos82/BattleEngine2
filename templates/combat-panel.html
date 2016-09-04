@@ -1,0 +1,13 @@
+<div class="row">
+	<p class="lead">Combat test goes here.</p>
+</div>
+<div class="row">
+	<div class="col-sm-12">
+		<p ng-repeat="f in fleets">
+			{{f.name}}
+			<ul>
+				<li ng-repeat="u in f.units">{{u.unit.name}}</li>
+			</ul>
+		</p>
+	</div>
+</div>

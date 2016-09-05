@@ -98,7 +98,7 @@
 			validate: _validate,
 			parse: _parse,
 			stringify: _stringify,
-			add = _add
+			add: _add
 		}
 	});
 
@@ -190,7 +190,23 @@
 		$scope.fleets = FleetService.all();
 	}]);
 
-	app.controller("be2CombatController",["$scope",function($scope){
+	app.controller("be2CombatController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService) {
+		$scope.combat = {
+			status: "uninitiated",
+			log: "Nothing to see here!"
+		};
+
+		this.startCombat = function() {
+			$scope.combat.status = "started";
+		};
+
+		this.stopCombat = function() {
+			$scope.combat.status = "stopped";
+		};
+
+		this.resetCombat = function() {
+			$scope.combat.status = "uninitiated";
+		};
 	}]);
 
 	app.directive('unitPanel',function() {

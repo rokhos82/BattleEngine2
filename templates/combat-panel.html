@@ -1,13 +1,24 @@
-<div class="row">
-	<p class="lead">Combat test goes here.</p>
-</div>
-<div class="row">
-	<div class="col-sm-12">
-		<div ng-repeat="fleet in fleets">
-			<h1>{{fleet.name}} [{{fleet.empire}}]</h1>
-			<ul>
-				<li ng-repeat="unit in fleet.units">{{unit.unit.name}} - {{unit.unit.type}}</li>
-			</ul>
+<div ng-controller="be2CombatController as combatCtl">
+	<div class="row top-buffer">
+		<div class="col-sm-12 col-md-6 col-lg-3">
+			<a href="#" class="btn btn-default btn-lg btn-block disabled top-buffer-sm">Combat Status: {{combat.status}}</a>
+		</div>
+		<div class="col-sm-12 col-md-6 col-lg-3">
+			<button class="btn btn-primary btn-lg btn-block top-buffer-sm" ng-click="combatCtl.startCombat()">Start Combat</button>
+		</div>
+		<div class="col-sm-12 col-md-6 col-lg-3">
+			<button class="btn btn-primary btn-lg btn-block top-buffer-sm" ng-click="combatCtl.stopCombat()">Stop Combat</<button>
+		</div>
+		<div class="col-sm-12 col-md-6 col-lg-3">
+			<button class="btn btn-primary btn-lg btn-block top-buffer-sm" ng-click="combatCtl.resetCombat()">Reset Combat</<button>
+		</div>
+	</div>
+	<div class="row top-buffer">
+		<div class="col-sm-12 col-md-12 col-lg-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">Combat Informatioin</div>
+				<div class="panel-body"><textarea class="form-control" rows="10">{{combat.log}}</textarea></div>
+			</div>
 		</div>
 	</div>
 </div>

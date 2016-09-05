@@ -48,9 +48,9 @@
 		}
 	}]);
 
-	//UnitService - This service provides unit functions.
+	// UnitService - This service provides unit functions.
 	app.factory("UnitService",function() {
-		var unit = {};
+		var unitLibrary = {};
 
 		var _validate = function(obj) {
 			var valid = true;
@@ -64,7 +64,6 @@
 				console.log("Invalid Unit due to no unit tag.");
 				valid = false;
 			}
-
 			return valid;
 		}
 
@@ -76,11 +75,34 @@
 			return obj;
 		};
 
+		var _stringify = function(obj) {
+			var str = null;
+			if(_validate(obj)) {
+				str = JSON.stringify(obj);
+			}
+			return str;
+		};
+
+		var _add = function(_unit) {
+			if(typeof(_unit) == "object" && _validate(_unit)) {
+			}
+			else if (typeof(_unit) == "string") {
+				var obj = _stringify(_unit);
+			}
+			else {
+				console.log("Unknown Unit format when adding to unit library.");
+			}
+		}
+
 		return {
 			validate: _validate,
-			parse: _parse
+			parse: _parse,
+			stringify: _stringify,
+			add = _add
 		}
 	});
+
+	// PlayerService
 
 	// be2MainController - Main controller for BattleEngine2.
 	app.controller("be2MainController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService){

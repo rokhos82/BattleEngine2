@@ -4,6 +4,7 @@
 	// FleetService - This service provides fleet functions and storage.
 	app.factory("FleetService",["UnitService",function(UnitService) {
 		var fleets = [];
+		var fleetNameIndex = {};
 
 		var _validate = function(obj) {
 			var valid = true;
@@ -24,8 +25,20 @@
 		};
 
 		var _add = function(fleet) {
-			if(_validate(fleet))
-				fleets.push(fleet);
+			if(_validate(fleet)) {
+				var l = fleets.push(fleet);
+				fleetNameIndex[fleet.name] = l;
+			}
+		};
+
+		var _addUnit = function(name,unit) {
+			var i = fleetNameIndex[name];
+			var fleet = fleets[i];
+			var success = false;
+			if(UnitService.validate(unit)) {
+				success = true;
+				fleet.units.push(unit);
+			}
 		}
 
 		return {

@@ -39,25 +39,37 @@
 	app.factory("UnitService",function() {
 		var unit = {};
 
-		return {
-			validate: function(obj) {
-				var valid = true;
-				if(obj.unit) {
-					if(!obj.unit.name || !obj.unit.type) {
-						console.log("Invalid Unit due to no name or type.");
-						valid = false;
-					}			
-				}
-				else {
-					console.log("Invalid Unit due to no unit tag.");
+		var _validate = function(obj) {
+			var valid = true;
+			if(obj.unit) {
+				if(!obj.unit.name || !obj.unit.type) {
+					console.log("Invalid Unit due to no name or type.");
 					valid = false;
-				}
-
-				return valid;
+				}			
 			}
+			else {
+				console.log("Invalid Unit due to no unit tag.");
+				valid = false;
+			}
+
+			return valid;
+		}
+
+		var _parse = function(jsonStr) {
+			var obj = JSON.parse(jsonStr);
+			if(_validate(obj)) {
+				obj = null;
+			}
+			return obj;
+		};
+
+		return {
+			validate: _validate,
+			parse: _parse
 		}
 	});
 
+	// be2MainController - Main controller for BattleEngine2.
 	app.controller("be2MainController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService){
 		$scope.states = {
 			combat: "combat",

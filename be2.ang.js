@@ -1,13 +1,14 @@
 (function(){
 	var app = angular.module("be2",[]);
 
+	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex"];
+
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// FactionService
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("FactionService",["FleetService",function(FleetService) {
 		var factions = [];
 		var factionIndex = {};
-		var reservedNames = ["factions","factionIndex"];
 		var _errorHeader = "FactionService: Error - ";
 		var _successHeader = "FactionService: Success - ";
 
@@ -55,8 +56,20 @@
 
 		// Add a fleet to a given faction name -----------------------------------------------------
 		var _addFleet = function(faction,fleet) {
-			var index = factionIndex[faction.name];
-			if(factionIndex[faction.name]) {
+			if(typeof(factionIndex[faction]) == "number") {
+				var i = factionIndex[faction];
+				if(Array.isArray(fleet)) {
+					for(var i in fleet) {
+						var obj = FleetService.add(fleet[i]);
+					}
+				}
+				else if(typeof(fleet) == "object") {
+					var obj = FleetService.add(fleet);
+				}
+				else {}
+			}
+			else {
+				console.log(_errorHeader + "Faction '" + faction + "' does not exist");
 			}
 		};
 
@@ -79,7 +92,7 @@
 			validate: _validate,
 			addFleet: _addFleet,
 			load: _simpleLoad,
-			loadFactionsInfo: _deepLoad;
+			loadFactionsInfo: _deepLoad
 		};
 	}]);
 
@@ -89,12 +102,15 @@
 	app.factory("FleetService",["UnitService",function(UnitService) {
 		var fleets = [];
 		var fleetNameIndex = {};
+		var _errorHeader = "FleetService: Error - ";
+		var _successHeader = "FleetService: Success - ";
 
+		// Validate that the object is a proper Fleet object ---------------------------------------
 		var _validate = function(obj) {
 			var valid = true;
 
-			if(!obj.name) {
-				console.log("Invalid Fleet because of no name entered.");
+			if(typeof(obj.name) != "string") {
+				console.log(_errorHeader + "Fleet does not have a proper name entry");
 				valid = false;
 			}
 
@@ -108,13 +124,19 @@
 			return valid;
 		};
 
+		// Add a fleet object to the dictionary ----------------------------------------------------
 		var _add = function(fleet) {
+			var ret = undefined;
 			if(_validate(fleet)) {
 				var l = fleets.push(fleet);
 				fleetNameIndex[fleet.name] = l-1;
+				ret = fleet;
+				console.log(_successHeader + "Loaded fleet " + fleet.name);
 			}
+			return ret;
 		};
 
+		// Add a unit to the specific fleet --------------------------------------------------------
 		var _addUnit = function(name,unit) {
 			var i = fleetNameIndex[name];
 			var fleet = fleets[i];
@@ -125,10 +147,17 @@
 			}
 		}
 
+		// Load basic fleet info from a JSON string ------------------------------------------------
+		var _simpleLoad = function(jsonStr) {
+			var obj = JSON.parse(jsonStr);
+			return _add(obj);
+		};
+
 		return {
 			all: function() { return fleets;},
 			add: _add,
 			validate: _validate,
+			load: _simpleLoad,
 			combatInfo: function() {return {"fleets":fleets,"index":fleetNameIndex}}
 		}
 	}]);
@@ -212,6 +241,9 @@
 		$scope.state = $scope.states.combat;
 		
 		factions.load("[{\"name\":\"Torr Combine High Command\"},{\"name\":\"Ancient Machine Race\"}]");
+		factions.addFleet("Torr Combine High Command",[{"name":"The Heavy","empire":"Torr Combine"},{"name":"The Scourge","empire":"New Haven Commmonwealth"}]);
+
+		$scope.fleets = fleets.all();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

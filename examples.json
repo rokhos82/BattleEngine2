@@ -1,0 +1,59 @@
+factions = {
+	"attacker": {
+		"name": "Torr Combine High Commmand",
+		"fleets": [{
+			"name": "The Heavy",
+			"empire": "Torr Combine",
+			"units": [{
+				"name": "Emma Rose"
+			},
+			{
+				"name": "William Fredrick"
+			}],
+			"unitIndex": {
+				"Emma Rose": 0,
+				"William Fredrick": 1
+			}
+		},
+		{
+			"name": "The Scourge",
+			"empire": "New Haven Commonwealth",
+			"units": [
+				0: {
+					"name": "Scourge A"
+				}
+			],
+			"unitIndex": {
+				"Scourge A": 0
+			}
+		}],
+		"fleetIndex": {
+			"The Heavy": 0,
+			"The Scourge": 1
+		},
+		"combatants": {
+			"Emma Rose": {fleet: "The Heavy", data: {a link to the actual data object @ fleets[0].units[0]}},
+			"William Fredrick": {fleet: "The Heavy", data: {a link to the actual data object @ fleets[0].units[1]}},
+			"Scourge A": {fleet: "The Scourge", data: {a link to the actual data object @ fleets[1].units[0]}}
+		},
+	},
+	"defender": {
+		"name": "Ancient Machine Race",
+		"fleets": [{
+			"name": "Machine Planetoid BG12ZK",
+			"empire": "Ancient Machine Race",
+			"units": [{
+				"name": "Machine Planetoid BG12ZK"
+			}],
+			"unitIndex": {
+				"Machine Planetoid BG12ZK": 0
+			}
+		}],
+		"fleetIndex": {
+			"Machine Planetoid BG12ZK": 0
+		},
+		"combatants": {
+			"Machine Planetoid BG12ZK": {fleet: "Machine Planetoid BG12ZK", data: {a link to the actual data object @ fleets[0].units[0]}}
+		}
+	}
+}

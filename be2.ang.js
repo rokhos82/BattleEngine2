@@ -1,6 +1,30 @@
 (function(){
 	var app = angular.module("be2",[]);
 
+	// FactionService
+	app.factory("FactionService",["FleetService",function(FleetService) {
+		var factions = [];
+		var factionIndex = {};
+
+		var _validate = function(faction) {
+			var valid = true;
+			if(!faction.name)
+				valid = false;
+			return valid;
+		}
+
+		var _add = function(faction) {
+			var l = factions.push(faction);
+			factionIndex[faction.name] = l-1;
+		}
+
+		var _addFleet = function(faction,fleet) {
+			var index = factionIndex[faction.name];
+			if(factionIndex[faction.name]) {
+			}
+		}
+	}]);
+
 	// FleetService - This service provides fleet functions and storage.
 	app.factory("FleetService",["UnitService",function(UnitService) {
 		var fleets = [];
@@ -149,7 +173,7 @@
 			}]
 		});
 
-		FleetService.add({
+		var fleetScourge = {
 			"name": "The Scourge",
 			"empire": "Torr Combine",
 			"enemy": "The Heavy",
@@ -230,7 +254,8 @@
 					"ammo": 1
 				}]
 			}]
-		});
+		};
+		FleetService.add(fleetScourge);
 
 
 		$scope.fleets = FleetService.all();

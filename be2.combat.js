@@ -16,61 +16,69 @@ function randomBetween(low,high) {
 
 function initCombat(event) {
 	var combatData = event.data;
-	doCombat(combatData);
+	startCombat(combatData);
 }
 
-function doCombat(combatData) {
+function startCombat(combatData) {
 	logger("Starting Combat!");
-	var fleets = combatData.fleets;
-
-	for(var f in fleets) {
-		var fleet = fleets[f];
-		logger("Fleet: " + fleet.name + " (" + fleet.empire + ")");
-
-		for(var u in fleet.units) {
-			var unit = fleet.units[u];
-			logger(": " + unit.unit.name);
-		}
+	logger("Fleets: ");
+	for(var f in combatData.fleets) {
+		var fleet = combatData.fleets[f];
+		logger("  " + fleet.name + " - " + fleet.empire);
 	}
+
+	initCombatState(combatData);
+
 	logger("");
-	var i = 0;
-	while(!_done) {
-		i++
-		logger("Starting round: " + i);
-
-		var targets = selectTargets(combatData);
-
-		if(i > 9)
-			_done=true;
-		logger("");
+	while(!combatData.state.done) {
+		doCombatRound(combatData);
 	}
 
 	logger("Combat Finished");
 	this.close();
 }
 
-function selectTargets(combatData) {
-	var targets = {};
+function doCombatRound(combatData) {
+	var state = combatData.state;
 	var fleets = combatData.fleets;
-	var index = combatData.index;
+	logger("Begin round " + state.round);
+	var roundState = {
+		round: state.round
+	};
+	state.rounds.push(roundState);
 
+	// List fleets and combatants
 	for(var f in fleets) {
 		var fleet = fleets[f];
-		logger("Selecting targets for fleet " + fleet.name + " from " + fleet.enemy);
-		var i = index[fleet.enemy];
-		var enemy = fleets[i];
 		var units = fleet.units;
 
+		logger("Fleet: " + fleet.name);
+
 		for(var u in units) {
-			var l = enemy.units.length;
-			var t = randomBetween(0,l);
-			var target = enemy.units[t];
 			var unit = units[u];
-			logger(": " + unit.unit.name + " fires at " + target.unit.name);
+			logger("  " + unit.unit.name + " - " + unit.unit.type);
 		}
 	}
 
-	return targets;
+
+	logger("");
+	state.round++;
+	if(state.round > 9)
+		state.done = true;
+}
+
+function initCombatState(combatData) {
+	var state = {};
+
+	state.done = false;
+	state.round = 1;
+	state.rounds = [];
+
+	combatData.state = state;
+}
+
+function selectTarget(combatants) {
+
 }
 
 function logger(entry) {

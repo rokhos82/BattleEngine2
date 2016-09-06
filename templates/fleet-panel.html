@@ -1,1 +1,8 @@
-<p class="lead">This is the fleets interface.</p>
+<div class="row">
+	<div class="col-sm-12 col-md-12 col-lg-6" ng-repeat="fleet in fleets">
+		<h3>{{fleet.name}} [{{fleet.empire}}]</h3>
+		<ul>
+			<li ng-repeat="unit in fleet.units">{{unit.unit.name}} - {{unit.unit.type}}</li>
+		</ul>
+	</div>
+</div>

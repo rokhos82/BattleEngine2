@@ -215,6 +215,7 @@
 			var worker = new Worker("be2.combat.js");
 
 			worker.addEventListener("message",workerCallback,false);
+			worker.postMessage($scope.fleets);
 
 			$scope.worker = worker;
 		};

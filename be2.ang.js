@@ -104,6 +104,11 @@
 
 	// PlayerService
 
+	// CombatService - 
+	app.factory("CombatService",["$q",function($q) {
+		var _worker = undefined;
+	}]);
+
 	// be2MainController - Main controller for BattleEngine2.
 	app.controller("be2MainController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService){
 		$scope.states = {
@@ -193,19 +198,39 @@
 	app.controller("be2CombatController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService) {
 		$scope.combat = {
 			status: "uninitiated",
-			log: "Nothing to see here!"
+			log: "Nothing to see here!",
+			isDone: false
 		};
+
+		function workerCallback(event) {
+			var data = event.data;
+			$scope.combat.log = data.log;
+			$scope.combat.isDone = data.done;
+			console.log("Received Message from Worker");
+		}
 
 		this.startCombat = function() {
 			$scope.combat.status = "started";
+			$scope.combat.log = "";
+
+			var worker = new Worker("be2.combat.js");
+
+			worker.addEventListener("message",workerCallback,false);
+
+			$scope.worker = worker;
+			$scope.combat.status = "running";
 		};
 
 		this.stopCombat = function() {
 			$scope.combat.status = "stopped";
+
+			$scope.worker.terminate();
+			$scope.worker = undefined;
 		};
 
 		this.resetCombat = function() {
 			$scope.combat.status = "uninitiated";
+			$scope.combat.log = "";
 		};
 	}]);
 

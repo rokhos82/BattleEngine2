@@ -6,18 +6,22 @@ var i = 0;
 function logger() {
 	i++;
 	var newLog = "[" + i + "] Test Entry\n";
-	console.log(newLog);
 
 	_log += newLog;
 
 
-	if(i > 10)
+	if(i > 9)
 		_done = true;
 
-	postMessage({log:_log,done:_done});
-
-	if(!_done)
-		setTimeout("logger()",2000);
+	if(!_done) {
+		this.postMessage({log:_log,done:_done});
+		setTimeout("logger()",500);
+	}
+	else {
+		_log += "Combat Finished!";
+		this.postMessage({log:_log,done:_done});
+		this.close();
+	}
 }
 
 logger();

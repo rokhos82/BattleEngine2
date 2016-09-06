@@ -198,15 +198,14 @@
 	app.controller("be2CombatController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService) {
 		$scope.combat = {
 			status: "uninitiated",
-			log: "Nothing to see here!",
-			isDone: false
+			log: "Combat results will be posted here!"
 		};
 
 		function workerCallback(event) {
-			var data = event.data;
-			$scope.combat.log = data.log;
-			$scope.combat.isDone = data.done;
-			console.log("Received Message from Worker");
+			$scope.combat.log = event.data.log;
+			if(event.data.done)
+				$scope.combat.status = "finished";
+			$scope.$apply();
 		}
 
 		this.startCombat = function() {
@@ -218,7 +217,6 @@
 			worker.addEventListener("message",workerCallback,false);
 
 			$scope.worker = worker;
-			$scope.combat.status = "running";
 		};
 
 		this.stopCombat = function() {

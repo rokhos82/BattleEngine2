@@ -8,13 +8,16 @@
 		var factions = [];
 		var factionIndex = {};
 		var reservedNames = ["factions","factionIndex"];
+		var _errorHeader = "FactionService: Error - ";
+		var _successHeader = "FactionService: Success - ";
 
 		// Validate that the passed object is a proper Faction object ------------------------------
 		var _validate = function(faction) {
 			var valid = true;
 
 			// Does the faction have a name?
-			if(typeof(faction.name) == "string") {
+			if(typeof(faction.name) != "string") {
+				console.log(_errorHeader + "Faction does not have a valid name entry.");
 				valid = false;
 			}
 			else {
@@ -22,7 +25,7 @@
 				for(var i in reservedNames) {
 					if(faction.name === reservedNames[i]) {
 						valid = false;
-						console.log("FactionService: Error - Faction name is in the reserved list.");
+						console.log(_errorHeader + "Faction name is in the reserved list.");
 						break;
 					}
 				}
@@ -30,6 +33,7 @@
 
 			// Does the faction of an array of fleets (Optional)
 			if(typeof(faction.fleets) != "array" && typeof(faction.fleets) != "undefined") {
+				console.log(_errorHeader + "Faction has an improper fleets entry.  The fleets entry must be absent or an Array.");
 				valid = false;
 			}
 
@@ -39,8 +43,14 @@
 
 		// Adds a Faction to the array -------------------------------------------------------------
 		var _add = function(faction) {
-			var l = factions.push(faction);
-			factionIndex[faction.name] = l-1;
+			if(_validate(faction)) {
+				var l = factions.push(faction);
+				factionIndex[faction.name] = l-1;
+				console.log(_successHeader + "Successfully add faction: " + faction.name);
+			}
+			else {
+				console.log(_errorHeader + "Unable to add faction.  See previous errors.");
+			}
 		};
 
 		// Add a fleet to a given faction name -----------------------------------------------------
@@ -50,20 +60,26 @@
 			}
 		};
 
-		// Load faction information from a JSON string ---------------------------------------------
-		var _loadFactions = function(jsonStr) {
+		// Load factions from a JSON string --------------------------------------------------------
+		var _simpleLoad = function(jsonStr) {
 			var obj = JSON.parse(jsonStr);
 
 			for(var i in obj) {
 				var faction = obj[i];
-				_validate(faction);
+				_add(faction);
 			}
+		};
+
+		// Load deep faction information from a JSON string ----------------------------------------
+		var _deepLoad = function(jsonStr) {
 		};
 
 		return {
 			add: _add,
 			validate: _validate,
 			addFleet: _addFleet,
+			load: _simpleLoad,
+			loadFactionsInfo: _deepLoad;
 		};
 	}]);
 
@@ -195,7 +211,7 @@
 		};
 		$scope.state = $scope.states.combat;
 		
-		$scope.factions = factions.load("");
+		factions.load("[{\"name\":\"Torr Combine High Command\"},{\"name\":\"Ancient Machine Race\"}]");
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

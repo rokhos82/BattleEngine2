@@ -1,56 +1,74 @@
 var _log = "";
 var _done = false;
 
-var i = 0;
+function sleep(milliseconds) {
+	var date = new Date();
+	var curDate = null;
 
-var fleets = undefined;
-
-function getCombatSetup(event) {
-	fleets = event.data;
-	combat();
+	do {
+		curDate = new Date();
+	} while (curDate - date < milliseconds)
 }
 
-function combat() {
-	_log += "Starting Combat\n";
+function initCombat(event) {
+	var fleets = event.data;
+	doCombat(fleets);
+}
+
+function doCombat(fleets) {
+	logger("Starting Combat!");
 
 	for(var f in fleets) {
 		var fleet = fleets[f];
-		_log += "Fleet: " + fleet.name + " (" + fleet.empire + ")\n";
+		logger("Fleet: " + fleet.name + " (" + fleet.empire + ")");
 
 		for(var u in fleet.units) {
 			var unit = fleet.units[u];
-			_log += ": " + unit.unit.name + "\n";
+			logger(": " + unit.unit.name);
 		}
 	}
+	logger("");
+	var i = 0;
+	while(!_done) {
+		i++
+		logger("Starting round: " + i);
 
-	_log += "Combat Finished!";
+		var targets = selectTargets(fleets);
 
-	this.postMessage({log:_log,done:true});
+		if(i > 9)
+			_done=true;
+		logger("");
+	}
+
+	logger("Combat Finished");
 	this.close();
 }
 
-function selectTarget() {
+function buildTargetList(fleets) {
+
 }
 
-function logger() {
-	i++;
-	var newLog = "[" + i + "] Test Entry\n";
+function selectTargets(fleets) {
+	var targets = {};
 
-	_log += newLog;
+	for(var f in fleets) {
+		var fleet = fleets[f];
+		logger("Selecting targets for fleet: " + fleet.name);
+		for(var u in fleet.units) {
 
-
-	if(i > 9)
-		_done = true;
-
-	if(!_done) {
-		this.postMessage({log:_log,done:_done});
-		setTimeout("logger()",500);
+		}
 	}
-	else {
-		_log += "Combat Finished!";
-		this.postMessage({log:_log,done:_done});
-		this.close();
-	}
+
+	return targets;
 }
 
-this.addEventListener('message',getCombatSetup,false);
+function logger(entry) {
+	_log = entry + "\n";
+	syncLog();
+}
+
+function syncLog() {
+	this.postMessage({log:_log,done:_done});
+}
+
+this.addEventListener('message',initCombat,false);

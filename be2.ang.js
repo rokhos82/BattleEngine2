@@ -202,7 +202,7 @@
 		};
 
 		function workerCallback(event) {
-			$scope.combat.log = event.data.log;
+			$scope.combat.log += event.data.log;
 			if(event.data.done)
 				$scope.combat.status = "finished";
 			$scope.$apply();

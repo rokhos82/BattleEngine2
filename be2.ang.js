@@ -1,16 +1,116 @@
 (function(){
 	var app = angular.module("be2",[]);
 
-	// FleetService - This service provides fleet functions and storage.
+	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex"];
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// FactionService
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.factory("FactionService",["FleetService",function(FleetService) {
+		var factions = [];
+		var factionIndex = {};
+		var _errorHeader = "FactionService: Error - ";
+		var _successHeader = "FactionService: Success - ";
+
+		// Validate that the passed object is a proper Faction object ------------------------------
+		var _validate = function(faction) {
+			var valid = true;
+
+			// Does the faction have a name?
+			if(typeof(faction.name) != "string") {
+				console.log(_errorHeader + "Faction does not have a valid name entry.");
+				valid = false;
+			}
+			else {
+				// Check against the list of reserved faction names
+				for(var i in reservedNames) {
+					if(faction.name === reservedNames[i]) {
+						valid = false;
+						console.log(_errorHeader + "Faction name is in the reserved list.");
+						break;
+					}
+				}
+			}
+
+			// Does the faction of an array of fleets (Optional)
+			if(typeof(faction.fleets) != "array" && typeof(faction.fleets) != "undefined") {
+				console.log(_errorHeader + "Faction has an improper fleets entry.  The fleets entry must be absent or an Array.");
+				valid = false;
+			}
+
+			// Return the valid flag.
+			return valid;
+		};
+
+		// Adds a Faction to the array -------------------------------------------------------------
+		var _add = function(faction) {
+			if(_validate(faction)) {
+				var l = factions.push(faction);
+				factionIndex[faction.name] = l-1;
+				console.log(_successHeader + "Successfully add faction: " + faction.name);
+			}
+			else {
+				console.log(_errorHeader + "Unable to add faction.  See previous errors.");
+			}
+		};
+
+		// Add a fleet to a given faction name -----------------------------------------------------
+		var _addFleet = function(faction,fleet) {
+			if(typeof(factionIndex[faction]) == "number") {
+				var i = factionIndex[faction];
+				if(Array.isArray(fleet)) {
+					for(var i in fleet) {
+						var obj = FleetService.add(fleet[i]);
+					}
+				}
+				else if(typeof(fleet) == "object") {
+					var obj = FleetService.add(fleet);
+				}
+				else {}
+			}
+			else {
+				console.log(_errorHeader + "Faction '" + faction + "' does not exist");
+			}
+		};
+
+		// Load factions from a JSON string --------------------------------------------------------
+		var _simpleLoad = function(jsonStr) {
+			var obj = JSON.parse(jsonStr);
+
+			for(var i in obj) {
+				var faction = obj[i];
+				_add(faction);
+			}
+		};
+
+		// Load deep faction information from a JSON string ----------------------------------------
+		var _deepLoad = function(jsonStr) {
+		};
+
+		return {
+			add: _add,
+			validate: _validate,
+			addFleet: _addFleet,
+			load: _simpleLoad,
+			loadFactionsInfo: _deepLoad
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// FleetService - This service provides fleet functions and storage
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("FleetService",["UnitService",function(UnitService) {
 		var fleets = [];
 		var fleetNameIndex = {};
+		var _errorHeader = "FleetService: Error - ";
+		var _successHeader = "FleetService: Success - ";
 
+		// Validate that the object is a proper Fleet object ---------------------------------------
 		var _validate = function(obj) {
 			var valid = true;
 
-			if(!obj.name) {
-				console.log("Invalid Fleet because of no name entered.");
+			if(typeof(obj.name) != "string") {
+				console.log(_errorHeader + "Fleet does not have a proper name entry");
 				valid = false;
 			}
 
@@ -24,13 +124,19 @@
 			return valid;
 		};
 
+		// Add a fleet object to the dictionary ----------------------------------------------------
 		var _add = function(fleet) {
+			var ret = undefined;
 			if(_validate(fleet)) {
 				var l = fleets.push(fleet);
-				fleetNameIndex[fleet.name] = l;
+				fleetNameIndex[fleet.name] = l-1;
+				ret = fleet;
+				console.log(_successHeader + "Loaded fleet " + fleet.name);
 			}
+			return ret;
 		};
 
+		// Add a unit to the specific fleet --------------------------------------------------------
 		var _addUnit = function(name,unit) {
 			var i = fleetNameIndex[name];
 			var fleet = fleets[i];
@@ -41,14 +147,24 @@
 			}
 		}
 
+		// Load basic fleet info from a JSON string ------------------------------------------------
+		var _simpleLoad = function(jsonStr) {
+			var obj = JSON.parse(jsonStr);
+			return _add(obj);
+		};
+
 		return {
 			all: function() { return fleets;},
 			add: _add,
-			validate: _validate
+			validate: _validate,
+			load: _simpleLoad,
+			combatInfo: function() {return {"fleets":fleets,"index":fleetNameIndex}}
 		}
 	}]);
 
-	// UnitService - This service provides unit functions.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// UnitService - This service provides unit functions
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("UnitService",function() {
 		var unitLibrary = {};
 
@@ -102,111 +218,48 @@
 		}
 	});
 
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// PlayerService
+	////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// CombatService - 
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// CombatService
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("CombatService",["$q",function($q) {
 		var _worker = undefined;
 	}]);
 
-	// be2MainController - Main controller for BattleEngine2.
-	app.controller("be2MainController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService){
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2MainController - Main controller for BattleEngine2
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService",function($scope,factions,fleets,units){
 		$scope.states = {
 			combat: "combat",
 			fleets: "fleets",
 			units: "units"
 		};
 		$scope.state = $scope.states.combat;
+		
+		factions.load("[{\"name\":\"Torr Combine High Command\"},{\"name\":\"Ancient Machine Race\"}]");
+		factions.addFleet("Torr Combine High Command",[{"name":"The Heavy","empire":"Torr Combine"},{"name":"The Scourge","empire":"New Haven Commmonwealth"}]);
 
-		FleetService.add({
-			"name": "The Heavy",
-			"empire": "Torr Combine",
-			"units": [{
-				"unit": {
-					"name": "Emma Rose",
-					"type": "starship",
-					"defense": 15
-				},
-				"hull": {
-					"base": 3,
-					"max": 5
-				},
-				"shield": {
-					"max": 1
-				},
-				"direct-fire": [{
-					"volley": 4,
-					"target": 15
-				}]
-			},{
-				"unit": {
-					"name": "Kaylee Gwenyth",
-					"type": "fighter",
-					"defense": 45
-				}
-			}]
-		});
-
-		FleetService.add({
-			"name": "The Scourge",
-			"empire": "Torr Combine",
-			"units": [{
-				"unit": {
-					"name": "Scourge A",
-					"type": "starship",
-					"defense": 15
-				},
-				"hull": {
-					"base": 1,
-					"max": 3
-				},
-				"direct-fire": [{
-					"volley": 3,
-					"target": 15
-				}],
-				"fire-packet": [{
-					"packet": 2,
-					"size": 1,
-					"ammo": 1
-				}]
-			},{
-				"unit": {
-					"name": "Scourge B",
-					"type": "starship",
-					"defense": 15
-				},
-				"hull": {
-					"base": 1,
-					"max": 3
-				},
-				"direct-fire": [{
-					"volley": 3,
-					"target": 15
-				}],
-				"fire-packet": [{
-					"packet": 2,
-					"size": 1,
-					"ammo": 1
-				}]
-			}]
-		});
-
-
-		$scope.fleets = FleetService.all();
+		$scope.fleets = fleets.all();
 	}]);
 
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2CombatController - Combat controller for BattleEngine2
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.controller("be2CombatController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService) {
 		$scope.combat = {
 			status: "uninitiated",
-			log: "Nothing to see here!",
-			isDone: false
+			log: "Combat results will be posted here!"
 		};
 
 		function workerCallback(event) {
-			var data = event.data;
-			$scope.combat.log = data.log;
-			$scope.combat.isDone = data.done;
-			console.log("Received Message from Worker");
+			$scope.combat.log += event.data.log;
+			if(event.data.done)
+				$scope.combat.status = "finished";
+			$scope.$apply();
 		}
 
 		this.startCombat = function() {
@@ -216,9 +269,9 @@
 			var worker = new Worker("be2.combat.js");
 
 			worker.addEventListener("message",workerCallback,false);
+			worker.postMessage(FleetService.combatInfo());
 
 			$scope.worker = worker;
-			$scope.combat.status = "running";
 		};
 
 		this.stopCombat = function() {

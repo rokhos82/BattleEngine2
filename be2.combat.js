@@ -41,11 +41,12 @@ function startCombat(combatData) {
 function doCombatRound(combatData) {
 	var state = combatData.state;
 	var fleets = combatData.fleets;
-	logger("Begin round " + state.round);
 	var roundState = {
 		round: state.round
 	};
 	state.rounds.push(roundState);
+
+	logger("Begin round " + state.round);
 
 	// List fleets and combatants
 	for(var f in fleets) {

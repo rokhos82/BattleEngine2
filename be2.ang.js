@@ -1,7 +1,9 @@
 (function(){
 	var app = angular.module("be2",[]);
 
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// FactionService
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("FactionService",["FleetService",function(FleetService) {
 		var factions = [];
 		var factionIndex = {};
@@ -23,9 +25,21 @@
 			if(factionIndex[faction.name]) {
 			}
 		}
+
+		var _loadFactions = function(jsonStr) {
+			var obj = JSON.parse(jsonStr);
+		}
+
+		return {
+			add: _add,
+			validate: _validate,
+			addFleet: _addFleet,
+		}
 	}]);
 
-	// FleetService - This service provides fleet functions and storage.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// FleetService - This service provides fleet functions and storage
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("FleetService",["UnitService",function(UnitService) {
 		var fleets = [];
 		var fleetNameIndex = {};
@@ -73,7 +87,9 @@
 		}
 	}]);
 
-	// UnitService - This service provides unit functions.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// UnitService - This service provides unit functions
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("UnitService",function() {
 		var unitLibrary = {};
 
@@ -127,140 +143,34 @@
 		}
 	});
 
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// PlayerService
+	////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// CombatService - 
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// CombatService
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("CombatService",["$q",function($q) {
 		var _worker = undefined;
 	}]);
 
-	// be2MainController - Main controller for BattleEngine2.
-	app.controller("be2MainController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService){
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2MainController - Main controller for BattleEngine2
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService",function($scope,factions,fleets,units){
 		$scope.states = {
 			combat: "combat",
 			fleets: "fleets",
 			units: "units"
 		};
 		$scope.state = $scope.states.combat;
-
-		FleetService.add({
-			"name": "The Heavy",
-			"empire": "Torr Combine",
-			"enemy": "The Scourge",
-			"units": [{
-				"unit": {
-					"name": "Emma Rose",
-					"type": "starship",
-					"defense": 15
-				},
-				"hull": {
-					"base": 3,
-					"max": 5
-				},
-				"shield": {
-					"max": 1
-				},
-				"direct-fire": [{
-					"volley": 4,
-					"target": 15
-				}]
-			},{
-				"unit": {
-					"name": "Kaylee Gwenyth",
-					"type": "fighter",
-					"defense": 45
-				}
-			}]
-		});
-
-		var fleetScourge = {
-			"name": "The Scourge",
-			"empire": "Torr Combine",
-			"enemy": "The Heavy",
-			"units": [{
-				"unit": {
-					"name": "Scourge A",
-					"type": "starship",
-					"defense": 15
-				},
-				"hull": {
-					"base": 1,
-					"max": 3
-				},
-				"direct-fire": [{
-					"volley": 3,
-					"target": 15
-				}],
-				"fire-packet": [{
-					"packet": 2,
-					"size": 1,
-					"ammo": 1
-				}]
-			},{
-				"unit": {
-					"name": "Scourge B",
-					"type": "starship",
-					"defense": 15
-				},
-				"hull": {
-					"base": 1,
-					"max": 3
-				},
-				"direct-fire": [{
-					"volley": 3,
-					"target": 15
-				}],
-				"fire-packet": [{
-					"packet": 2,
-					"size": 1,
-					"ammo": 1
-				}]
-			},{
-				"unit": {
-					"name": "Scourge C",
-					"type": "starship",
-					"defense": 15
-				},
-				"hull": {
-					"base": 1,
-					"max": 3
-				},
-				"direct-fire": [{
-					"volley": 3,
-					"target": 15
-				}],
-				"fire-packet": [{
-					"packet": 2,
-					"size": 1,
-					"ammo": 1
-				}]
-			},{
-				"unit": {
-					"name": "Scourge D",
-					"type": "starship",
-					"defense": 15
-				},
-				"hull": {
-					"base": 1,
-					"max": 3
-				},
-				"direct-fire": [{
-					"volley": 3,
-					"target": 15
-				}],
-				"fire-packet": [{
-					"packet": 2,
-					"size": 1,
-					"ammo": 1
-				}]
-			}]
-		};
-		FleetService.add(fleetScourge);
-
-
-		$scope.fleets = FleetService.all();
+		
+		$scope.factions = factions.load("");
 	}]);
 
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2CombatController - Combat controller for BattleEngine2
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.controller("be2CombatController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService) {
 		$scope.combat = {
 			status: "uninitiated",

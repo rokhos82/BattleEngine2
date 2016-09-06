@@ -1,4 +1,4 @@
-'factions': [{
+[{
 	'name': 'Torr Combine High Commmand',
 	'fleets': [{
 		'name': 'The Heavy',
@@ -52,8 +52,4 @@
 	'combatants': {
 		'Machine Planetoid BG12ZK': {fleet: 'Machine Planetoid BG12ZK', data: null}
 	}
-}],
-'factionIndex': {
-	'Torr Combine High Commmand': 0,
-	'Ancient Machine Race'
-}
+}]

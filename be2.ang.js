@@ -7,34 +7,64 @@
 	app.factory("FactionService",["FleetService",function(FleetService) {
 		var factions = [];
 		var factionIndex = {};
+		var reservedNames = ["factions","factionIndex"];
 
+		// Validate that the passed object is a proper Faction object ------------------------------
 		var _validate = function(faction) {
 			var valid = true;
-			if(!faction.name)
-				valid = false;
-			return valid;
-		}
 
+			// Does the faction have a name?
+			if(typeof(faction.name) == "string") {
+				valid = false;
+			}
+			else {
+				// Check against the list of reserved faction names
+				for(var i in reservedNames) {
+					if(faction.name === reservedNames[i]) {
+						valid = false;
+						console.log("FactionService: Error - Faction name is in the reserved list.");
+						break;
+					}
+				}
+			}
+
+			// Does the faction of an array of fleets (Optional)
+			if(typeof(faction.fleets) != "array" && typeof(faction.fleets) != "undefined") {
+				valid = false;
+			}
+
+			// Return the valid flag.
+			return valid;
+		};
+
+		// Adds a Faction to the array -------------------------------------------------------------
 		var _add = function(faction) {
 			var l = factions.push(faction);
 			factionIndex[faction.name] = l-1;
-		}
+		};
 
+		// Add a fleet to a given faction name -----------------------------------------------------
 		var _addFleet = function(faction,fleet) {
 			var index = factionIndex[faction.name];
 			if(factionIndex[faction.name]) {
 			}
-		}
+		};
 
+		// Load faction information from a JSON string ---------------------------------------------
 		var _loadFactions = function(jsonStr) {
 			var obj = JSON.parse(jsonStr);
-		}
+
+			for(var i in obj) {
+				var faction = obj[i];
+				_validate(faction);
+			}
+		};
 
 		return {
 			add: _add,
 			validate: _validate,
 			addFleet: _addFleet,
-		}
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

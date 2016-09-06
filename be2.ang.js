@@ -27,7 +27,7 @@
 		var _add = function(fleet) {
 			if(_validate(fleet)) {
 				var l = fleets.push(fleet);
-				fleetNameIndex[fleet.name] = l;
+				fleetNameIndex[fleet.name] = l-1;
 			}
 		};
 
@@ -44,7 +44,8 @@
 		return {
 			all: function() { return fleets;},
 			add: _add,
-			validate: _validate
+			validate: _validate,
+			combatInfo: function() {return {"fleets":fleets,"index":fleetNameIndex}}
 		}
 	}]);
 
@@ -121,6 +122,7 @@
 		FleetService.add({
 			"name": "The Heavy",
 			"empire": "Torr Combine",
+			"enemy": "The Scourge",
 			"units": [{
 				"unit": {
 					"name": "Emma Rose",
@@ -150,6 +152,7 @@
 		FleetService.add({
 			"name": "The Scourge",
 			"empire": "Torr Combine",
+			"enemy": "The Heavy",
 			"units": [{
 				"unit": {
 					"name": "Scourge A",
@@ -172,6 +175,44 @@
 			},{
 				"unit": {
 					"name": "Scourge B",
+					"type": "starship",
+					"defense": 15
+				},
+				"hull": {
+					"base": 1,
+					"max": 3
+				},
+				"direct-fire": [{
+					"volley": 3,
+					"target": 15
+				}],
+				"fire-packet": [{
+					"packet": 2,
+					"size": 1,
+					"ammo": 1
+				}]
+			},{
+				"unit": {
+					"name": "Scourge C",
+					"type": "starship",
+					"defense": 15
+				},
+				"hull": {
+					"base": 1,
+					"max": 3
+				},
+				"direct-fire": [{
+					"volley": 3,
+					"target": 15
+				}],
+				"fire-packet": [{
+					"packet": 2,
+					"size": 1,
+					"ammo": 1
+				}]
+			},{
+				"unit": {
+					"name": "Scourge D",
 					"type": "starship",
 					"defense": 15
 				},
@@ -215,7 +256,7 @@
 			var worker = new Worker("be2.combat.js");
 
 			worker.addEventListener("message",workerCallback,false);
-			worker.postMessage($scope.fleets);
+			worker.postMessage(FleetService.combatInfo());
 
 			$scope.worker = worker;
 		};

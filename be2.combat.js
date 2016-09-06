@@ -10,13 +10,18 @@ function sleep(milliseconds) {
 	} while (curDate - date < milliseconds)
 }
 
-function initCombat(event) {
-	var fleets = event.data;
-	doCombat(fleets);
+function randomBetween(low,high) {
+	return Math.floor((Math.random() * (high - low)) + low);
 }
 
-function doCombat(fleets) {
+function initCombat(event) {
+	var combatData = event.data;
+	doCombat(combatData);
+}
+
+function doCombat(combatData) {
 	logger("Starting Combat!");
+	var fleets = combatData.fleets;
 
 	for(var f in fleets) {
 		var fleet = fleets[f];
@@ -33,7 +38,7 @@ function doCombat(fleets) {
 		i++
 		logger("Starting round: " + i);
 
-		var targets = selectTargets(fleets);
+		var targets = selectTargets(combatData);
 
 		if(i > 9)
 			_done=true;
@@ -44,18 +49,24 @@ function doCombat(fleets) {
 	this.close();
 }
 
-function buildTargetList(fleets) {
-
-}
-
-function selectTargets(fleets) {
+function selectTargets(combatData) {
 	var targets = {};
+	var fleets = combatData.fleets;
+	var index = combatData.index;
 
 	for(var f in fleets) {
 		var fleet = fleets[f];
-		logger("Selecting targets for fleet: " + fleet.name);
-		for(var u in fleet.units) {
+		logger("Selecting targets for fleet " + fleet.name + " from " + fleet.enemy);
+		var i = index[fleet.enemy];
+		var enemy = fleets[i];
+		var units = fleet.units;
 
+		for(var u in units) {
+			var l = enemy.units.length;
+			var t = randomBetween(0,l);
+			var target = enemy.units[t];
+			var unit = units[u];
+			logger(": " + unit.unit.name + " fires at " + target.unit.name);
 		}
 	}
 

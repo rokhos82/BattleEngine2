@@ -2,6 +2,8 @@
 	<div id="factionCreateModal" class="modal fade" role="dialog">
 		<faction-create-panel></faction-create-panel>
 	</div>
+	<div id="factionModifyModal" class="modal fade" role="dialog">
+	</div>
 	<div class="row top-buffer-lg bottom-buffer-lg">
 		<div class="col-lg-12 col-md-12 col-sm-12">
 			<div class="btn-toolbar">
@@ -25,7 +27,7 @@
 							<li><a href="#">Remove Fleet</a></li>
 							<li class="divider"></li>
 							<li><a href="#">Modify Faction</a></li>
-							<li><a href="#">Remove Faction</a></li>
+							<li><a href="#" ng-click="factionCtl.removeFaction($index)">Remove Faction</a></li>
 						</ul>
 					</div>
 					<h3 class="panel-title">{{faction.name}}</h3>

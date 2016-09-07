@@ -46,7 +46,7 @@
 		var _add = function(faction) {
 			if(_validate(faction)) {
 				var l = factions.push(faction);
-				factionIndex[faction.name] = l-1;
+				_buildIndex();
 				console.log(_successHeader + "Loaded faction " + faction.name);
 			}
 			else {
@@ -141,7 +141,26 @@
 			return _exists(faction) ? factions[factionIndex[faction]] : undefined;
 		};
 
-			return {
+		// Build the faction index -----------------------------------------------------------------
+		var _buildIndex = function() {
+			factionIndex = {};
+			for(var f in factions) {
+				var faction = factions[f];
+				factionIndex[faction.name] = parseInt(f);
+			}
+		};
+
+		// Remove a faction ------------------------------------------------------------------------
+		var _remove = function(faction) {
+			if(_exists(faction)) {
+				console.log("Removing " + faction);
+				var i = factionIndex[faction];
+				delete factions[i];
+				_buildIndex();
+			}
+		}
+
+		return {
 			add: _add,
 			addFleet: _addFleet,
 			attachFleet: _attachFleet,
@@ -151,7 +170,8 @@
 			validate: _validate,
 			load: _simpleLoad,
 			loadFactionsInfo: _deepLoad,
-			all: _all
+			all: _all,
+			remove: _remove
 		};
 	}]);
 
@@ -347,7 +367,8 @@
 		};
 		$scope.state = $scope.states.factions;
 		
-		factions.load("[{\"name\":\"Torr Combine High Command\"},{\"name\":\"Ancient Machine Race\"}]");
+		factions.add({"name":"Torr Combine High Command","description":"Combined New Haven/Torr Combine Federate"});
+		factions.add({"name":"Ancient Machine Race","description":"Horrible Threat!"});
 		
 		fleets.add({"name":"The Heavy","empire":"Torr Combine"});
 		fleets.add({"name":"The Scourge","empire":"New Haven Commmonwealth"});
@@ -387,15 +408,18 @@
 			}
 		};
 
-		var factions = FactionService.getFactionList();
-		for(var i in factions) {
-			var _fleets = FactionService.getFactionFleets(factions[i]);
-			var obj = {
-				name: factions[i],
-				fleets: _fleets,
-				activeFleet: _fleets[0]
-			};
-			$scope.ui.factions.push(obj);
+		this.initFactions = function() {
+			var factions = FactionService.getFactionList();
+			$scope.ui.factions = [];
+			for(var i in factions) {
+				var _fleets = FactionService.getFactionFleets(factions[i]);
+				var obj = {
+					name: factions[i],
+					fleets: _fleets,
+					activeFleet: _fleets[0]
+				};
+				$scope.ui.factions.push(obj);
+			}
 		}
 
 		this.getUnits = function(faction) {
@@ -413,9 +437,17 @@
 			FactionService.add({"name":$scope.ui.newFaction.name,"description":$scope.ui.newFaction.description});
 			console.log($scope.ui.newFaction.name);
 			console.log($scope.ui.newFaction.description);
-			$scope.ui.factions.push({name:$scope.ui.newFaction.name,fleets:[],activeFleet:""});
 			this.closeCreateFaction();
+			this.initFactions();
 		};
+
+		this.removeFaction = function(i) {
+			var faction = $scope.ui.factions[i];
+			FactionService.remove(faction.name);
+			this.initFactions();
+		};
+
+		this.initFactions();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

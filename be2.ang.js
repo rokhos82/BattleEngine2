@@ -222,9 +222,30 @@
 			return _exists(fleet) ? fleets[fleetIndex[fleet]] : undefined;
 		};
 
+		// Attach a unit to a fleet ----------------------------------------------------------------
+		var _attachUnit = function(fleet,unit) {
+			if(_exists(fleet) && UnitService.exists(unit)) {
+				var f = fleetIndex[fleet];
+				var fleet = fleets[f];
+				var unit = UnitService.getUnit(unit);
+				if(!Array.isArray(fleet.units))
+					fleet.units = [];
+				if(typeof(fleet.unitIndex) != "object")
+					fleet.unitIndex = {};
+				var l = fleet.units.push(unit);
+				fleet.unitIndex[unit.unit.name] = l - 1;
+			}
+		};
+
+		// Get all the units from the passed fleet object ------------------------------------------
+		var _getUnits = function(fleet) {
+			return fleet.units;
+		};
+
 		return {
 			all: function() { return fleets;},
 			add: _add,
+			attachUnit: _attachUnit,
 			exists: _exists,
 			getFleet: _getFleet,
 			validate: _validate,
@@ -237,7 +258,10 @@
 	// UnitService - This service provides unit functions
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("UnitService",function() {
-		var unitLibrary = {};
+		var units = [];
+		var unitIndex = {};
+		var _errorHeader = "UnitService: Error - ";
+		var _successHeader = "UnitService: Success - ";
 
 		var _validate = function(obj) {
 			var valid = true;
@@ -271,21 +295,30 @@
 		};
 
 		var _add = function(_unit) {
-			if(typeof(_unit) == "object" && _validate(_unit)) {
-			}
-			else if (typeof(_unit) == "string") {
-				var obj = _stringify(_unit);
-			}
-			else {
-				console.log("Unknown Unit format when adding to unit library.");
+			if(_validate(_unit)) {
+				var l = units.push(_unit);
+				unitIndex[_unit.unit.name] = l - 1;
+				console.log(_successHeader + "Loaded unit " + _unit.unit.name);
 			}
 		}
+
+		// Validate that a unit exists -------------------------------------------------------------
+		var _exists = function(unit) {
+			return (typeof(unit) == "string" && typeof(unitIndex[unit]) == "number");
+		};
+
+		// Get a specific unit ---------------------------------------------------------------------
+		var _getUnit = function(unit) {
+			return _exists(unit) ? units[unitIndex[unit]] : undefined;
+		};
 
 		return {
 			validate: _validate,
 			parse: _parse,
 			stringify: _stringify,
-			add: _add
+			add: _add,
+			exists: _exists,
+			getUnit: _getUnit
 		}
 	});
 
@@ -308,19 +341,34 @@
 			combat: "combat",
 			factions: "factions",
 			fleets: "fleets",
-			units: "units"
+			units: "units",
+			entities: "entities"
 		};
 		$scope.state = $scope.states.factions;
 		
 		factions.load("[{\"name\":\"Torr Combine High Command\"},{\"name\":\"Ancient Machine Race\"}]");
+		
 		fleets.add({"name":"The Heavy","empire":"Torr Combine"});
 		fleets.add({"name":"The Scourge","empire":"New Haven Commmonwealth"});
 		factions.attachFleet("Torr Combine High Command","The Heavy");
 		factions.attachFleet("Torr Combine High Command","The Scourge");
+		
 		fleets.add({"name":"Machine Planetoid BG12ZK","empire":"Ancient Machine Race"});
 		fleets.add({"name":"Machine Ship ZZF1","empire":"Ancient Machine Race"});
 		factions.attachFleet("Ancient Machine Race","Machine Planetoid BG12ZK");
 		factions.attachFleet("Ancient Machine Race","Machine Ship ZZF1")
+
+		units.add({"unit": {"name": "Emma Rose","type": "Starship","defense": 30},"hull": {"base": 20,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []});
+		units.add({"unit": {"name": "Iron Maiden","type": "Starship","defense": 30},"hull": {"base": 20,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []});
+		units.add({"unit": {"name": "Jagermeister","type": "Starship","defense": 30},"hull": {"base": 10,"max": 15},"shield": {"max": 30},"direct-fire": [],"packet-fire": []});
+		units.add({"unit": {"name": "Machine Planetoid BG12ZK","type": "Base","defense": 30},"hull": {"base": 10,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []});
+		units.add({"unit": {"name": "Machine Ship ZZF1","type": "Starship","defense": 30},"hull": {"base": 100,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []});
+		
+		fleets.attachUnit("The Heavy","Emma Rose");
+		fleets.attachUnit("The Heavy","Iron Maiden");
+		fleets.attachUnit("The Scourge","Jagermeister");
+		fleets.attachUnit("Machine Planetoid BG12ZK","Machine Planetoid BG12ZK");
+		fleets.attachUnit("Machine Ship ZZF1","Machine Ship ZZF1");
 
 		$scope.fleets = fleets.all();
 		$scope.factions = factions.all();
@@ -329,7 +377,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FactionController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FactionController",["$scope","FactionService",function($scope,FactionService){
+	app.controller("be2FactionController",["$scope","FactionService","FleetService",function($scope,FactionService,FleetService){
 		$scope.ui = {
 			factions: []
 		};
@@ -344,6 +392,11 @@
 			};
 			$scope.ui.factions.push(obj);
 		}
+
+		this.getUnits = function(faction) {
+			var fleet = FleetService.getFleet($scope.ui.factions[faction].activeFleet);
+			return fleet.units;
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -412,6 +465,13 @@
 		return {
 			restrict: 'E',
 			templateUrl: 'templates/faction-panel.html'
+		};
+	});
+
+	app.directive('entityPanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/entity-panel.html'
 		};
 	});
 })();

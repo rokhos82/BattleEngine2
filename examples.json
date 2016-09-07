@@ -59,3 +59,25 @@
 "[{\"name\":\"Machine Planetoid BG12ZK\",\"empire\":\"Ancient Machine Race\"}]"
 
 {"name":"Machine Ship ZZF1","empire":"Ancient Machine Race"}
+
+{"name": "Machine Planetoid BG12ZK"}
+
+// Example Unit
+{
+	"unit": {
+		"name": "Emma Rose",
+		"type": "Starship",
+		"defense": 30
+	},
+	"hull": {
+		"base": 20,
+		"max": 1200
+	},
+	"shield": {
+		"max": 60
+	},
+	"direct-fire": [],
+	"packet-fire": []
+}
+
+{"unit": {"name": "Emma Rose","type": "Starship","defense": 30},"hull": {"base": 20,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []}

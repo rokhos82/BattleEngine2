@@ -25,6 +25,7 @@
 						<li ng-class="{active:state === states.factions}"><a href="" ng-click="state = states.factions">Factions</a></li>
 						<li ng-class="{active:state === states.fleets}"><a href="" ng-click="state = states.fleets">Fleets</a></li>
 						<li ng-class="{active:state === states.units}"><a href="" ng-click="state =states.units">Units</a></li>
+						<li ng-class="{active:state === states.entities}"><a href="" ng-click="state = states.entities">Entities</a></li>
 						<li ng-class="{active:state === states.combat}"><a href="" ng-click="state = states.combat">Combat</a></li>
 					</ul>
 				</div><!--/.nav-collapse -->
@@ -41,6 +42,9 @@
 		</div>
 		<div class="container" ng-show="state === states.combat">
 			<combat-panel></combat-panel>
+		</div>
+		<div class="container" ng-show="state === states.entities">
+			<entity-panel></entity-panel>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>

@@ -25,3 +25,13 @@
 .bottom-buffer-sm {
 	margin-bottom: 5px;
 }
+
+.panel-btn-right {
+	position: relative;
+	top: 0px;
+	right: 0px;
+}
+
+.panel-title-left {
+	float: left;
+}

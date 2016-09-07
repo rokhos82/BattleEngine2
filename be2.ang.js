@@ -380,7 +380,11 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.controller("be2FactionController",["$scope","FactionService","FleetService",function($scope,FactionService,FleetService){
 		$scope.ui = {
-			factions: []
+			factions: [],
+			newFaction: {
+				name: "",
+				description: ""
+			}
 		};
 
 		var factions = FactionService.getFactionList();
@@ -396,7 +400,21 @@
 
 		this.getUnits = function(faction) {
 			var fleet = FleetService.getFleet($scope.ui.factions[faction].activeFleet);
-			return fleet.units;
+			return typeof(fleet) == "undefined" ? [] : fleet.units;
+		};
+
+		this.closeCreateFaction = function() {
+			$scope.ui.newFaction.name = "";
+			$scope.ui.newFaction.description = "";
+			$("#factionCreateModal").modal('hide');
+		};
+
+		this.createFaction = function() {
+			FactionService.add({"name":$scope.ui.newFaction.name,"description":$scope.ui.newFaction.description});
+			console.log($scope.ui.newFaction.name);
+			console.log($scope.ui.newFaction.description);
+			$scope.ui.factions.push({name:$scope.ui.newFaction.name,fleets:[],activeFleet:""});
+			this.closeCreateFaction();
 		};
 	}]);
 
@@ -480,6 +498,13 @@
 		return {
 			restrict: 'E',
 			templateUrl: 'templates/template-panel.html'
+		};
+	});
+
+	app.directive('factionCreatePanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/faction-create-panel.html'
 		};
 	});
 })();

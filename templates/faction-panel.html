@@ -23,7 +23,13 @@
 				<h3 class="panel-title">{{faction.name}}</h3>
 			</div>
 			<div class="panel-body">
-				List of fleets goes here.
+				<div class="col-lg-2">
+					<ul class="nav nav-pills nav-stacked">
+						<li ng-repeat="fleet in faction.fleets"><a href="#">{{fleet.name}}</a></li>
+					</ul>
+				</div>
+				<div class="col-lg-10">
+				</div>
 			</div>
 		</div>
 	</div>

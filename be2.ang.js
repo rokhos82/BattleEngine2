@@ -87,14 +87,36 @@
 		var _deepLoad = function(jsonStr) {
 		};
 
+		// Return top level factions object --------------------------------------------------------
 		var _all = function() {
 			return factions;
 		};
 
+		// Return true if the faction exists -------------------------------------------------------
+		var _exists = function(faction) {
+			return (typeof(faction) == "string" && typeof(factionIndex[faction]) == "number");
+		}
+
+		// Attach an existing fleet to an existing faction -----------------------------------------
+		var _attachFleet = function(faction,fleet) {
+			if(_exists(faction) && FleetService.exists(fleet)) {
+				var i = factionIndex[faction];
+				var faction = factions[i];
+				var fleet = FleetService.getFleet(fleet);
+				if(!Array.isArray(faction.fleets))
+					faction.fleets = [];
+				faction.fleets.push(fleet);
+			}
+			else {
+				console.log(_errorHeader + "Unable to attach fleet to a faction.  Either the fleet or the faction does not exist.");
+			}
+		}
+
 		return {
 			add: _add,
-			validate: _validate,
 			addFleet: _addFleet,
+			attachFleet: _attachFleet,
+			validate: _validate,
 			load: _simpleLoad,
 			loadFactionsInfo: _deepLoad,
 			all: _all
@@ -106,7 +128,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("FleetService",["UnitService",function(UnitService) {
 		var fleets = [];
-		var fleetNameIndex = {};
+		var fleetIndex = {};
 		var _errorHeader = "FleetService: Error - ";
 		var _successHeader = "FleetService: Success - ";
 
@@ -134,7 +156,7 @@
 			var ret = undefined;
 			if(_validate(fleet)) {
 				var l = fleets.push(fleet);
-				fleetNameIndex[fleet.name] = l-1;
+				fleetIndex[fleet.name] = l-1;
 				ret = fleet;
 				console.log(_successHeader + "Loaded fleet " + fleet.name);
 			}
@@ -143,7 +165,7 @@
 
 		// Add a unit to the specific fleet --------------------------------------------------------
 		var _addUnit = function(name,unit) {
-			var i = fleetNameIndex[name];
+			var i = fleetIndex[name];
 			var fleet = fleets[i];
 			var success = false;
 			if(UnitService.validate(unit)) {
@@ -158,12 +180,24 @@
 			return _add(obj);
 		};
 
+		// Verify that the fleet exists ------------------------------------------------------------
+		var _exists = function(fleet) {
+			return (typeof(fleet) == "string" && typeof(fleetIndex[fleet]) == "number");
+		};
+
+		// Return a specific fleet object ----------------------------------------------------------
+		var _getFleet = function(fleet) {
+			return _exists(fleet) ? fleets[fleetIndex[fleet]] : undefined;
+		};
+
 		return {
 			all: function() { return fleets;},
 			add: _add,
+			exists: _exists,
+			getFleet: _getFleet,
 			validate: _validate,
 			load: _simpleLoad,
-			combatInfo: function() {return {"fleets":fleets,"index":fleetNameIndex}}
+			combatInfo: function() {return {"fleets":fleets,"index":fleetIndex}}
 		}
 	}]);
 
@@ -247,7 +281,10 @@
 		$scope.state = $scope.states.factions;
 		
 		factions.load("[{\"name\":\"Torr Combine High Command\"},{\"name\":\"Ancient Machine Race\"}]");
-		factions.addFleet("Torr Combine High Command",[{"name":"The Heavy","empire":"Torr Combine"},{"name":"The Scourge","empire":"New Haven Commmonwealth"}]);
+		fleets.add({"name":"The Heavy","empire":"Torr Combine"});
+		fleets.add({"name":"The Scourge","empire":"New Haven Commmonwealth"});
+		factions.attachFleet("Torr Combine High Command","The Heavy");
+		factions.attachFleet("Torr Combine High Command","The Scourge");
 
 		$scope.fleets = fleets.all();
 		$scope.factions = factions.all();

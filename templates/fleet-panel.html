@@ -1,8 +1,33 @@
-<div class="row">
-	<div class="col-sm-12 col-md-12 col-lg-6" ng-repeat="fleet in fleets">
-		<h3>{{fleet.name}} [{{fleet.empire}}]</h3>
-		<ul>
-			<li ng-repeat="unit in fleet.units">{{unit.unit.name}} - {{unit.unit.type}}</li>
-		</ul>
+<div class="row top-buffer-lg bottom-buffer-lg">
+	<div class="col-lg-12 col-md-12 col-sm-12">
+		<div class="btn-toolbar">
+			<div class="btn-group">
+				<a href="#" class="btn btn-primary btn-lg">Create Fleet</a>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row" ng-repeat="fleet in fleets">
+	<div class="col-sm-12 col-md-12 col-lg-12">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<div class="btn-group pull-right">
+					<a href="#" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li><a href="#">Attach Unit</a></li>
+						<li><a href="#">Remove Unit</a></li>
+						<li class="divider"></li>
+						<li><a href="#">Modify Fleet</a></li>
+						<li><a href="#">Remove Fleet</a></li>
+					</ul>
+				</div>
+				<h3 class="panel-title">{{fleet.name}} [{{fleet.empire}}]</h3>
+			</div>
+			<div class="panel-body">
+				<ul>
+					<li ng-repeat="unit in fleet.units">{{unit.unit.name}} - {{unit.unit.type}}</li>
+				</ul>
+			</div>
+		</div>
 	</div>
 </div>

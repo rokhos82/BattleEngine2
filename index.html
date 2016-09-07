@@ -22,13 +22,17 @@
 				</div>
 				<div id="navbar" class="collapse navbar-collapse">
 					<ul class="nav navbar-nav">
-						<li ng-class="{active:state === states.units}"><a href="" ng-click="state =states.units">Units</a></li>
+						<li ng-class="{active:state === states.factions}"><a href="" ng-click="state = states.factions">Factions</a></li>
 						<li ng-class="{active:state === states.fleets}"><a href="" ng-click="state = states.fleets">Fleets</a></li>
+						<li ng-class="{active:state === states.units}"><a href="" ng-click="state =states.units">Units</a></li>
 						<li ng-class="{active:state === states.combat}"><a href="" ng-click="state = states.combat">Combat</a></li>
 					</ul>
 				</div><!--/.nav-collapse -->
 			</div>
 		</nav>
+		<div class="container" ng-show="state === states.factions">
+			<faction-panel></faction-panel>
+		</div>
 		<div class="container" ng-show="state === states.units">
 			<unit-panel></unit-panel>
 		</div>

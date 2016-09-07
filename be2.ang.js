@@ -47,7 +47,7 @@
 			if(_validate(faction)) {
 				var l = factions.push(faction);
 				factionIndex[faction.name] = l-1;
-				console.log(_successHeader + "Successfully add faction: " + faction.name);
+				console.log(_successHeader + "Loaded faction " + faction.name);
 			}
 			else {
 				console.log(_errorHeader + "Unable to add faction.  See previous errors.");

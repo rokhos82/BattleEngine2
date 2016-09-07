@@ -342,7 +342,8 @@
 			factions: "factions",
 			fleets: "fleets",
 			units: "units",
-			entities: "entities"
+			entities: "entities",
+			templates: "templates"
 		};
 		$scope.state = $scope.states.factions;
 		

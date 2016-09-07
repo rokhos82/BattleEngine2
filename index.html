@@ -4,7 +4,7 @@
 		<title>BattleEngine2</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta charset="utf-8">
-		<link rel="stylesheet" type="text/css" href="css\bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="css\slate\bootstrap.min.css" />
 		<link rel="stylesheet" type="text/css" href="css\starter-template.css" />
 		<link rel="stylesheet" type="text/css" href="css\be2.ang.css" />
 	</head>
@@ -24,9 +24,24 @@
 					<ul class="nav navbar-nav">
 						<li ng-class="{active:state === states.factions}"><a href="" ng-click="state = states.factions">Factions</a></li>
 						<li ng-class="{active:state === states.fleets}"><a href="" ng-click="state = states.fleets">Fleets</a></li>
-						<li ng-class="{active:state === states.units}"><a href="" ng-click="state =states.units">Units</a></li>
-						<li ng-class="{active:state === states.entities}"><a href="" ng-click="state = states.entities">Entities</a></li>
+						<!--<li ng-class="{active:state === states.units}"><a href="" ng-click="state =states.units">Units</a></li>-->
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Units <span class="caret"></span></a>
+							<ul class="dropdown-menu" role="menu">
+								<li ng-class="{active:state === states.units}"><a href="#" ng-click="state = states.units">Actve</a></li>
+								<li ng-class="{active:state === states.templates}"><a href="#" ng-click="state = states.templates">Templates</a></li>
+							</ul>
+						</li>
+						<li ng-class="{active:state === states.entities}"><a href="" ng-click="state = states.entities">Officers</a></li>
 						<li ng-class="{active:state === states.combat}"><a href="" ng-click="state = states.combat">Combat</a></li>
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Tools <span class="caret"></span></a>
+							<ul class="dropdown-menu" role="menu">
+								<li><a href="#">Save Data</a></li>
+							</ul>
+						</li>
 					</ul>
 				</div><!--/.nav-collapse -->
 			</div>
@@ -45,6 +60,9 @@
 		</div>
 		<div class="container" ng-show="state === states.entities">
 			<entity-panel></entity-panel>
+		</div>
+		<div class="container" ng-show="state === states.templates">
+			<template-panel></template-panel>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>

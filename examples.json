@@ -67,7 +67,11 @@
 	"unit": {
 		"name": "Emma Rose",
 		"type": "Starship",
-		"defense": 30
+		"defense": 30,
+		"wf": {
+			"safe": 5,
+			"max": 6
+		}
 	},
 	"hull": {
 		"base": 20,
@@ -80,4 +84,4 @@
 	"packet-fire": []
 }
 
-{"unit": {"name": "Emma Rose","type": "Starship","defense": 30},"hull": {"base": 20,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []}
+{"unit":{"name":"Emma Rose","type":"Starship","defense":30,"wf":{"safe":5,"max":6}},"hull": {"base": 20,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []}

@@ -46,8 +46,8 @@
 		var _add = function(faction) {
 			if(_validate(faction)) {
 				var l = factions.push(faction);
-				factionIndex[faction.name] = l-1;
-				console.log(_successHeader + "Successfully add faction: " + faction.name);
+				_buildIndex();
+				console.log(_successHeader + "Loaded faction " + faction.name);
 			}
 			else {
 				console.log(_errorHeader + "Unable to add faction.  See previous errors.");
@@ -141,7 +141,26 @@
 			return _exists(faction) ? factions[factionIndex[faction]] : undefined;
 		};
 
-			return {
+		// Build the faction index -----------------------------------------------------------------
+		var _buildIndex = function() {
+			factionIndex = {};
+			for(var f in factions) {
+				var faction = factions[f];
+				factionIndex[faction.name] = parseInt(f);
+			}
+		};
+
+		// Remove a faction ------------------------------------------------------------------------
+		var _remove = function(faction) {
+			if(_exists(faction)) {
+				console.log("Removing " + faction);
+				var i = factionIndex[faction];
+				delete factions[i];
+				_buildIndex();
+			}
+		}
+
+		return {
 			add: _add,
 			addFleet: _addFleet,
 			attachFleet: _attachFleet,
@@ -151,7 +170,8 @@
 			validate: _validate,
 			load: _simpleLoad,
 			loadFactionsInfo: _deepLoad,
-			all: _all
+			all: _all,
+			remove: _remove
 		};
 	}]);
 
@@ -334,6 +354,57 @@
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	// StorageService
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.factory("StorageService",function() {
+		var stored = {};
+		var state = {
+			stored: "stored",
+			converted: "converted"
+		};
+		var _errorHeader = "StorageService: Error - ";
+
+		var _store = function(key,data) {
+			stored[key] = state.stored;
+			if(typeof(data) == "string") {
+				localStorage.setItem(key,data);
+			}
+			else {
+				var jsonStr = JSON.stringify(data);
+				localStorage.setItem(key,jsonStr);
+				stored[key] = state.converted;
+			}
+		};
+
+		var _retrieve = function(key) {
+			var ret = undefined;
+
+			if(stored[key] === state.stored) {
+				ret = localStorage.getItem(key);
+			}
+			else if(stored[key] === state.converted) {
+				ret = JSON.parse(localStorage.getItem(key));
+			}
+			else {
+				console.log(_errorHeader + " Unabled to retrieve key " + key);
+			}
+
+			return ret;
+		};
+
+		var _clear = function(key) {
+			delete stored[key];
+			localStorage.removeItem(key);
+		}
+
+		return {
+			store: _store,
+			retrieve: _retrieve,
+			clear: _clear
+		}
+	});
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2MainController - Main controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService",function($scope,factions,fleets,units){
@@ -342,11 +413,13 @@
 			factions: "factions",
 			fleets: "fleets",
 			units: "units",
-			entities: "entities"
+			entities: "entities",
+			templates: "templates"
 		};
 		$scope.state = $scope.states.factions;
 		
-		factions.load("[{\"name\":\"Torr Combine High Command\"},{\"name\":\"Ancient Machine Race\"}]");
+		factions.add({"name":"Torr Combine High Command","description":"Combined New Haven/Torr Combine Federate"});
+		factions.add({"name":"Ancient Machine Race","description":"Horrible Threat!"});
 		
 		fleets.add({"name":"The Heavy","empire":"Torr Combine"});
 		fleets.add({"name":"The Scourge","empire":"New Haven Commmonwealth"});
@@ -379,24 +452,53 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.controller("be2FactionController",["$scope","FactionService","FleetService",function($scope,FactionService,FleetService){
 		$scope.ui = {
-			factions: []
+			factions: [],
+			newFaction: {
+				name: "",
+				description: ""
+			}
 		};
 
-		var factions = FactionService.getFactionList();
-		for(var i in factions) {
-			var _fleets = FactionService.getFactionFleets(factions[i]);
-			var obj = {
-				name: factions[i],
-				fleets: _fleets,
-				activeFleet: _fleets[0]
-			};
-			$scope.ui.factions.push(obj);
+		this.initFactions = function() {
+			var factions = FactionService.getFactionList();
+			$scope.ui.factions = [];
+			for(var i in factions) {
+				var _fleets = FactionService.getFactionFleets(factions[i]);
+				var obj = {
+					name: factions[i],
+					fleets: _fleets,
+					activeFleet: _fleets[0]
+				};
+				$scope.ui.factions.push(obj);
+			}
 		}
 
 		this.getUnits = function(faction) {
 			var fleet = FleetService.getFleet($scope.ui.factions[faction].activeFleet);
-			return fleet.units;
+			return typeof(fleet) == "undefined" ? [] : fleet.units;
 		};
+
+		this.closeCreateFaction = function() {
+			$scope.ui.newFaction.name = "";
+			$scope.ui.newFaction.description = "";
+			$("#factionCreateModal").modal('hide');
+		};
+
+		this.createFaction = function() {
+			FactionService.add({"name":$scope.ui.newFaction.name,"description":$scope.ui.newFaction.description});
+			console.log($scope.ui.newFaction.name);
+			console.log($scope.ui.newFaction.description);
+			this.closeCreateFaction();
+			this.initFactions();
+		};
+
+		this.removeFaction = function(i) {
+			var faction = $scope.ui.factions[i];
+			FactionService.remove(faction.name);
+			this.initFactions();
+		};
+
+		this.initFactions();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -472,6 +574,20 @@
 		return {
 			restrict: 'E',
 			templateUrl: 'templates/entity-panel.html'
+		};
+	});
+
+	app.directive('templatePanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/template-panel.html'
+		};
+	});
+
+	app.directive('factionCreatePanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/faction-create-panel.html'
 		};
 	});
 })();

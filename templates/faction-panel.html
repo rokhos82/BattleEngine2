@@ -1,0 +1,19 @@
+<div class="row top-buffer-lg bottom-buffer-lg">
+	<div class="btn-group btn-group-justified">
+		<a href="#" class="btn btn-default">Create Faction</a>
+		<a href="#" class="btn btn-default">Some other button</a>
+		<a href="#" class="btn btn-default">Yet another</a>
+	</div>
+</div>
+<div class="row" ng-repeat="faction in factions">
+	<div class="col-lg-12 col-md-12 col-sm-12">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">{{faction.name}}</h3>
+			</div>
+			<div class="panel-body">
+				List of fleets goes here.
+			</div>
+		</div>
+	</div>
+</div>

@@ -13,3 +13,15 @@
 .top-buffer-sm {
 	margin-top: 5px;
 }
+
+.bottom-buffer-lg {
+	margin-bottom: 20px;
+}
+
+.bottom-buffer-md {
+	margin-bottom: 10px;
+}
+
+.bottom-buffer-sm {
+	margin-bottom: 5px;
+}

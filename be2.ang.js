@@ -87,12 +87,17 @@
 		var _deepLoad = function(jsonStr) {
 		};
 
+		var _all = function() {
+			return factions;
+		};
+
 		return {
 			add: _add,
 			validate: _validate,
 			addFleet: _addFleet,
 			load: _simpleLoad,
-			loadFactionsInfo: _deepLoad
+			loadFactionsInfo: _deepLoad,
+			all: _all
 		};
 	}]);
 
@@ -235,15 +240,17 @@
 	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService",function($scope,factions,fleets,units){
 		$scope.states = {
 			combat: "combat",
+			factions: "factions",
 			fleets: "fleets",
 			units: "units"
 		};
-		$scope.state = $scope.states.combat;
+		$scope.state = $scope.states.factions;
 		
 		factions.load("[{\"name\":\"Torr Combine High Command\"},{\"name\":\"Ancient Machine Race\"}]");
 		factions.addFleet("Torr Combine High Command",[{"name":"The Heavy","empire":"Torr Combine"},{"name":"The Scourge","empire":"New Haven Commmonwealth"}]);
 
 		$scope.fleets = fleets.all();
+		$scope.factions = factions.all();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -305,6 +312,13 @@
 		return {
 			restrict: 'E',
 			templateUrl: 'templates/combat-panel.html'
+		};
+	});
+
+	app.directive('factionPanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/faction-panel.html'
 		};
 	});
 })();

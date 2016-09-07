@@ -1,34 +1,36 @@
-<div class="row top-buffer-lg bottom-buffer-lg">
-	<div class="col-lg-12 col-md-12 col-sm-12">
-		<div class="btn-toolbar">
-			<div class="btn-group">
-				<a href="#" class="btn btn-primary btn-lg">Create Faction</a>
+<div ng-controller="be2FactionController as factionCtl">
+	<div class="row top-buffer-lg bottom-buffer-lg">
+		<div class="col-lg-12 col-md-12 col-sm-12">
+			<div class="btn-toolbar">
+				<div class="btn-group">
+					<a href="#" class="btn btn-primary btn-lg">Create Faction</a>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
-<div class="row" ng-repeat="faction in factions">
-	<div class="col-lg-12 col-md-12 col-sm-12">
-		<div class="panel panel-primary">
-			<div class="panel-heading">
-				<div class="btn-group pull-right">
-					<a href="#" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li><a href="#">Attach Fleet</a></li>
-						<li><a href="#">Remove Fleet</a></li>
-						<li class="divider"></li>
-						<li><a href="#">Remove Faction</a></li>
-					</ul>
+	<div class="row" ng-repeat="faction in ui.factions">
+		<div class="col-lg-12 col-md-12 col-sm-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<div class="btn-group pull-right">
+						<a href="#" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a href="#">Attach Fleet</a></li>
+							<li><a href="#">Remove Fleet</a></li>
+							<li class="divider"></li>
+							<li><a href="#">Remove Faction</a></li>
+						</ul>
+					</div>
+					<h3 class="panel-title">{{faction.name}}</h3>
 				</div>
-				<h3 class="panel-title">{{faction.name}}</h3>
-			</div>
-			<div class="panel-body">
-				<div class="col-lg-2">
-					<ul class="nav nav-pills nav-stacked">
-						<li ng-repeat="fleet in faction.fleets"><a href="#">{{fleet.name}}</a></li>
-					</ul>
-				</div>
-				<div class="col-lg-10">
+				<div class="panel-body">
+					<div class="col-lg-3">
+						<ul class="nav nav-pills nav-stacked" ng-init="facIndex = $index">
+							<li ng-class="{active:ui.factions[facIndex].activeFleet === ui.factions[facIndex].fleets[$index]}" ng-repeat="fleet in faction.fleets"><a href="#" ng-click="ui.factions[facIndex].activeFleet = ui.factions[facIndex].fleets[$index]">{{fleet}}</a></li>
+						</ul>
+					</div>
+					<div class="col-lg-9">
+					</div>
 				</div>
 			</div>
 		</div>

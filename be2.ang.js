@@ -95,7 +95,7 @@
 		// Return true if the faction exists -------------------------------------------------------
 		var _exists = function(faction) {
 			return (typeof(faction) == "string" && typeof(factionIndex[faction]) == "number");
-		}
+		};
 
 		// Attach an existing fleet to an existing faction -----------------------------------------
 		var _attachFleet = function(faction,fleet) {
@@ -105,17 +105,49 @@
 				var fleet = FleetService.getFleet(fleet);
 				if(!Array.isArray(faction.fleets))
 					faction.fleets = [];
-				faction.fleets.push(fleet);
+				if(typeof(faction.fleetIndex) != "object")
+					faction.fleetIndex = {};
+				var l = faction.fleets.push(fleet);
+				faction.fleetIndex[fleet.name] = l - 1;
 			}
 			else {
 				console.log(_errorHeader + "Unable to attach fleet to a faction.  Either the fleet or the faction does not exist.");
 			}
-		}
+		};
 
-		return {
+		// Get a list of fleets assigned to a faction ----------------------------------------------
+		var _getFactionFleets = function(faction) {
+			var fleets = [];
+			if(_exists(faction)) {
+				var faction = factions[factionIndex[faction]];
+				for(var i in faction.fleetIndex) {
+					fleets.push(i);
+				}
+			}
+			return fleets;
+		};
+
+		// Get a list of factions ------------------------------------------------------------------
+		var _getFactionList = function() {
+			var arr = [];
+			for(var i in factionIndex) {
+				arr.push(i);
+			}
+			return arr;
+		};
+
+		// Get a specific faction ------------------------------------------------------------------
+		var _getFaction = function(faction) {
+			return _exists(faction) ? factions[factionIndex[faction]] : undefined;
+		};
+
+			return {
 			add: _add,
 			addFleet: _addFleet,
 			attachFleet: _attachFleet,
+			getFaction: _getFaction,
+			getFactionFleets: _getFactionFleets,
+			getFactionList: _getFactionList,
 			validate: _validate,
 			load: _simpleLoad,
 			loadFactionsInfo: _deepLoad,
@@ -285,9 +317,33 @@
 		fleets.add({"name":"The Scourge","empire":"New Haven Commmonwealth"});
 		factions.attachFleet("Torr Combine High Command","The Heavy");
 		factions.attachFleet("Torr Combine High Command","The Scourge");
+		fleets.add({"name":"Machine Planetoid BG12ZK","empire":"Ancient Machine Race"});
+		fleets.add({"name":"Machine Ship ZZF1","empire":"Ancient Machine Race"});
+		factions.attachFleet("Ancient Machine Race","Machine Planetoid BG12ZK");
+		factions.attachFleet("Ancient Machine Race","Machine Ship ZZF1")
 
 		$scope.fleets = fleets.all();
 		$scope.factions = factions.all();
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2FactionController
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2FactionController",["$scope","FactionService",function($scope,FactionService){
+		$scope.ui = {
+			factions: []
+		};
+
+		var factions = FactionService.getFactionList();
+		for(var i in factions) {
+			var _fleets = FactionService.getFactionFleets(factions[i]);
+			var obj = {
+				name: factions[i],
+				fleets: _fleets,
+				activeFleet: _fleets[0]
+			};
+			$scope.ui.factions.push(obj);
+		}
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

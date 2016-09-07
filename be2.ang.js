@@ -354,6 +354,57 @@
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	// StorageService
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.factory("StorageService",function() {
+		var stored = {};
+		var state = {
+			stored: "stored",
+			converted: "converted"
+		};
+		var _errorHeader = "StorageService: Error - ";
+
+		var _store = function(key,data) {
+			stored[key] = state.stored;
+			if(typeof(data) == "string") {
+				localStorage.setItem(key,data);
+			}
+			else {
+				var jsonStr = JSON.stringify(data);
+				localStorage.setItem(key,jsonStr);
+				stored[key] = state.converted;
+			}
+		};
+
+		var _retrieve = function(key) {
+			var ret = undefined;
+
+			if(stored[key] === state.stored) {
+				ret = localStorage.getItem(key);
+			}
+			else if(stored[key] === state.converted) {
+				ret = JSON.parse(localStorage.getItem(key));
+			}
+			else {
+				console.log(_errorHeader + " Unabled to retrieve key " + key);
+			}
+
+			return ret;
+		};
+
+		var _clear = function(key) {
+			delete stored[key];
+			localStorage.removeItem(key);
+		}
+
+		return {
+			store: _store,
+			retrieve: _retrieve,
+			clear: _clear
+		}
+	});
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2MainController - Main controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService",function($scope,factions,fleets,units){

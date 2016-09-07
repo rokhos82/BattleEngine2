@@ -30,6 +30,24 @@
 						</ul>
 					</div>
 					<div class="col-lg-9">
+						<table class="table table-bordered table-condensed table-hover">
+							<thead>
+								<tr>
+									<th class="col-lg-1">#</th>
+									<th class="col-lg-1">Unit</th>
+									<th class="col-lg-1">Type</th>
+									<th class="col-lg-1">Base Hull</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="unit in factionCtl.getUnits($index)">
+									<td>{{$index}}</td>
+									<td>{{unit.unit.name}}</td>
+									<td>{{unit.unit.type}}</td>
+									<td>{{unit.hull.base}}</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>

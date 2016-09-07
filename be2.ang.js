@@ -475,4 +475,11 @@
 			templateUrl: 'templates/entity-panel.html'
 		};
 	});
+
+	app.directive('templatePanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/template-panel.html'
+		};
+	});
 })();

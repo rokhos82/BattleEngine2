@@ -31,7 +31,8 @@
 				unit: {},
 				template: {},
 				entity: {},
-				main: {}
+				main: {},
+				debug: true
 			},
 			combat: {}
 		};
@@ -42,36 +43,47 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// FactionService
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("FactionService",["FleetService",function(FleetService) {
+	app.factory("FactionService",["FleetService","DataStore",function(FleetService,data) {
 		var factions = [];
 		var factionIndex = {};
 		var _errorHeader = "FactionService: Error - ";
 		var _successHeader = "FactionService: Success - ";
+		var _logger = {
+			error: function(msg) {if(data.ui.debug){console.log("FactionService: Error - " + msg);}},
+			success: function(msg) {if(data.ui.debug){console.log("FactionService: Success - " + msg);}},
+			warning: function(msg) {if(data.ui.debug){console.log("FactionService: Warning - " + msg);}}
+		};
 
 		// Validate that the passed object is a proper Faction object ------------------------------
 		var _validate = function(faction) {
 			var valid = true;
 
-			// Does the faction have a name?
-			if(typeof(faction.name) != "string") {
-				console.log(_errorHeader + "Faction does not have a valid name entry.");
-				valid = false;
-			}
-			else {
-				// Check against the list of reserved faction names
-				for(var i in reservedNames) {
-					if(faction.name === reservedNames[i]) {
-						valid = false;
-						console.log(_errorHeader + "Faction name is in the reserved list.");
-						break;
+			// Is the faction an object and not an array?
+			if(typeof(faction) === "object" && !Array.isArray(faction)){
+				// Does the faction have a name
+				if(typeof(faction.name) === "string") {
+					// Is the name in the reserved list?
+					for(var i in reservedNames) {
+						if(faction.name === reservedNames[i]) {
+							_logger.error("Faction name '" + faction.name + "' is on the reserved list");
+							valid = false;
+							break;
+						}
 					}
 				}
-			}
+				else {
+					valid = false;
+				}
 
-			// Does the faction of an array of fleets (Optional)
-			if(typeof(faction.fleets) != "array" && typeof(faction.fleets) != "undefined") {
-				console.log(_errorHeader + "Faction has an improper fleets entry.  The fleets entry must be absent or an Array.");
+				// Does the faction have an array of fleets
+				if(typeof(faction.fleets) !== "undefined" && !Array.isArray(faction.fleets)) {
+					_logger.error("Faction has a fleet list that is not an array");
+					valid = false;
+				}
+			}
+			else {
 				valid = false;
+				_logger.error("Faction is not an dictionary");
 			}
 
 			// Return the valid flag.
@@ -80,110 +92,48 @@
 
 		// Adds a Faction to the array -------------------------------------------------------------
 		var _add = function(faction) {
-			if(_validate(faction)) {
-				var l = factions.push(faction);
-				_buildIndex();
-				console.log(_successHeader + "Loaded faction " + faction.name);
+			if(_validate(faction) && !_exists(faction)) {
+				data.state.factions[faction.name] = faction;
+				var l = data.state.factions.list.push(faction.name);
+				_logger.success("Added Faction " + faction.name + ".  " + l + " faction(s) currently in system.");
 			}
 			else {
-				console.log(_errorHeader + "Unable to add faction.  See previous errors.");
+				_logger.error("Unable to Add Faction.  Faction may already exist.");
 			}
-		};
-
-		// Add a fleet to a given faction name -----------------------------------------------------
-		var _addFleet = function(faction,fleet) {
-			if(typeof(factionIndex[faction]) == "number") {
-				var i = factionIndex[faction];
-				if(Array.isArray(fleet)) {
-					for(var i in fleet) {
-						var obj = FleetService.add(fleet[i]);
-					}
-				}
-				else if(typeof(fleet) == "object") {
-					var obj = FleetService.add(fleet);
-				}
-				else {}
-			}
-			else {
-				console.log(_errorHeader + "Faction '" + faction + "' does not exist");
-			}
-		};
-
-		// Load factions from a JSON string --------------------------------------------------------
-		var _simpleLoad = function(jsonStr) {
-			var obj = JSON.parse(jsonStr);
-
-			for(var i in obj) {
-				var faction = obj[i];
-				_add(faction);
-			}
-		};
-
-		// Load deep faction information from a JSON string ----------------------------------------
-		var _deepLoad = function(jsonStr) {
-		};
-
-		// Return top level factions object --------------------------------------------------------
-		var _all = function() {
-			return factions;
 		};
 
 		// Return true if the faction exists -------------------------------------------------------
 		var _exists = function(faction) {
-			return (typeof(faction) == "string" && typeof(factionIndex[faction]) == "number");
+			return (typeof(faction) === "string" && typeof(data.state.factions[faction]) === "object");
 		};
 
 		// Attach an existing fleet to an existing faction -----------------------------------------
 		var _attachFleet = function(faction,fleet) {
 			if(_exists(faction) && FleetService.exists(fleet)) {
-				var i = factionIndex[faction];
-				var faction = factions[i];
-				var fleet = FleetService.getFleet(fleet);
-				if(!Array.isArray(faction.fleets))
-					faction.fleets = [];
-				if(typeof(faction.fleetIndex) != "object")
-					faction.fleetIndex = {};
-				var l = faction.fleets.push(fleet);
-				faction.fleetIndex[fleet.name] = l - 1;
+				var f = data.state.factions[faction];
+				if(!Array.isArray(f.fleets))
+					f.fleets = [];
+				f.fleets.push(fleet);
+				_logger.success("Attached fleet '" + fleet + "'' to faction '" + faction + "'.");
 			}
 			else {
-				console.log(_errorHeader + "Unable to attach fleet to a faction.  Either the fleet or the faction does not exist.");
+				_logger.error("Unable to attach fleet to a faction.  Either the fleet or the faction does not exist.");
 			}
 		};
 
 		// Get a list of fleets assigned to a faction ----------------------------------------------
-		var _getFactionFleets = function(faction) {
-			var fleets = [];
-			if(_exists(faction)) {
-				var faction = factions[factionIndex[faction]];
-				for(var i in faction.fleetIndex) {
-					fleets.push(i);
-				}
-			}
-			return fleets;
+		var _getFleets = function(faction) {
+			return data.state.factions[faction].fleets;
 		};
 
 		// Get a list of factions ------------------------------------------------------------------
-		var _getFactionList = function() {
-			var arr = [];
-			for(var i in factionIndex) {
-				arr.push(i);
-			}
-			return arr;
+		var _getList = function() {
+			return data.state.factions.list;
 		};
 
 		// Get a specific faction ------------------------------------------------------------------
-		var _getFaction = function(faction) {
-			return _exists(faction) ? factions[factionIndex[faction]] : undefined;
-		};
-
-		// Build the faction index -----------------------------------------------------------------
-		var _buildIndex = function() {
-			factionIndex = {};
-			for(var f in factions) {
-				var faction = factions[f];
-				factionIndex[faction.name] = parseInt(f);
-			}
+		var _get = function(faction) {
+			return _exists(faction) ? data.state.factions[faction] : undefined;
 		};
 
 		// Remove a faction ------------------------------------------------------------------------
@@ -198,15 +148,11 @@
 
 		return {
 			add: _add,
-			addFleet: _addFleet,
 			attachFleet: _attachFleet,
-			getFaction: _getFaction,
-			getFactionFleets: _getFactionFleets,
-			getFactionList: _getFactionList,
+			get: _get,
+			getFleets: _getFleets,
+			getList: _getList,
 			validate: _validate,
-			load: _simpleLoad,
-			loadFactionsInfo: _deepLoad,
-			all: _all,
 			remove: _remove
 		};
 	}]);
@@ -489,10 +435,10 @@
 		};
 
 		this.initFactions = function() {
-			var factions = FactionService.getFactionList();
+			var factions = FactionService.getList();
 			$scope.ui.factions = [];
 			for(var i in factions) {
-				var _fleets = FactionService.getFactionFleets(factions[i]);
+				var _fleets = FactionService.getFleets(factions[i]);
 				var obj = {
 					name: factions[i],
 					fleets: _fleets,

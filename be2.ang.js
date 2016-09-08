@@ -498,16 +498,45 @@
 	// be2FleetController
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","DataStore",function($scope,FactionService,FleetService,UnitService,data){
-		var ui = data.ui.faction;
+		var ui = data.ui.fleet;
 		ui.fleets = FleetService.getList();
+		ui.state = {
+			show: {}
+		};
 		ui.newFleet = {
 				name: "",
 				description: "",
 		};
 		$scope.ui = ui;
 
+		// Mappings to Service factories -----------------------------------------------------------
 		this.getFleet = FleetService.get;
 
+		// UI State Actions ------------------------------------------------------------------------
+		this.initState = function() {
+			for(var i in ui.fleets) {
+				var fleet = ui.fleets[i];
+				ui.state.show[fleet] = false;
+			}
+		}
+
+		this.showAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = true;
+			}
+		};
+
+		this.hideAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = false;
+			}
+		};
+
+		this.toggleVisible = function(fleet) {
+			ui.state.show[fleet] = !ui.state.show[fleet];
+		}
+
+		// Fleet Creation Functions ----------------------------------------------------------------
 		this.closeCreateFleet = function() {
 			ui.newFleet.name = "";
 			ui.newFleet.description = "";
@@ -516,8 +545,12 @@
 
 		this.createFleet = function() {
 			FleetService.add({"name":ui.newFleet.name,"description":ui.newFleet.description});
+			ui.state.show[ui.newFleet.name] = true;
 			this.closeCreateFleet();
 		};
+
+		// Initialize the ui.state -----------------------------------------------------------------
+		this.initState();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

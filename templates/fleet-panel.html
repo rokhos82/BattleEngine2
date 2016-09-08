@@ -7,8 +7,10 @@
 			<div class="btn-toolbar">
 				<div class="btn-group">
 					<button class="btn btn-primary " data-toggle="modal" data-target="#fleetCreateModal">Create Fleet</button>
-					<button class="btn btn-default disabled">Import Fleet</button>
-					<button class="btn btn-default disabled">Export Fleet</button>
+					<button class="btn btn-default disabled">Import Fleets</button>
+					<button class="btn btn-default disabled">Export Fleets</button>
+					<button class="btn btn-default" ng-click="fleetCtl.showAll()">Show All</button>
+					<button class="btn btn-default" ng-click="fleetCtl.hideAll()">Hide All</button>
 					<button class="btn btn-danger disabled">Purge Fleets</button>
 				</div>
 			</div>
@@ -18,21 +20,39 @@
 		<div class="col-sm-12 col-md-12 col-lg-12">
 			<div class="panel panel-primary" ng-init="fleetInfo = fleetCtl.getFleet(fleet)">
 				<div class="panel-heading">
-					<div class="btn-group pull-right">
-						<a href="#" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="caret"></span></a>
-						<ul class="dropdown-menu">
-							<li><a href="#">Attach Unit</a></li>
-							<li><a href="#">Remove Unit</a></li>
-							<li class="divider"></li>
-							<li><a href="#">Modify Fleet</a></li>
-							<li><a href="#">Remove Fleet</a></li>
-						</ul>
+					<div class="btn-toolbar pull-right">
+						<div class="btn-group">
+							<a href="#" class="btn btn-default btn-xs" ng-class="{active:ui.state.show[fleet]}" ng-click="fleetCtl.toggleVisible(fleet)">&#9728;</a>
+							<a href="#" class="btn btn-default btn-xs">&hellip;</a>
+							<a href="#" class="btn btn-danger btn-xs" data-toggle="tooltip" data-placement="auto bottom" title="Remove Fleet">&times;</a>
+						</div>
 					</div>
 					<h3 class="panel-title">{{fleetInfo.name}}</h3>
 				</div>
-				<div class="panel-body">
-					<div class="well well-sm">
+				<div class="panel-body" ng-show="ui.state.show[fleet]">
+					<div class="well well-sm" ng-show="fleetInfo.description">
 						{{fleetInfo.description}}
+					</div>
+					<div clas="panel panel-default">
+						<div class="panel-heading">
+							<div class="btn-toolbar pull-right">
+								<div class="btn-group">
+									<button class="btn btn-primary btn-xs">&#9901;</button>
+									<button class="btn btn-default btn-xs">&#9728;</button>
+								</div>
+							</div>
+							<h3 class="panel-title">Units</h3>
+						</div>
+						<div class="panel-body">
+							<div class="list-group">
+								<a href="#" class="list-group-item">Test Data Please Ignore<button class="btn btn-warning btn-xs pull-right" data-toggle="tooltip" data-placement="auto bottom" title="Detach Unit">&times;</button></a>
+								<a href="#" class="list-group-item">Test Data Please Ignore</a>
+								<a href="#" class="list-group-item">Test Data Please Ignore</a>
+								<a href="#" class="list-group-item">Test Data Please Ignore</a>
+								<a href="#" class="list-group-item">Test Data Please Ignore</a>
+								<a href="#" class="list-group-item">Test Data Please Ignore</a>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

@@ -30,15 +30,17 @@
 							<li><a href="#" ng-click="factionCtl.removeFaction($index)">Remove Faction</a></li>
 						</ul>
 					</div>
-					<h3 class="panel-title">{{faction.name}}</h3>
+					<h3 class="panel-title">{{faction}}</h3>
 				</div>
 				<div class="panel-body">
 					<div class="col-lg-3">
 						<ul class="nav nav-pills nav-stacked" ng-init="facIndex = $index">
-							<li ng-class="{active:ui.factions[facIndex].activeFleet === ui.factions[facIndex].fleets[$index]}" ng-repeat="fleet in faction.fleets"><a href="#" ng-click="ui.factions[facIndex].activeFleet = ui.factions[facIndex].fleets[$index]">{{fleet}}</a></li>
+							<li ng-class="{active:activeFleet(faction) === fleet}" ng-repeat="fleet in getFleetList(faction)">
+								<a href="#" ng-click="setActiveFleet(faction,fleet)">{{fleet}}</a>
+							</li>
 						</ul>
 					</div>
-					<div class="col-lg-9">
+					<div class="col-lg-9" ng-show="activeFleet(faction)">
 						<table class="table table-bordered table-condensed table-hover">
 							<thead>
 								<tr>
@@ -50,7 +52,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="unit in factionCtl.getUnits(ui.factions[facIndex].activeFleet)">
+								<tr ng-repeat="unit in getActiveUnits(faction)">
 									<td>{{$index}}</td>
 									<td>{{unit.unit.name}}</td>
 									<td>{{unit.unit.type}}</td>

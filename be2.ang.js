@@ -280,9 +280,9 @@
 
 		// Add a unit object to the dictionary ----------------------------------------------------
 		var _add = function(unit) {
-			if(_validate(unit) && !_exists(unit)) {
-				data.state.units[unit.name] = unit;
-				var l = data.state.units.list.push(unit.name);
+			if(_validate(unit) && !_exists(unit.unit.name)) {
+				data.state.units[unit.unit.name] = unit;
+				var l = data.state.units.list.push(unit.unit.name);
 				_logger.success("Added unit " + unit.name + ".  " + l + " unit(s) currently in system.");
 			}
 			else {
@@ -292,12 +292,12 @@
 
 		// Validate that a unit exists -------------------------------------------------------------
 		var _exists = function(unit) {
-			return (typeof(unit) == "string" && typeof(data.state.units[unit]) == "object");
+			return (typeof(unit) === "string" && typeof(data.state.units[unit]) === "object");
 		};
 
 		// Get a specific unit ---------------------------------------------------------------------
 		var _getUnit = function(unit) {
-			return _exists(unit) ? units[unitIndex[unit]] : undefined;
+			return _exists(unit) ? data.state.units[unit] : undefined;
 		};
 
 		// Get a list of units ---------------------------------------------------------------------
@@ -424,54 +424,36 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FactionController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FactionController",["$scope","FactionService","FleetService","UnitService",function($scope,FactionService,FleetService,UnitService){
-		$scope.ui = {
-			factions: [],
-			newFaction: {
+	app.controller("be2FactionController",["$scope","FactionService","FleetService","UnitService","DataStore",function($scope,FactionService,FleetService,UnitService,data){
+		var ui = data.ui.faction;
+		ui.factions = FactionService.getList();
+		ui.activeFleet = {};
+		ui.newFaction = {
 				name: "",
 				description: ""
+		};
+		$scope.ui = ui;
+
+		$scope.getFleetList = function(faction) {
+			return FactionService.getFleets(faction);
+		};
+
+		$scope.activeFleet = function(faction) {
+			return ui.activeFleet[faction];
+		};
+
+		$scope.setActiveFleet = function(faction,fleet) {
+			ui.activeFleet[faction] = fleet;
+		};
+
+		$scope.getActiveUnits = function(faction) {
+			var fleet = ui.activeFleet[faction];
+			var arr = [];
+			if(typeof(fleet) === "string") {
+				arr = UnitService.getMultiple(FleetService.getUnits(fleet));
 			}
+			return arr;
 		};
-
-		this.initFactions = function() {
-			var factions = FactionService.getList();
-			$scope.ui.factions = [];
-			for(var i in factions) {
-				var _fleets = FactionService.getFleets(factions[i]);
-				var obj = {
-					name: factions[i],
-					fleets: _fleets,
-					activeFleet: _fleets[0]
-				};
-				$scope.ui.factions.push(obj);
-			}
-		}
-
-		this.getUnits = function(fleet) {
-			UnitService.getMultiple(FleetService.getUnits(fleet));
-		};
-
-		this.closeCreateFaction = function() {
-			$scope.ui.newFaction.name = "";
-			$scope.ui.newFaction.description = "";
-			$("#factionCreateModal").modal('hide');
-		};
-
-		this.createFaction = function() {
-			FactionService.add({"name":$scope.ui.newFaction.name,"description":$scope.ui.newFaction.description});
-			console.log($scope.ui.newFaction.name);
-			console.log($scope.ui.newFaction.description);
-			this.closeCreateFaction();
-			this.initFactions();
-		};
-
-		this.removeFaction = function(i) {
-			var faction = $scope.ui.factions[i];
-			FactionService.remove(faction.name);
-			this.initFactions();
-		};
-
-		this.initFactions();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -515,6 +497,9 @@
 		};
 	}]);
 
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// HTML Template Directives
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.directive('unitPanel',function() {
 		return {
 			restrict: 'E',

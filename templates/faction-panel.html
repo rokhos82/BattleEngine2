@@ -50,7 +50,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="unit in factionCtl.getUnits($index)">
+								<tr ng-repeat="unit in factionCtl.getUnits(ui.factions[facIndex].activeFleet)">
 									<td>{{$index}}</td>
 									<td>{{unit.unit.name}}</td>
 									<td>{{unit.unit.type}}</td>

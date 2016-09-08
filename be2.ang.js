@@ -44,10 +44,6 @@
 	// FactionService
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("FactionService",["FleetService","DataStore",function(FleetService,data) {
-		var factions = [];
-		var factionIndex = {};
-		var _errorHeader = "FactionService: Error - ";
-		var _successHeader = "FactionService: Success - ";
 		var _logger = {
 			error: function(msg) {if(data.ui.debug){console.log("FactionService: Error - " + msg);}},
 			success: function(msg) {if(data.ui.debug){console.log("FactionService: Success - " + msg);}},
@@ -65,17 +61,18 @@
 					// Is the name in the reserved list?
 					for(var i in reservedNames) {
 						if(faction.name === reservedNames[i]) {
-							_logger.error("Faction name '" + faction.name + "' is on the reserved list");
+							_logger.error("Faction name '" + faction.name + "' is on the reserved list.");
 							valid = false;
 							break;
 						}
 					}
 				}
 				else {
+					_logger.error("Faction does not have a name.");
 					valid = false;
 				}
 
-				// Does the faction have an array of fleets
+				// Does the faction have an array of fleets (Optional)
 				if(typeof(faction.fleets) !== "undefined" && !Array.isArray(faction.fleets)) {
 					_logger.error("Faction has a fleet list that is not an array");
 					valid = false;
@@ -83,7 +80,7 @@
 			}
 			else {
 				valid = false;
-				_logger.error("Faction is not an dictionary");
+				_logger.error("Faction is not a dictionary.");
 			}
 
 			// Return the valid flag.
@@ -160,26 +157,44 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// FleetService - This service provides fleet functions and storage
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("FleetService",["UnitService",function(UnitService) {
-		var fleets = [];
-		var fleetIndex = {};
-		var _errorHeader = "FleetService: Error - ";
-		var _successHeader = "FleetService: Success - ";
+	app.factory("FleetService",["UnitService","DataStore",function(UnitService,data) {
+		var _logger = {
+			error: function(msg) {if(data.ui.debug){console.log("FleetService: Error - " + msg);}},
+			success: function(msg) {if(data.ui.debug){console.log("FleetService: Success - " + msg);}},
+			warning: function(msg) {if(data.ui.debug){console.log("FleetService: Warning - " + msg);}}
+		};
 
 		// Validate that the object is a proper Fleet object ---------------------------------------
-		var _validate = function(obj) {
+		var _validate = function(fleet) {
 			var valid = true;
 
-			if(typeof(obj.name) != "string") {
-				console.log(_errorHeader + "Fleet does not have a proper name entry");
-				valid = false;
-			}
-
-			for(x in obj.units) {
-				if(!UnitService.validate(obj.units[x])) {
-					console.log("Invalid Fleet because of unit.");
+			// Is the fleet an object and not an array?
+			if(typeof(fleet) === "object" && !Array.isArray(fleet)) {
+				// Does the fleet have a name?
+				if(typeof(fleet.name) === "string") {
+					// Is the name in the reserved list.
+					for(var i in reservedNames) {
+						if(fleet.name === reservedNames[i]) {
+							_logger.error("Fleet name '" + fleet.name + "' is on the reserved list.");
+							valid = false;
+							break;
+						}
+					}
+				}
+				else {
+					_logger.error("Fleet does not have a name.");
 					valid = false;
 				}
+
+				// Does the fleet have an array of units (Optional)
+				if(typeof(fleet.fleets) !== "undefined" && !Array.isArray(fleet.fleets)) {
+					_logger.error("Fleet has a unit list that is not an array");
+					valid = false;
+				}
+			}
+			else {
+				_logger.error("Fleet is not a dictionary.");
+				valid = false;
 			}
 
 			return valid;
@@ -187,61 +202,43 @@
 
 		// Add a fleet object to the dictionary ----------------------------------------------------
 		var _add = function(fleet) {
-			var ret = undefined;
-			if(_validate(fleet)) {
-				var l = fleets.push(fleet);
-				fleetIndex[fleet.name] = l-1;
-				ret = fleet;
-				console.log(_successHeader + "Loaded fleet " + fleet.name);
+			if(_validate(fleet) && !_exists(fleet)) {
+				data.state.fleets[fleet.name] = fleet;
+				var l = data.state.fleets.list.push(fleet.name);
+				_logger.success("Added Fleet " + fleet.name + ".  " + l + " fleet(s) currently in system.");
 			}
-			return ret;
-		};
-
-		// Add a unit to the specific fleet --------------------------------------------------------
-		var _addUnit = function(name,unit) {
-			var i = fleetIndex[name];
-			var fleet = fleets[i];
-			var success = false;
-			if(UnitService.validate(unit)) {
-				success = true;
-				fleet.units.push(unit);
+			else {
+				_logger.error("Unable to Add Fleet.  Fleet may already exist.");
 			}
-		}
-
-		// Load basic fleet info from a JSON string ------------------------------------------------
-		var _simpleLoad = function(jsonStr) {
-			var obj = JSON.parse(jsonStr);
-			return _add(obj);
 		};
 
 		// Verify that the fleet exists ------------------------------------------------------------
 		var _exists = function(fleet) {
-			return (typeof(fleet) == "string" && typeof(fleetIndex[fleet]) == "number");
+			return (typeof(fleet) === "string" && typeof(data.state.fleets[fleet]) === "object");
 		};
 
 		// Return a specific fleet object ----------------------------------------------------------
-		var _getFleet = function(fleet) {
-			return _exists(fleet) ? fleets[fleetIndex[fleet]] : undefined;
+		var _get = function(fleet) {
+			return _exists(fleet) ? data.state.fleets[fleet] : undefined;
 		};
 
 		// Attach a unit to a fleet ----------------------------------------------------------------
 		var _attachUnit = function(fleet,unit) {
 			if(_exists(fleet) && UnitService.exists(unit)) {
-				var f = fleetIndex[fleet];
-				var fleet = fleets[f];
-				var unit = UnitService.getUnit(unit);
-				if(!Array.isArray(fleet.units))
-					fleet.units = [];
-				if(typeof(fleet.unitIndex) != "object")
-					fleet.unitIndex = {};
-				var l = fleet.units.push(unit);
-				fleet.unitIndex[unit.unit.name] = l - 1;
+				var f = data.state.fleets[fleet];
+				if(!Array.isArray(f.units))
+					f.units = [];
+				f.units.push(unit);
+				_logger.success("Attached unit '" + unit + "'' to fleet '" + fleet + "'.");
+			}
+			else {
+				_logger.error("Unable to attach unit to a fleet.  Either the unit or the fleet does not exist.");
 			}
 		};
 
 		// Get all the units from the passed fleet object ------------------------------------------
 		var _getUnits = function(fleet) {
-			return fleet.units;
+			return data.state.fleets[fleet].units;
 		};
 
 		return {
@@ -249,9 +246,9 @@
 			add: _add,
 			attachUnit: _attachUnit,
 			exists: _exists,
-			getFleet: _getFleet,
+			get: _get,
 			validate: _validate,
-			load: _simpleLoad,
+			getUnits: _getUnits,
 			combatInfo: function() {return {"fleets":fleets,"index":fleetIndex}}
 		}
 	}]);
@@ -259,54 +256,43 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// UnitService - This service provides unit functions
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("UnitService",function() {
-		var units = [];
-		var unitIndex = {};
-		var _errorHeader = "UnitService: Error - ";
-		var _successHeader = "UnitService: Success - ";
+	app.factory("UnitService",["DataStore",function(data) {
+		var _logger = {
+			error: function(msg) {if(data.ui.debug){console.log("UnitService: Error - " + msg);}},
+			success: function(msg) {if(data.ui.debug){console.log("UnitService: Success - " + msg);}},
+			warning: function(msg) {if(data.ui.debug){console.log("UnitService: Warning - " + msg);}}
+		};
 
 		var _validate = function(obj) {
 			var valid = true;
 			if(obj.unit) {
 				if(!obj.unit.name || !obj.unit.type) {
-					console.log("Invalid Unit due to no name or type.");
+					_logger.error("Invalid Unit due to no name or type.");
 					valid = false;
 				}			
 			}
 			else {
-				console.log("Invalid Unit due to no unit tag.");
+				_logger.error("Invalid Unit due to no unit tag.");
 				valid = false;
 			}
 			return valid;
 		}
 
-		var _parse = function(jsonStr) {
-			var obj = JSON.parse(jsonStr);
-			if(_validate(obj)) {
-				obj = null;
+		// Add a unit object to the dictionary ----------------------------------------------------
+		var _add = function(unit) {
+			if(_validate(unit) && !_exists(unit)) {
+				data.state.units[unit.name] = unit;
+				var l = data.state.units.list.push(unit.name);
+				_logger.success("Added unit " + unit.name + ".  " + l + " unit(s) currently in system.");
 			}
-			return obj;
+			else {
+				_logger.error("Unable to Add Fleet.  Fleet may already exist.");
+			}
 		};
-
-		var _stringify = function(obj) {
-			var str = null;
-			if(_validate(obj)) {
-				str = JSON.stringify(obj);
-			}
-			return str;
-		};
-
-		var _add = function(_unit) {
-			if(_validate(_unit)) {
-				var l = units.push(_unit);
-				unitIndex[_unit.unit.name] = l - 1;
-				console.log(_successHeader + "Loaded unit " + _unit.unit.name);
-			}
-		}
 
 		// Validate that a unit exists -------------------------------------------------------------
 		var _exists = function(unit) {
-			return (typeof(unit) == "string" && typeof(unitIndex[unit]) == "number");
+			return (typeof(unit) == "string" && typeof(data.state.units[unit]) == "object");
 		};
 
 		// Get a specific unit ---------------------------------------------------------------------
@@ -314,15 +300,28 @@
 			return _exists(unit) ? units[unitIndex[unit]] : undefined;
 		};
 
+		// Get a list of units ---------------------------------------------------------------------
+		var _getMultiple = function(list) {
+			var arr = [];
+			if(Array.isArray(list)) {
+				for(var i in list) {
+					arr.push(_getUnit(list[i]));
+				}
+			}
+			else {
+				_logger.warning("List must be an array");
+			}
+			return arr;
+		};
+
 		return {
 			validate: _validate,
-			parse: _parse,
-			stringify: _stringify,
 			add: _add,
 			exists: _exists,
-			getUnit: _getUnit
+			get: _getUnit,
+			getMultiple: _getMultiple
 		}
-	});
+	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// PlayerService
@@ -425,7 +424,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FactionController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FactionController",["$scope","FactionService","FleetService",function($scope,FactionService,FleetService){
+	app.controller("be2FactionController",["$scope","FactionService","FleetService","UnitService",function($scope,FactionService,FleetService,UnitService){
 		$scope.ui = {
 			factions: [],
 			newFaction: {
@@ -448,9 +447,8 @@
 			}
 		}
 
-		this.getUnits = function(faction) {
-			var fleet = FleetService.getFleet($scope.ui.factions[faction].activeFleet);
-			return typeof(fleet) == "undefined" ? [] : fleet.units;
+		this.getUnits = function(fleet) {
+			UnitService.getMultiple(FleetService.getUnits(fleet));
 		};
 
 		this.closeCreateFaction = function() {

@@ -241,12 +241,17 @@
 			return data.state.fleets[fleet].units;
 		};
 
+		var _getList = function() {
+			return data.state.fleets.list;
+		};
+
 		return {
 			all: function() { return fleets;},
 			add: _add,
 			attachUnit: _attachUnit,
 			exists: _exists,
 			get: _get,
+			getList: _getList,
 			validate: _validate,
 			getUnits: _getUnits,
 			combatInfo: function() {return {"fleets":fleets,"index":fleetIndex}}
@@ -479,12 +484,40 @@
 			this.closeCreateFaction();
 		};
 
+		this.getFaction = FactionService.get;
+
 		// Set the first fleet in the list to active!
 		for(var i in ui.factions) {
 			var faction = ui.factions[i];
 			var fleets = $scope.getFleetList(faction);
-			ui.activeFleet[faction] = fleets[0];
+			ui.activeFleet[faction] = fleets ? fleets[0] : undefined;
 		}
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2FleetController
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","DataStore",function($scope,FactionService,FleetService,UnitService,data){
+		var ui = data.ui.faction;
+		ui.fleets = FleetService.getList();
+		ui.newFleet = {
+				name: "",
+				description: "",
+		};
+		$scope.ui = ui;
+
+		this.getFleet = FleetService.get;
+
+		this.closeCreateFleet = function() {
+			ui.newFleet.name = "";
+			ui.newFleet.description = "";
+			$("#fleetCreateModal").modal('hide');
+		};
+
+		this.createFleet = function() {
+			FleetService.add({"name":ui.newFleet.name,"description":ui.newFleet.description});
+			this.closeCreateFleet();
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -577,6 +610,13 @@
 		return {
 			restrict: 'E',
 			templateUrl: 'templates/faction-create-panel.html'
+		};
+	});
+
+	app.directive('fleetCreatePanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/fleet-create-panel.html'
 		};
 	});
 })();

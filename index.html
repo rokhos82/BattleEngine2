@@ -22,46 +22,47 @@
 				</div>
 				<div id="navbar" class="collapse navbar-collapse">
 					<ul class="nav navbar-nav">
-						<li ng-class="{active:state === states.factions}"><a href="" ng-click="state = states.factions">Factions</a></li>
-						<li ng-class="{active:state === states.fleets}"><a href="" ng-click="state = states.fleets">Fleets</a></li>
+						<li ng-class="{active:ui.state === ui.states.factions}"><a href="" ng-click="ui.state = ui.states.factions">Factions</a></li>
+						<li ng-class="{active:ui.state === ui.states.fleets}"><a href="" ng-click="ui.state = ui.states.fleets">Fleets</a></li>
 						<!--<li ng-class="{active:state === states.units}"><a href="" ng-click="state =states.units">Units</a></li>-->
 						<li class="dropdown">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Units <span class="caret"></span></a>
 							<ul class="dropdown-menu" role="menu">
-								<li ng-class="{active:state === states.units}"><a href="#" ng-click="state = states.units">Actve</a></li>
-								<li ng-class="{active:state === states.templates}"><a href="#" ng-click="state = states.templates">Templates</a></li>
+								<li ng-class="{active:ui.state === ui.states.units}"><a href="#" ng-click="ui.state = ui.states.units">Actve</a></li>
+								<li ng-class="{active:ui.state === ui.states.templates}"><a href="#" ng-click="ui.state = ui.states.templates">Templates</a></li>
 							</ul>
 						</li>
-						<li ng-class="{active:state === states.entities}"><a href="" ng-click="state = states.entities">Officers</a></li>
-						<li ng-class="{active:state === states.combat}"><a href="" ng-click="state = states.combat">Combat</a></li>
+						<li ng-class="{active:ui.state === ui.states.entities}"><a href="" ng-click="ui.state = ui.states.entities">Officers</a></li>
+						<li ng-class="{active:ui.state === ui.states.combat}"><a href="" ng-click="ui.state = ui.states.combat">Combat</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li class="dropdown">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Tools <span class="caret"></span></a>
 							<ul class="dropdown-menu" role="menu">
-								<li><a href="#">Save Data</a></li>
+								<li><a href="#" ng-click="main.saveData()">Save Data</a></li>
+								<li><a href="#">Load Data</a></li>
 							</ul>
 						</li>
 					</ul>
 				</div><!--/.nav-collapse -->
 			</div>
 		</nav>
-		<div class="container" ng-show="state === states.factions">
+		<div class="container" ng-show="ui.state === ui.states.factions">
 			<faction-panel></faction-panel>
 		</div>
-		<div class="container" ng-show="state === states.units">
+		<div class="container" ng-show="ui.state === ui.states.units">
 			<unit-panel></unit-panel>
 		</div>
-		<div class="container" ng-show="state === states.fleets">
+		<div class="container" ng-show="ui.state === ui.states.fleets">
 			<fleet-panel></fleet-panel>
 		</div>
-		<div class="container" ng-show="state === states.combat">
+		<div class="container" ng-show="ui.state === ui.states.combat">
 			<combat-panel></combat-panel>
 		</div>
-		<div class="container" ng-show="state === states.entities">
+		<div class="container" ng-show="ui.state === ui.states.entities">
 			<entity-panel></entity-panel>
 		</div>
-		<div class="container" ng-show="state === states.templates">
+		<div class="container" ng-show="ui.state === ui.states.templates">
 			<template-panel></template-panel>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>

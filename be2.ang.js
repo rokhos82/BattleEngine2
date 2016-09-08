@@ -1,7 +1,43 @@
 (function(){
 	var app = angular.module("be2",[]);
 
-	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex"];
+	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex","list"];
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// DataStore - this is the main data store for the entire application.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.factory("DataStore",[function() {
+		var _data = {
+			state: {
+				factions: {
+					list: []
+				},
+				fleets: {
+					list: []
+				},
+				units: {
+					list: []
+				},
+				templates: {
+					list: []
+				},
+				entities: {
+					list: []
+				}
+			},
+			ui: {
+				faction: {},
+				fleet: {},
+				unit: {},
+				template: {},
+				entity: {},
+				main: {}
+			},
+			combat: {}
+		};
+
+		return _data;
+	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// FactionService
@@ -356,59 +392,51 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// StorageService
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("StorageService",function() {
-		var stored = {};
-		var state = {
-			stored: "stored",
-			converted: "converted"
+	app.factory("StorageService",["DataStore",function(data) {
+		var _key = "be2.datastore";
+		var _logger = {
+			error: function(msg) { console.log("StorageService: Error - " + msg); },
+			success: function(msg) { console.log("StorageService: Success - " + msg); },
+			warning: function(msg) { console.log("StorageService: Warning - " + msg); }
 		};
-		var _errorHeader = "StorageService: Error - ";
 
-		var _store = function(key,data) {
-			stored[key] = state.stored;
-			if(typeof(data) == "string") {
-				localStorage.setItem(key,data);
+		var _load = function() {
+			if(typeof(localStorage) !== "undefined") {
+				var json = localStorage.getItem(_key);
+				if(typeof(json) === "string") {
+					data.state = JSON.parse(json);
+				}
+				else {
+					_logger.warning("No data in localStorage")
+				}
 			}
 			else {
-				var jsonStr = JSON.stringify(data);
-				localStorage.setItem(key,jsonStr);
-				stored[key] = state.converted;
+				_logger.warning("Browser does not support localStorage");
 			}
 		};
 
-		var _retrieve = function(key) {
-			var ret = undefined;
-
-			if(stored[key] === state.stored) {
-				ret = localStorage.getItem(key);
-			}
-			else if(stored[key] === state.converted) {
-				ret = JSON.parse(localStorage.getItem(key));
+		var _save = function() {
+			if(typeof(localStorage) !== "undefined") {
+				var json = JSON.stringify(data.state);
+				localStorage.setItem(_key,json);
 			}
 			else {
-				console.log(_errorHeader + " Unabled to retrieve key " + key);
+				_logger.warning("Browser does not support localStorage");
 			}
-
-			return ret;
 		};
-
-		var _clear = function(key) {
-			delete stored[key];
-			localStorage.removeItem(key);
-		}
 
 		return {
-			store: _store,
-			retrieve: _retrieve,
-			clear: _clear
+			save: _save,
+			load: _load
 		}
-	});
+	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2MainController - Main controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService",function($scope,factions,fleets,units){
-		$scope.states = {
+	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService","StorageService","DataStore",function($scope,factions,fleets,units,storage,data){
+		var ui = data.ui.main;
+		ui.states = {
 			combat: "combat",
 			factions: "factions",
 			fleets: "fleets",
@@ -416,7 +444,8 @@
 			entities: "entities",
 			templates: "templates"
 		};
-		$scope.state = $scope.states.factions;
+		ui.state = ui.states.factions;
+		$scope.ui = ui;
 		
 		factions.add({"name":"Torr Combine High Command","description":"Combined New Haven/Torr Combine Federate"});
 		factions.add({"name":"Ancient Machine Race","description":"Horrible Threat!"});
@@ -443,8 +472,8 @@
 		fleets.attachUnit("Machine Planetoid BG12ZK","Machine Planetoid BG12ZK");
 		fleets.attachUnit("Machine Ship ZZF1","Machine Ship ZZF1");
 
-		$scope.fleets = fleets.all();
-		$scope.factions = factions.all();
+		this.saveData = storage.save;
+		this.loadData = storage.load;
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

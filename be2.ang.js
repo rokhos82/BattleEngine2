@@ -370,9 +370,19 @@
 			}
 		};
 
+		var _clear = function() {
+			if(typeof(localStorage) !== "undefined") {
+				localStorage.removeItem(_key);
+			}
+			else {
+				_logger.warning("Browser does not support localStorage");
+			}	
+		}
+
 		return {
 			save: _save,
-			load: _load
+			load: _load,
+			clear: _clear
 		}
 	}]);
 
@@ -392,7 +402,7 @@
 		ui.state = ui.states.factions;
 		$scope.ui = ui;
 		
-		factions.add({"name":"Torr Combine High Command","description":"Combined New Haven/Torr Combine Federate"});
+		/*factions.add({"name":"Torr Combine High Command","description":"Combined New Haven/Torr Combine Federate"});
 		factions.add({"name":"Ancient Machine Race","description":"Horrible Threat!"});
 		
 		fleets.add({"name":"The Heavy","empire":"Torr Combine"});
@@ -415,10 +425,13 @@
 		fleets.attachUnit("The Heavy","Iron Maiden");
 		fleets.attachUnit("The Scourge","Jagermeister");
 		fleets.attachUnit("Machine Planetoid BG12ZK","Machine Planetoid BG12ZK");
-		fleets.attachUnit("Machine Ship ZZF1","Machine Ship ZZF1");
+		fleets.attachUnit("Machine Ship ZZF1","Machine Ship ZZF1");*/
 
 		this.saveData = storage.save;
 		this.loadData = storage.load;
+		this.purgeData = storage.clear;
+
+		this.loadData();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -429,7 +442,7 @@
 		ui.factions = FactionService.getList();
 		ui.activeFleet = {};
 		ui.newFaction = {
-				name: "",
+				name: "Test",
 				description: ""
 		};
 		$scope.ui = ui;
@@ -454,6 +467,24 @@
 			}
 			return arr;
 		};
+
+		this.closeCreateFaction = function() {
+			ui.newFaction.name = "";
+			ui.newFaction.description = "";
+			$("#factionCreateModal").modal('hide');
+		};
+
+		this.createFaction = function() {
+			FactionService.add({"name":ui.newFaction.name,"description":ui.newFaction.description});
+			this.closeCreateFaction();
+		};
+
+		// Set the first fleet in the list to active!
+		for(var i in ui.factions) {
+			var faction = ui.factions[i];
+			var fleets = $scope.getFleetList(faction);
+			ui.activeFleet[faction] = fleets[0];
+		}
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

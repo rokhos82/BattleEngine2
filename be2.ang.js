@@ -445,6 +445,9 @@
 	app.controller("be2FactionController",["$scope","FactionService","FleetService","UnitService","DataStore",function($scope,FactionService,FleetService,UnitService,data){
 		var ui = data.ui.faction;
 		ui.factions = FactionService.getList();
+		ui.state = {
+			show: {}
+		};
 		ui.activeFleet = {};
 		ui.newFaction = {
 				name: "",

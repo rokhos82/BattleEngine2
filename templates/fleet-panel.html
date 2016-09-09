@@ -22,9 +22,12 @@
 				<div class="panel-heading">
 					<div class="btn-toolbar pull-right">
 						<div class="btn-group">
-							<a href="#" class="btn btn-default btn-xs" ng-class="{active:ui.state.show[fleet]}" ng-click="fleetCtl.toggleVisible(fleet)">&#9728;</a>
-							<a href="#" class="btn btn-default btn-xs">&hellip;</a>
-							<a href="#" class="btn btn-danger btn-xs" data-toggle="tooltip" data-placement="auto bottom" title="Remove Fleet">&times;</a>
+							<button class="btn btn-info btn-xs">&#9901;</button>
+						</div>
+						<div class="btn-group">
+							<button class="btn btn-default btn-xs" ng-class="{active:ui.state.show[fleet]}" ng-click="fleetCtl.toggleVisible(fleet)">&#9728;</button>
+							<button class="btn btn-default btn-xs">&hellip;</button>
+							<button class="btn btn-danger btn-xs" data-toggle="tooltip" data-placement="auto bottom" title="Remove Fleet">&times;</button>
 						</div>
 					</div>
 					<h3 class="panel-title">{{fleetInfo.name}}</h3>
@@ -32,27 +35,6 @@
 				<div class="panel-body" ng-show="ui.state.show[fleet]">
 					<div class="well well-sm" ng-show="fleetInfo.description">
 						{{fleetInfo.description}}
-					</div>
-					<div clas="panel panel-default">
-						<div class="panel-heading">
-							<div class="btn-toolbar pull-right">
-								<div class="btn-group">
-									<button class="btn btn-primary btn-xs">&#9901;</button>
-									<button class="btn btn-default btn-xs">&#9728;</button>
-								</div>
-							</div>
-							<h3 class="panel-title">Units</h3>
-						</div>
-						<div class="panel-body">
-							<div class="list-group">
-								<a href="#" class="list-group-item">Test Data Please Ignore</a>
-								<a href="#" class="list-group-item">Test Data Please Ignore</a>
-								<a href="#" class="list-group-item">Test Data Please Ignore</a>
-								<a href="#" class="list-group-item">Test Data Please Ignore</a>
-								<a href="#" class="list-group-item">Test Data Please Ignore</a>
-								<a href="#" class="list-group-item">Test Data Please Ignore</a>
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>

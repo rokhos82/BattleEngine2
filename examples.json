@@ -1,73 +1,10 @@
-[{
-	'name': 'Torr Combine High Commmand',
-	'fleets': [{
-		'name': 'The Heavy',
-		'empire': 'Torr Combine',
-		'units': [{
-			'name': 'Emma Rose'
-		},
-		{
-			'name': 'William Fredrick'
-		}],
-		'unitIndex': {
-			'Emma Rose': 0,
-			'William Fredrick': 1
-		}
-	},
-	{
-		'name': 'The Scourge',
-		'empire': 'New Haven Commonwealth',
-		'units': [{
-			'name': 'Scourge A'
-		}],
-		'unitIndex': {
-			'Scourge A': 0
-		}
-	}],
-	'fleetIndex': {
-		'The Heavy': 0,
-		'The Scourge': 1
-	},
-	'combatants': {
-		'Emma Rose': {fleet: 'The Heavy', data: null},
-		'William Fredrick': {fleet: 'The Heavy', data: null},
-		'Scourge A': {fleet: 'The Scourge', data: null}
-	},
-},
-{
-	'name': 'Ancient Machine Race',
-	'fleets': [{
-		'name': 'Machine Planetoid BG12ZK',
-		'empire': 'Ancient Machine Race',
-		'units': [{
-			'name': 'Machine Planetoid BG12ZK'
-		}],
-		'unitIndex': {
-			'Machine Planetoid BG12ZK': 0
-		}
-	}],
-	'fleetIndex': {
-		'Machine Planetoid BG12ZK': 0
-	},
-	'combatants': {
-		'Machine Planetoid BG12ZK': {fleet: 'Machine Planetoid BG12ZK', data: null}
-	}
-}]
-////////////////////////////////////////////////////////////////////////////////////////////////////
-"[{\"name\":\"Torr Combine High Command\"},{\"name\":\"Ancient Machine Race\"}]"
-"[{\"name\":\"The Heavy\",\"empire\":\"Torr Combine\"},{\"name\":\"The Scourge\",\"empire\":\"New Haven Commmonwealth\"}]"
-"[{\"name\":\"Machine Planetoid BG12ZK\",\"empire\":\"Ancient Machine Race\"}]"
-
-{"name":"Machine Ship ZZF1","empire":"Ancient Machine Race"}
-
-{"name": "Machine Planetoid BG12ZK"}
-
-// Example Unit
+// Example Unit ////////////////////////////////////////////////////////////////////////////////////
 {
 	"unit": {
 		"name": "Emma Rose",
 		"type": "Starship",
-		"defense": 30,
+		"defense": 20,
+		"ecm": 10,
 		"wf": {
 			"safe": 5,
 			"max": 6
@@ -84,12 +21,11 @@
 	"packet-fire": []
 }
 
-{"unit":{"name":"Emma Rose","type":"Starship","defense":30,"wf":{"safe":5,"max":6}},"hull": {"base": 20,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []}
-
-// Example fleet
+// Example fleet ///////////////////////////////////////////////////////////////////////////////////
 {
 	"name": "",
-	"empire": "",
+	"nickname": "",
+	"faction": "",
 	"combat": {},
 	"flag": "name of entity",
 	"units": []

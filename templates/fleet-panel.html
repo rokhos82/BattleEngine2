@@ -32,7 +32,7 @@
 					</div>
 					<h3 class="panel-title">{{fleetInfo.name}}</h3>
 				</div>
-				<div class="panel-body" ng-show="ui.state.show[fleet]">
+				<div class="panel-body" ng-show="ui.state.show[fleet]" ng-init="units = fleetCtl.getUnits(fleet)">
 					<div class="well well-sm" ng-show="fleetInfo.description">
 						{{fleetInfo.description}}
 					</div>

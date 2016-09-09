@@ -118,6 +118,17 @@
 			}
 		};
 
+		// Detach fleet from a faction -------------------------------------------------------------
+		var _detachFleet = function(faction,fleet) {
+			if(_exists(faction) && FleetService.exists(fleet)) {
+				var i = data.state.factions[faction].fleets.indexOf(fleet);
+				data.state.factions[faction].fleets.splice(i,1);
+			}
+			else {
+				_logger.error("Unable to detach fleet from a faction.  Either the fleet or the faction does not exist.");
+			}
+		};
+
 		// Get a list of fleets assigned to a faction ----------------------------------------------
 		var _getFleets = function(faction) {
 			return data.state.factions[faction].fleets;
@@ -146,6 +157,7 @@
 		return {
 			add: _add,
 			attachFleet: _attachFleet,
+			detachFleet: _detachFleet,
 			get: _get,
 			getFleets: _getFleets,
 			getList: _getList,
@@ -487,6 +499,12 @@
 			ui.fleets[faction] = FactionService.getFleets(faction);
 		};
 
+		this.detachFleet = function(faction,fleet) {
+			if(confirm("Do you wish to detach this fleet?")) {
+				FactionService.detachFleet(faction,fleet);
+			}
+		};
+
 		this.getFleet = FleetService.get;
 
 		$scope.getFleetList = function(faction) {
@@ -531,6 +549,18 @@
 		}
 
 		this.initState();
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2AttachFleetController
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2AttachFleetController",["$scope","FactionService","FleetService","DataStore",function($scope,FactionService,FleetService,data) {
+		var ui = {
+			faction: "",
+			fleets: []
+		};
+		
+		$scope.ui = ui;
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

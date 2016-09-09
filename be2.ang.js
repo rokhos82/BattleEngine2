@@ -528,6 +528,11 @@
 			return arr;
 		};
 
+		// Modal dialog functions ------------------------------------------------------------------
+		this.showAttachFleet = function(faction) {
+			$("#attachFleetModal").modal('show');
+		};
+
 		this.closeCreateFaction = function() {
 			ui.newFaction.name = "";
 			ui.newFaction.description = "";
@@ -557,10 +562,26 @@
 	app.controller("be2AttachFleetController",["$scope","FactionService","FleetService","DataStore",function($scope,FactionService,FleetService,data) {
 		var ui = {
 			faction: "",
-			fleets: []
+			fleets: [],
+			modal: $("#attachFleetModal")
 		};
 		
 		$scope.ui = ui;
+
+		ui.modal.on('show.bs.modal',function(event) {
+			var button = $(event.relatedTarget);
+			var faction = button.data('faction');
+			ui.faction = faction;
+			ui.fleets = FleetService.getList();
+			$scope.$apply();
+		});
+
+		$scope.attach = function() {
+			var faction = ui.faction;
+			var fleet = $("#attachFleetName").val();
+			FactionService.attachFleet(faction,fleet);
+			ui.modal.modal('hide');
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -727,5 +748,16 @@
 			restrict: 'E',
 			templateUrl: 'templates/unit-table.html'
 		};
+	});
+
+	app.directive('attachFleetModal',function() {
+		return {
+			restrict: 'E',
+			transclude: true,
+			replace: true,
+			scope: true,
+			controller: "be2AttachFleetController",
+			templateUrl: "templates/attach-fleet-modal.html"
+		}
 	});
 })();

@@ -1,0 +1,26 @@
+<div id="attachFleetModal" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h4 class="modal-title">Attach Fleet to {{ui.faction}}</h4>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label for="attachFleetName" class="col-lg-2 control-label">Fleets</label>
+						<div class="col-lg-10">
+							<select class="form-control" id="attachFleetName">
+								<option ng-repeat="fleet in ui.fleets" ng-attr-value="{{fleet}}">{{fleet}}</option>
+							</select>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-toggle="modal" data-target="#attachFleetModal">Cancel</button>
+				<button type="button" class="btn btn-primary" ng-click="attach()">Attach</button>
+			</div>
+		</div>
+	</div>
+</div>

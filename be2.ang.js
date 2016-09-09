@@ -445,6 +445,7 @@
 	app.controller("be2FactionController",["$scope","FactionService","FleetService","UnitService","DataStore",function($scope,FactionService,FleetService,UnitService,data){
 		var ui = data.ui.faction;
 		ui.factions = FactionService.getList();
+		ui.fleets = {};
 		ui.state = {
 			show: {}
 		};
@@ -454,6 +455,39 @@
 				description: ""
 		};
 		$scope.ui = ui;
+
+		this.initState = function() {
+			for(var i in ui.factions) {
+				var faction = ui.factions[i];
+				ui.state.show[faction] = false;
+				ui.fleets[faction] = FactionService.getFleets(faction);
+			}			
+		};
+
+		this.toggleVisible = function(faction) {
+			ui.state.show[faction] = !ui.state.show[faction];			
+		};
+
+		this.showAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = true;
+			}
+		};
+
+		this.hideAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = false;
+			}
+		};
+
+		this.attachFleet = function(faction) {
+			var fleet = "1st Vanguard Fleet";
+			FleetService.add({"name":fleet,"nickname":"The Heavy","description":"All about the battleships baby!"});
+			FactionService.attachFleet(faction,fleet);
+			ui.fleets[faction] = FactionService.getFleets(faction);
+		};
+
+		this.getFleet = FleetService.get;
 
 		$scope.getFleetList = function(faction) {
 			return FactionService.getFleets(faction);
@@ -495,6 +529,8 @@
 			var fleets = $scope.getFleetList(faction);
 			ui.activeFleet[faction] = fleets ? fleets[0] : undefined;
 		}
+
+		this.initState();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -653,6 +689,13 @@
 		return {
 			restrict: 'E',
 			templateUrl: 'templates/fleet-create-panel.html'
+		};
+	});
+
+	app.directive('unitTable',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/unit-table.html'
 		};
 	});
 })();

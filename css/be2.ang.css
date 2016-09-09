@@ -35,3 +35,7 @@
 .panel-title-left {
 	float: left;
 }
+
+.panel-title-lg {
+	font-size: 18pt;
+}

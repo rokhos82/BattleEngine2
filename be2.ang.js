@@ -1,41 +1,86 @@
 (function(){
 	var app = angular.module("be2",[]);
 
-	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex"];
+	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex","list"];
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// DataStore - this is the main data store for the entire application.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.factory("DataStore",[function() {
+		var _data = {
+			state: {
+				factions: {
+					list: []
+				},
+				fleets: {
+					list: []
+				},
+				units: {
+					list: []
+				},
+				templates: {
+					list: []
+				},
+				entities: {
+					list: []
+				}
+			},
+			ui: {
+				faction: {},
+				fleet: {},
+				unit: {},
+				template: {},
+				entity: {},
+				main: {},
+				debug: true
+			},
+			combat: {}
+		};
+
+		return _data;
+	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// FactionService
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("FactionService",["FleetService",function(FleetService) {
-		var factions = [];
-		var factionIndex = {};
-		var _errorHeader = "FactionService: Error - ";
-		var _successHeader = "FactionService: Success - ";
+	app.factory("FactionService",["FleetService","DataStore",function(FleetService,data) {
+		var _logger = {
+			error: function(msg) {if(data.ui.debug){console.log("FactionService: Error - " + msg);}},
+			success: function(msg) {if(data.ui.debug){console.log("FactionService: Success - " + msg);}},
+			warning: function(msg) {if(data.ui.debug){console.log("FactionService: Warning - " + msg);}}
+		};
 
 		// Validate that the passed object is a proper Faction object ------------------------------
 		var _validate = function(faction) {
 			var valid = true;
 
-			// Does the faction have a name?
-			if(typeof(faction.name) != "string") {
-				console.log(_errorHeader + "Faction does not have a valid name entry.");
-				valid = false;
-			}
-			else {
-				// Check against the list of reserved faction names
-				for(var i in reservedNames) {
-					if(faction.name === reservedNames[i]) {
-						valid = false;
-						console.log(_errorHeader + "Faction name is in the reserved list.");
-						break;
+			// Is the faction an object and not an array?
+			if(typeof(faction) === "object" && !Array.isArray(faction)){
+				// Does the faction have a name
+				if(typeof(faction.name) === "string") {
+					// Is the name in the reserved list?
+					for(var i in reservedNames) {
+						if(faction.name === reservedNames[i]) {
+							_logger.error("Faction name '" + faction.name + "' is on the reserved list.");
+							valid = false;
+							break;
+						}
 					}
 				}
-			}
+				else {
+					_logger.error("Faction does not have a name.");
+					valid = false;
+				}
 
-			// Does the faction of an array of fleets (Optional)
-			if(typeof(faction.fleets) != "array" && typeof(faction.fleets) != "undefined") {
-				console.log(_errorHeader + "Faction has an improper fleets entry.  The fleets entry must be absent or an Array.");
+				// Does the faction have an array of fleets (Optional)
+				if(typeof(faction.fleets) !== "undefined" && !Array.isArray(faction.fleets)) {
+					_logger.error("Faction has a fleet list that is not an array");
+					valid = false;
+				}
+			}
+			else {
 				valid = false;
+				_logger.error("Faction is not a dictionary.");
 			}
 
 			// Return the valid flag.
@@ -44,110 +89,59 @@
 
 		// Adds a Faction to the array -------------------------------------------------------------
 		var _add = function(faction) {
-			if(_validate(faction)) {
-				var l = factions.push(faction);
-				_buildIndex();
-				console.log(_successHeader + "Loaded faction " + faction.name);
+			if(_validate(faction) && !_exists(faction)) {
+				data.state.factions[faction.name] = faction;
+				var l = data.state.factions.list.push(faction.name);
+				_logger.success("Added Faction " + faction.name + ".  " + l + " faction(s) currently in system.");
 			}
 			else {
-				console.log(_errorHeader + "Unable to add faction.  See previous errors.");
+				_logger.error("Unable to Add Faction.  Faction may already exist.");
 			}
-		};
-
-		// Add a fleet to a given faction name -----------------------------------------------------
-		var _addFleet = function(faction,fleet) {
-			if(typeof(factionIndex[faction]) == "number") {
-				var i = factionIndex[faction];
-				if(Array.isArray(fleet)) {
-					for(var i in fleet) {
-						var obj = FleetService.add(fleet[i]);
-					}
-				}
-				else if(typeof(fleet) == "object") {
-					var obj = FleetService.add(fleet);
-				}
-				else {}
-			}
-			else {
-				console.log(_errorHeader + "Faction '" + faction + "' does not exist");
-			}
-		};
-
-		// Load factions from a JSON string --------------------------------------------------------
-		var _simpleLoad = function(jsonStr) {
-			var obj = JSON.parse(jsonStr);
-
-			for(var i in obj) {
-				var faction = obj[i];
-				_add(faction);
-			}
-		};
-
-		// Load deep faction information from a JSON string ----------------------------------------
-		var _deepLoad = function(jsonStr) {
-		};
-
-		// Return top level factions object --------------------------------------------------------
-		var _all = function() {
-			return factions;
 		};
 
 		// Return true if the faction exists -------------------------------------------------------
 		var _exists = function(faction) {
-			return (typeof(faction) == "string" && typeof(factionIndex[faction]) == "number");
+			return (typeof(faction) === "string" && typeof(data.state.factions[faction]) === "object");
 		};
 
 		// Attach an existing fleet to an existing faction -----------------------------------------
 		var _attachFleet = function(faction,fleet) {
 			if(_exists(faction) && FleetService.exists(fleet)) {
-				var i = factionIndex[faction];
-				var faction = factions[i];
-				var fleet = FleetService.getFleet(fleet);
-				if(!Array.isArray(faction.fleets))
-					faction.fleets = [];
-				if(typeof(faction.fleetIndex) != "object")
-					faction.fleetIndex = {};
-				var l = faction.fleets.push(fleet);
-				faction.fleetIndex[fleet.name] = l - 1;
+				var f = data.state.factions[faction];
+				if(!Array.isArray(f.fleets))
+					f.fleets = [];
+				f.fleets.push(fleet);
+				_logger.success("Attached fleet '" + fleet + "'' to faction '" + faction + "'.");
 			}
 			else {
-				console.log(_errorHeader + "Unable to attach fleet to a faction.  Either the fleet or the faction does not exist.");
+				_logger.error("Unable to attach fleet to a faction.  Either the fleet or the faction does not exist.");
+			}
+		};
+
+		// Detach fleet from a faction -------------------------------------------------------------
+		var _detachFleet = function(faction,fleet) {
+			if(_exists(faction) && FleetService.exists(fleet)) {
+				var i = data.state.factions[faction].fleets.indexOf(fleet);
+				data.state.factions[faction].fleets.splice(i,1);
+			}
+			else {
+				_logger.error("Unable to detach fleet from a faction.  Either the fleet or the faction does not exist.");
 			}
 		};
 
 		// Get a list of fleets assigned to a faction ----------------------------------------------
-		var _getFactionFleets = function(faction) {
-			var fleets = [];
-			if(_exists(faction)) {
-				var faction = factions[factionIndex[faction]];
-				for(var i in faction.fleetIndex) {
-					fleets.push(i);
-				}
-			}
-			return fleets;
+		var _getFleets = function(faction) {
+			return data.state.factions[faction].fleets;
 		};
 
 		// Get a list of factions ------------------------------------------------------------------
-		var _getFactionList = function() {
-			var arr = [];
-			for(var i in factionIndex) {
-				arr.push(i);
-			}
-			return arr;
+		var _getList = function() {
+			return data.state.factions.list;
 		};
 
 		// Get a specific faction ------------------------------------------------------------------
-		var _getFaction = function(faction) {
-			return _exists(faction) ? factions[factionIndex[faction]] : undefined;
-		};
-
-		// Build the faction index -----------------------------------------------------------------
-		var _buildIndex = function() {
-			factionIndex = {};
-			for(var f in factions) {
-				var faction = factions[f];
-				factionIndex[faction.name] = parseInt(f);
-			}
+		var _get = function(faction) {
+			return _exists(faction) ? data.state.factions[faction] : undefined;
 		};
 
 		// Remove a faction ------------------------------------------------------------------------
@@ -162,15 +156,12 @@
 
 		return {
 			add: _add,
-			addFleet: _addFleet,
 			attachFleet: _attachFleet,
-			getFaction: _getFaction,
-			getFactionFleets: _getFactionFleets,
-			getFactionList: _getFactionList,
+			detachFleet: _detachFleet,
+			get: _get,
+			getFleets: _getFleets,
+			getList: _getList,
 			validate: _validate,
-			load: _simpleLoad,
-			loadFactionsInfo: _deepLoad,
-			all: _all,
 			remove: _remove
 		};
 	}]);
@@ -178,26 +169,44 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// FleetService - This service provides fleet functions and storage
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("FleetService",["UnitService",function(UnitService) {
-		var fleets = [];
-		var fleetIndex = {};
-		var _errorHeader = "FleetService: Error - ";
-		var _successHeader = "FleetService: Success - ";
+	app.factory("FleetService",["UnitService","DataStore",function(UnitService,data) {
+		var _logger = {
+			error: function(msg) {if(data.ui.debug){console.log("FleetService: Error - " + msg);}},
+			success: function(msg) {if(data.ui.debug){console.log("FleetService: Success - " + msg);}},
+			warning: function(msg) {if(data.ui.debug){console.log("FleetService: Warning - " + msg);}}
+		};
 
 		// Validate that the object is a proper Fleet object ---------------------------------------
-		var _validate = function(obj) {
+		var _validate = function(fleet) {
 			var valid = true;
 
-			if(typeof(obj.name) != "string") {
-				console.log(_errorHeader + "Fleet does not have a proper name entry");
-				valid = false;
-			}
-
-			for(x in obj.units) {
-				if(!UnitService.validate(obj.units[x])) {
-					console.log("Invalid Fleet because of unit.");
+			// Is the fleet an object and not an array?
+			if(typeof(fleet) === "object" && !Array.isArray(fleet)) {
+				// Does the fleet have a name?
+				if(typeof(fleet.name) === "string") {
+					// Is the name in the reserved list.
+					for(var i in reservedNames) {
+						if(fleet.name === reservedNames[i]) {
+							_logger.error("Fleet name '" + fleet.name + "' is on the reserved list.");
+							valid = false;
+							break;
+						}
+					}
+				}
+				else {
+					_logger.error("Fleet does not have a name.");
 					valid = false;
 				}
+
+				// Does the fleet have an array of units (Optional)
+				if(typeof(fleet.fleets) !== "undefined" && !Array.isArray(fleet.fleets)) {
+					_logger.error("Fleet has a unit list that is not an array");
+					valid = false;
+				}
+			}
+			else {
+				_logger.error("Fleet is not a dictionary.");
+				valid = false;
 			}
 
 			return valid;
@@ -205,61 +214,47 @@
 
 		// Add a fleet object to the dictionary ----------------------------------------------------
 		var _add = function(fleet) {
-			var ret = undefined;
-			if(_validate(fleet)) {
-				var l = fleets.push(fleet);
-				fleetIndex[fleet.name] = l-1;
-				ret = fleet;
-				console.log(_successHeader + "Loaded fleet " + fleet.name);
+			if(_validate(fleet) && !_exists(fleet)) {
+				data.state.fleets[fleet.name] = fleet;
+				var l = data.state.fleets.list.push(fleet.name);
+				_logger.success("Added Fleet " + fleet.name + ".  " + l + " fleet(s) currently in system.");
 			}
-			return ret;
-		};
-
-		// Add a unit to the specific fleet --------------------------------------------------------
-		var _addUnit = function(name,unit) {
-			var i = fleetIndex[name];
-			var fleet = fleets[i];
-			var success = false;
-			if(UnitService.validate(unit)) {
-				success = true;
-				fleet.units.push(unit);
+			else {
+				_logger.error("Unable to Add Fleet.  Fleet may already exist.");
 			}
-		}
-
-		// Load basic fleet info from a JSON string ------------------------------------------------
-		var _simpleLoad = function(jsonStr) {
-			var obj = JSON.parse(jsonStr);
-			return _add(obj);
 		};
 
 		// Verify that the fleet exists ------------------------------------------------------------
 		var _exists = function(fleet) {
-			return (typeof(fleet) == "string" && typeof(fleetIndex[fleet]) == "number");
+			return (typeof(fleet) === "string" && typeof(data.state.fleets[fleet]) === "object");
 		};
 
 		// Return a specific fleet object ----------------------------------------------------------
-		var _getFleet = function(fleet) {
-			return _exists(fleet) ? fleets[fleetIndex[fleet]] : undefined;
+		var _get = function(fleet) {
+			return _exists(fleet) ? data.state.fleets[fleet] : undefined;
 		};
 
 		// Attach a unit to a fleet ----------------------------------------------------------------
 		var _attachUnit = function(fleet,unit) {
 			if(_exists(fleet) && UnitService.exists(unit)) {
-				var f = fleetIndex[fleet];
-				var fleet = fleets[f];
-				var unit = UnitService.getUnit(unit);
-				if(!Array.isArray(fleet.units))
-					fleet.units = [];
-				if(typeof(fleet.unitIndex) != "object")
-					fleet.unitIndex = {};
-				var l = fleet.units.push(unit);
-				fleet.unitIndex[unit.unit.name] = l - 1;
+				var f = data.state.fleets[fleet];
+				if(!Array.isArray(f.units))
+					f.units = [];
+				f.units.push(unit);
+				_logger.success("Attached unit '" + unit + "'' to fleet '" + fleet + "'.");
+			}
+			else {
+				_logger.error("Unable to attach unit to a fleet.  Either the unit or the fleet does not exist.");
 			}
 		};
 
 		// Get all the units from the passed fleet object ------------------------------------------
 		var _getUnits = function(fleet) {
-			return fleet.units;
+			return data.state.fleets[fleet].units;
+		};
+
+		var _getList = function() {
+			return data.state.fleets.list;
 		};
 
 		return {
@@ -267,9 +262,10 @@
 			add: _add,
 			attachUnit: _attachUnit,
 			exists: _exists,
-			getFleet: _getFleet,
+			get: _get,
+			getList: _getList,
 			validate: _validate,
-			load: _simpleLoad,
+			getUnits: _getUnits,
 			combatInfo: function() {return {"fleets":fleets,"index":fleetIndex}}
 		}
 	}]);
@@ -277,70 +273,72 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// UnitService - This service provides unit functions
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("UnitService",function() {
-		var units = [];
-		var unitIndex = {};
-		var _errorHeader = "UnitService: Error - ";
-		var _successHeader = "UnitService: Success - ";
+	app.factory("UnitService",["DataStore",function(data) {
+		var _logger = {
+			error: function(msg) {if(data.ui.debug){console.log("UnitService: Error - " + msg);}},
+			success: function(msg) {if(data.ui.debug){console.log("UnitService: Success - " + msg);}},
+			warning: function(msg) {if(data.ui.debug){console.log("UnitService: Warning - " + msg);}}
+		};
 
 		var _validate = function(obj) {
 			var valid = true;
 			if(obj.unit) {
 				if(!obj.unit.name || !obj.unit.type) {
-					console.log("Invalid Unit due to no name or type.");
+					_logger.error("Invalid Unit due to no name or type.");
 					valid = false;
 				}			
 			}
 			else {
-				console.log("Invalid Unit due to no unit tag.");
+				_logger.error("Invalid Unit due to no unit tag.");
 				valid = false;
 			}
 			return valid;
 		}
 
-		var _parse = function(jsonStr) {
-			var obj = JSON.parse(jsonStr);
-			if(_validate(obj)) {
-				obj = null;
+		// Add a unit object to the dictionary ----------------------------------------------------
+		var _add = function(unit) {
+			if(_validate(unit) && !_exists(unit.unit.name)) {
+				data.state.units[unit.unit.name] = unit;
+				var l = data.state.units.list.push(unit.unit.name);
+				_logger.success("Added unit " + unit.name + ".  " + l + " unit(s) currently in system.");
 			}
-			return obj;
+			else {
+				_logger.error("Unable to Add Fleet.  Fleet may already exist.");
+			}
 		};
-
-		var _stringify = function(obj) {
-			var str = null;
-			if(_validate(obj)) {
-				str = JSON.stringify(obj);
-			}
-			return str;
-		};
-
-		var _add = function(_unit) {
-			if(_validate(_unit)) {
-				var l = units.push(_unit);
-				unitIndex[_unit.unit.name] = l - 1;
-				console.log(_successHeader + "Loaded unit " + _unit.unit.name);
-			}
-		}
 
 		// Validate that a unit exists -------------------------------------------------------------
 		var _exists = function(unit) {
-			return (typeof(unit) == "string" && typeof(unitIndex[unit]) == "number");
+			return (typeof(unit) === "string" && typeof(data.state.units[unit]) === "object");
 		};
 
 		// Get a specific unit ---------------------------------------------------------------------
 		var _getUnit = function(unit) {
-			return _exists(unit) ? units[unitIndex[unit]] : undefined;
+			return _exists(unit) ? data.state.units[unit] : undefined;
+		};
+
+		// Get a list of units ---------------------------------------------------------------------
+		var _getMultiple = function(list) {
+			var arr = [];
+			if(Array.isArray(list)) {
+				for(var i in list) {
+					arr.push(_getUnit(list[i]));
+				}
+			}
+			else {
+				_logger.warning("List must be an array");
+			}
+			return arr;
 		};
 
 		return {
 			validate: _validate,
-			parse: _parse,
-			stringify: _stringify,
 			add: _add,
 			exists: _exists,
-			getUnit: _getUnit
+			get: _getUnit,
+			getMultiple: _getMultiple
 		}
-	});
+	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// PlayerService
@@ -356,59 +354,61 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// StorageService
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("StorageService",function() {
-		var stored = {};
-		var state = {
-			stored: "stored",
-			converted: "converted"
+	app.factory("StorageService",["DataStore",function(data) {
+		var _key = "be2.datastore";
+		var _logger = {
+			error: function(msg) { console.log("StorageService: Error - " + msg); },
+			success: function(msg) { console.log("StorageService: Success - " + msg); },
+			warning: function(msg) { console.log("StorageService: Warning - " + msg); }
 		};
-		var _errorHeader = "StorageService: Error - ";
 
-		var _store = function(key,data) {
-			stored[key] = state.stored;
-			if(typeof(data) == "string") {
-				localStorage.setItem(key,data);
+		var _load = function() {
+			if(typeof(localStorage) !== "undefined") {
+				var json = localStorage.getItem(_key);
+				if(typeof(json) === "string") {
+					data.state = JSON.parse(json);
+				}
+				else {
+					_logger.warning("No data in localStorage")
+				}
 			}
 			else {
-				var jsonStr = JSON.stringify(data);
-				localStorage.setItem(key,jsonStr);
-				stored[key] = state.converted;
+				_logger.warning("Browser does not support localStorage");
 			}
 		};
 
-		var _retrieve = function(key) {
-			var ret = undefined;
-
-			if(stored[key] === state.stored) {
-				ret = localStorage.getItem(key);
-			}
-			else if(stored[key] === state.converted) {
-				ret = JSON.parse(localStorage.getItem(key));
+		var _save = function() {
+			if(typeof(localStorage) !== "undefined") {
+				var json = JSON.stringify(data.state);
+				localStorage.setItem(_key,json);
 			}
 			else {
-				console.log(_errorHeader + " Unabled to retrieve key " + key);
+				_logger.warning("Browser does not support localStorage");
 			}
-
-			return ret;
 		};
 
-		var _clear = function(key) {
-			delete stored[key];
-			localStorage.removeItem(key);
+		var _clear = function() {
+			if(typeof(localStorage) !== "undefined") {
+				localStorage.removeItem(_key);
+			}
+			else {
+				_logger.warning("Browser does not support localStorage");
+			}	
 		}
 
 		return {
-			store: _store,
-			retrieve: _retrieve,
+			save: _save,
+			load: _load,
 			clear: _clear
 		}
-	});
+	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2MainController - Main controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService",function($scope,factions,fleets,units){
-		$scope.states = {
+	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService","StorageService","DataStore",function($scope,factions,fleets,units,storage,data){
+		var ui = data.ui.main;
+		ui.states = {
 			combat: "combat",
 			factions: "factions",
 			fleets: "fleets",
@@ -416,9 +416,10 @@
 			entities: "entities",
 			templates: "templates"
 		};
-		$scope.state = $scope.states.factions;
+		ui.state = ui.states.factions;
+		$scope.ui = ui;
 		
-		factions.add({"name":"Torr Combine High Command","description":"Combined New Haven/Torr Combine Federate"});
+		/*factions.add({"name":"Torr Combine High Command","description":"Combined New Haven/Torr Combine Federate"});
 		factions.add({"name":"Ancient Machine Race","description":"Horrible Threat!"});
 		
 		fleets.add({"name":"The Heavy","empire":"Torr Combine"});
@@ -441,64 +442,210 @@
 		fleets.attachUnit("The Heavy","Iron Maiden");
 		fleets.attachUnit("The Scourge","Jagermeister");
 		fleets.attachUnit("Machine Planetoid BG12ZK","Machine Planetoid BG12ZK");
-		fleets.attachUnit("Machine Ship ZZF1","Machine Ship ZZF1");
+		fleets.attachUnit("Machine Ship ZZF1","Machine Ship ZZF1");*/
 
-		$scope.fleets = fleets.all();
-		$scope.factions = factions.all();
+		this.saveData = storage.save;
+		this.loadData = storage.load;
+		this.purgeData = storage.clear;
+
+		this.loadData();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FactionController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FactionController",["$scope","FactionService","FleetService",function($scope,FactionService,FleetService){
-		$scope.ui = {
-			factions: [],
-			newFaction: {
+	app.controller("be2FactionController",["$scope","FactionService","FleetService","UnitService","DataStore",function($scope,FactionService,FleetService,UnitService,data){
+		var ui = data.ui.faction;
+		ui.factions = FactionService.getList();
+		ui.fleets = {};
+		ui.state = {
+			show: {}
+		};
+		ui.activeFleet = {};
+		ui.newFaction = {
 				name: "",
 				description: ""
+		};
+		$scope.ui = ui;
+
+		this.initState = function() {
+			for(var i in ui.factions) {
+				var faction = ui.factions[i];
+				ui.state.show[faction] = false;
+				ui.fleets[faction] = FactionService.getFleets(faction);
+			}			
+		};
+
+		this.toggleVisible = function(faction) {
+			ui.state.show[faction] = !ui.state.show[faction];			
+		};
+
+		this.showAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = true;
 			}
 		};
 
-		this.initFactions = function() {
-			var factions = FactionService.getFactionList();
-			$scope.ui.factions = [];
-			for(var i in factions) {
-				var _fleets = FactionService.getFactionFleets(factions[i]);
-				var obj = {
-					name: factions[i],
-					fleets: _fleets,
-					activeFleet: _fleets[0]
-				};
-				$scope.ui.factions.push(obj);
+		this.hideAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = false;
 			}
-		}
+		};
 
-		this.getUnits = function(faction) {
-			var fleet = FleetService.getFleet($scope.ui.factions[faction].activeFleet);
-			return typeof(fleet) == "undefined" ? [] : fleet.units;
+		this.attachFleet = function(faction) {
+			var fleet = "1st Vanguard Fleet";
+			FleetService.add({"name":fleet,"nickname":"The Heavy","description":"All about the battleships baby!"});
+			FactionService.attachFleet(faction,fleet);
+			ui.fleets[faction] = FactionService.getFleets(faction);
+		};
+
+		this.detachFleet = function(faction,fleet) {
+			if(confirm("Do you wish to detach this fleet?")) {
+				FactionService.detachFleet(faction,fleet);
+			}
+		};
+
+		this.getFleet = FleetService.get;
+
+		$scope.getFleetList = function(faction) {
+			return FactionService.getFleets(faction);
+		};
+
+		$scope.activeFleet = function(faction) {
+			return ui.activeFleet[faction];
+		};
+
+		$scope.setActiveFleet = function(faction,fleet) {
+			ui.activeFleet[faction] = fleet;
+		};
+
+		$scope.getActiveUnits = function(faction) {
+			var fleet = ui.activeFleet[faction];
+			var arr = [];
+			if(typeof(fleet) === "string") {
+				arr = UnitService.getMultiple(FleetService.getUnits(fleet));
+			}
+			return arr;
+		};
+
+		// Modal dialog functions ------------------------------------------------------------------
+		this.showAttachFleet = function(faction) {
+			$("#attachFleetModal").modal('show');
 		};
 
 		this.closeCreateFaction = function() {
-			$scope.ui.newFaction.name = "";
-			$scope.ui.newFaction.description = "";
+			ui.newFaction.name = "";
+			ui.newFaction.description = "";
 			$("#factionCreateModal").modal('hide');
 		};
 
 		this.createFaction = function() {
-			FactionService.add({"name":$scope.ui.newFaction.name,"description":$scope.ui.newFaction.description});
-			console.log($scope.ui.newFaction.name);
-			console.log($scope.ui.newFaction.description);
+			var faction = ui.newFaction.name;
+			FactionService.add({"name":faction,"description":ui.newFaction.description,"fleets":[]});
 			this.closeCreateFaction();
-			this.initFactions();
+			ui.fleets[faction] = FactionService.getFleets(faction);
+			ui.state.show[faction] = true;
 		};
 
-		this.removeFaction = function(i) {
-			var faction = $scope.ui.factions[i];
-			FactionService.remove(faction.name);
-			this.initFactions();
+		this.getFaction = FactionService.get;
+
+		// Set the first fleet in the list to active!
+		for(var i in ui.factions) {
+			var faction = ui.factions[i];
+			var fleets = $scope.getFleetList(faction);
+			ui.activeFleet[faction] = fleets ? fleets[0] : undefined;
+		}
+
+		this.initState();
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2AttachFleetController
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2AttachFleetController",["$scope","FactionService","FleetService","DataStore",function($scope,FactionService,FleetService,data) {
+		var ui = {
+			faction: "",
+			fleets: [],
+			modal: $("#attachFleetModal")
+		};
+		
+		$scope.ui = ui;
+
+		// Event handler for showing the modal -----------------------------------------------------
+		ui.modal.on('show.bs.modal',function(event) {
+			var button = $(event.relatedTarget);
+			var faction = button.data('faction');
+			ui.faction = faction;
+			ui.fleets = FleetService.getList();
+			$scope.$apply();
+		});
+
+		// Attach the fleet to the faction ---------------------------------------------------------
+		$scope.attach = function() {
+			var faction = ui.faction;
+			var fleet = $("#attachFleetName").val();
+			FactionService.attachFleet(faction,fleet);
+			ui.modal.modal('hide');
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2FleetController
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","DataStore",function($scope,FactionService,FleetService,UnitService,data){
+		var ui = data.ui.fleet;
+		ui.fleets = FleetService.getList();
+		ui.state = {
+			show: {}
+		};
+		ui.newFleet = {
+				name: "",
+				description: "",
+		};
+		$scope.ui = ui;
+
+		// Mappings to Service factories -----------------------------------------------------------
+		this.getFleet = FleetService.get;
+
+		// UI State Actions ------------------------------------------------------------------------
+		this.initState = function() {
+			for(var i in ui.fleets) {
+				var fleet = ui.fleets[i];
+				ui.state.show[fleet] = false;
+			}
+		}
+
+		this.showAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = true;
+			}
 		};
 
-		this.initFactions();
+		this.hideAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = false;
+			}
+		};
+
+		this.toggleVisible = function(fleet) {
+			ui.state.show[fleet] = !ui.state.show[fleet];
+		}
+
+		// Fleet Creation Functions ----------------------------------------------------------------
+		this.closeCreateFleet = function() {
+			ui.newFleet.name = "";
+			ui.newFleet.description = "";
+			$("#fleetCreateModal").modal('hide');
+		};
+
+		this.createFleet = function() {
+			FleetService.add({"name":ui.newFleet.name,"description":ui.newFleet.description});
+			ui.state.show[ui.newFleet.name] = true;
+			this.closeCreateFleet();
+		};
+
+		// Initialize the ui.state -----------------------------------------------------------------
+		this.initState();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -542,6 +689,9 @@
 		};
 	}]);
 
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// HTML Template Directives
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.directive('unitPanel',function() {
 		return {
 			restrict: 'E',
@@ -589,5 +739,30 @@
 			restrict: 'E',
 			templateUrl: 'templates/faction-create-panel.html'
 		};
+	});
+
+	app.directive('fleetCreatePanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/fleet-create-panel.html'
+		};
+	});
+
+	app.directive('unitTable',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/unit-table.html'
+		};
+	});
+
+	app.directive('attachFleetModal',function() {
+		return {
+			restrict: 'E',
+			transclude: true,
+			replace: true,
+			scope: true,
+			controller: "be2AttachFleetController",
+			templateUrl: "templates/attach-fleet-modal.html"
+		}
 	});
 })();

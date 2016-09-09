@@ -1,0 +1,8 @@
+<table class="table table-hover table-bordered">
+	<thead>
+		<tr><th>#</th><th>Unit</th><th>Type</th><th>Base Hull</th></tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="unit in units"><td>$index</td><td>{{unit.unit.name}}</td><td>{{unit.unit.type}}</td><td>{{unit.hull.base}}</td></tr>
+	</tbody>
+</table>

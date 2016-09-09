@@ -447,7 +447,7 @@
 		ui.factions = FactionService.getList();
 		ui.activeFleet = {};
 		ui.newFaction = {
-				name: "Test",
+				name: "",
 				description: ""
 		};
 		$scope.ui = ui;

@@ -540,8 +540,11 @@
 		};
 
 		this.createFaction = function() {
-			FactionService.add({"name":ui.newFaction.name,"description":ui.newFaction.description});
+			var faction = ui.newFaction.name;
+			FactionService.add({"name":faction,"description":ui.newFaction.description,"fleets":[]});
 			this.closeCreateFaction();
+			ui.fleets[faction] = FactionService.getFleets(faction);
+			ui.state.show[faction] = true;
 		};
 
 		this.getFaction = FactionService.get;
@@ -568,6 +571,7 @@
 		
 		$scope.ui = ui;
 
+		// Event handler for showing the modal -----------------------------------------------------
 		ui.modal.on('show.bs.modal',function(event) {
 			var button = $(event.relatedTarget);
 			var faction = button.data('faction');
@@ -576,6 +580,7 @@
 			$scope.$apply();
 		});
 
+		// Attach the fleet to the faction ---------------------------------------------------------
 		$scope.attach = function() {
 			var faction = ui.faction;
 			var fleet = $("#attachFleetName").val();

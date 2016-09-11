@@ -28,8 +28,9 @@
 						<li class="dropdown">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="glyphicon glyphicon-send"></span> Units <span class="caret"></span></a>
 							<ul class="dropdown-menu" role="menu">
-								<li ng-class="{active:ui.state === ui.states.units}"><a href="#" ng-click="ui.state = ui.states.units">Actve</a></li>
+								<li ng-class="{active:ui.state === ui.states.units}"><a href="#" ng-click="ui.state = ui.states.units">Deployed</a></li>
 								<li ng-class="{active:ui.state === ui.states.templates}"><a href="#" ng-click="ui.state = ui.states.templates">Templates</a></li>
+								<li><a href="#" class="disabled">Mothballed</a></li>
 							</ul>
 						</li>
 						<li ng-class="{active:ui.state === ui.states.entities}"><a href="" ng-click="ui.state = ui.states.entities"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Officers</a></li>

@@ -1,18 +1,16 @@
 <div ng-controller="be2FactionController as factionCtl">
-	<div id="factionCreateModal" class="modal fade" role="dialog">
-		<faction-create-panel></faction-create-panel>
-	</div>
+	<faction-create-panel></faction-create-panel>
 	<attach-fleet-modal></attach-fleet-modal>
 	<div class="row top-buffer-lg bottom-buffer-lg">
 		<div class="col-lg-12 col-md-12 col-sm-12">
 			<div class="btn-toolbar">
 				<div class="btn-group">
-				<button class="btn btn-primary" data-toggle="modal" data-target="#factionCreateModal">Create Faction</button>
-				<button class="btn btn-default disabled">Import Faction</button>
-				<button class="btn btn-default disabled">Export Faction</button>
-				<button class="btn btn-default" ng-click="factionCtl.showAll()">Show All</button>
-				<button class="btn btn-default" ng-click="factionCtl.hideAll()">Hide All</button>
-				<button class="btn btn-danger disabled">Purge Factions</button>
+				<button class="btn btn-primary" data-toggle="modal" data-target="#factionCreateModal"><span class="glyphicon glyphicon-plus-sign"></span> Create Faction</button>
+				<button class="btn btn-default disabled"><span class="glyphicon glyphicon-import"></span> Import Factions</button>
+				<button class="btn btn-default disabled"><span class="glyphicon glyphicon-export"></span> Export Factions</button>
+				<button class="btn btn-default" ng-click="factionCtl.showAll()"><span class="glyphicon glyphicon-eye-open"></span> Show All</button>
+				<button class="btn btn-default" ng-click="factionCtl.hideAll()"><span class="glyphicon glyphicon-eye-close"></span> Hide All</button>
+				<button class="btn btn-danger disabled"><span class="glyphicon glyphicon-remove-sign"></span> Purge Factions</button>
 			</div>
 			</div>
 		</div>

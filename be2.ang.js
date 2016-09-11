@@ -87,6 +87,22 @@
 			return valid;
 		};
 
+		// Creates a new faction from a dictionary on elements -------------------------------------
+		var _create = function(elements) {
+			var faction = {
+				name: "",
+				description: "",
+				fleets: [],
+				enemies: []
+			};
+
+			for(var e in elements) {
+				faction[e] = elements[e];
+			}
+
+			_add(faction);
+		};
+
 		// Adds a Faction to the array -------------------------------------------------------------
 		var _add = function(faction) {
 			if(_validate(faction) && !_exists(faction)) {
@@ -157,6 +173,7 @@
 		return {
 			add: _add,
 			attachFleet: _attachFleet,
+			create: _create,
 			detachFleet: _detachFleet,
 			get: _get,
 			getFleets: _getFleets,
@@ -560,6 +577,33 @@
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2CreateFactionController
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2CreateFactionController",["$scope","FactionService","DataStore",function($scope,FactionService,data) {
+		var ui = {
+			name: "",
+			description: "",
+			modal: $("#factionCreateModal")
+		};
+
+		$scope.ui = ui;
+
+		// Eventer handler for show the modal ------------------------------------------------------
+		ui.modal.on('show.bs.modal',function(event) {
+			ui.name = "";
+			ui.description = "";
+			$scope.$apply();
+		});
+
+		$scope.create = function() {
+			var name = $('#inputFactionName').val();
+			var description = $('#inputFactionDescription').val();
+			FactionService.create({"name":name,"description":description});
+			ui.modal.modal('hide');
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2AttachFleetController
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.controller("be2AttachFleetController",["$scope","FactionService","FleetService","DataStore",function($scope,FactionService,FleetService,data) {
@@ -737,6 +781,10 @@
 	app.directive('factionCreatePanel',function() {
 		return {
 			restrict: 'E',
+			transclude: true,
+			replace: true,
+			scope: true,
+			controller: "be2CreateFactionController",
 			templateUrl: 'templates/faction-create-panel.html'
 		};
 	});

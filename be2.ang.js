@@ -241,6 +241,22 @@
 			}
 		};
 
+		// Create a fleet from a give dictionary of elements ---------------------------------------
+		var _create = function(elements) {
+			var fleet = {
+				name: "",
+				nickname: "",
+				description: "",
+				units: []
+			};
+
+			for(var e in elements) {
+				fleet[e] = elements[e];
+			}
+
+			_add(fleet);
+		};
+
 		// Verify that the fleet exists ------------------------------------------------------------
 		var _exists = function(fleet) {
 			return (typeof(fleet) === "string" && typeof(data.state.fleets[fleet]) === "object");
@@ -278,6 +294,7 @@
 			all: function() { return fleets;},
 			add: _add,
 			attachUnit: _attachUnit,
+			create: _create,
 			exists: _exists,
 			get: _get,
 			getList: _getList,
@@ -471,7 +488,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FactionController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FactionController",["$scope","FactionService","FleetService","UnitService","DataStore",function($scope,FactionService,FleetService,UnitService,data){
+	app.controller("be2FactionController",["$rootScope","$scope","FactionService","FleetService","UnitService","DataStore",function($rootScope,$scope,FactionService,FleetService,UnitService,data){
 		var ui = data.ui.faction;
 		ui.factions = FactionService.getList();
 		ui.fleets = {};
@@ -545,17 +562,6 @@
 			return arr;
 		};
 
-		// Modal dialog functions ------------------------------------------------------------------
-		this.showAttachFleet = function(faction) {
-			$("#attachFleetModal").modal('show');
-		};
-
-		this.closeCreateFaction = function() {
-			ui.newFaction.name = "";
-			ui.newFaction.description = "";
-			$("#factionCreateModal").modal('hide');
-		};
-
 		this.createFaction = function() {
 			var faction = ui.newFaction.name;
 			FactionService.add({"name":faction,"description":ui.newFaction.description,"fleets":[]});
@@ -573,13 +579,20 @@
 			ui.activeFleet[faction] = fleets ? fleets[0] : undefined;
 		}
 
+		// Custom Event Handlers -------------------------------------------------------------------
+		$rootScope.$on('factionCreated',function(event,data) {
+			var faction = data.faction;
+			ui.state.show[faction] = true;
+			ui.fleets[faction] = $scope.getFleetList(faction);
+		});
+
 		this.initState();
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2CreateFactionController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2CreateFactionController",["$scope","FactionService","DataStore",function($scope,FactionService,data) {
+	app.controller("be2CreateFactionController",["$rootScope","$scope","FactionService","DataStore",function($rootScope,$scope,FactionService,data) {
 		var ui = {
 			name: "",
 			description: "",
@@ -600,6 +613,7 @@
 			var description = $('#inputFactionDescription').val();
 			FactionService.create({"name":name,"description":description});
 			ui.modal.modal('hide');
+			$rootScope.$broadcast("factionCreated",{faction:name});
 		};
 	}]);
 
@@ -690,6 +704,36 @@
 
 		// Initialize the ui.state -----------------------------------------------------------------
 		this.initState();
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2CreateFleetController
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2CreateFleetController",["$scope","FleetService","DataStore",function($scope,FleetService,data) {
+		var ui = {
+			name: "",
+			nickname: "",
+			description: "",
+			modal: $("#fleetCreateModal")
+		};
+
+		$scope.ui = ui;
+
+		// Eventer handler for show the modal ------------------------------------------------------
+		ui.modal.on('show.bs.modal',function(event) {
+			ui.name = "";
+			ui.nickname = "";
+			ui.description = "";
+			$scope.$apply();
+		});
+
+		$scope.create = function() {
+			var name = $('#inputFleetName').val();
+			var nickname = $('#inputFleetNickname').val();
+			var description = $('#inputFleetDescription').val();
+			FleetService.create({"name":name,"nickname":nickname,"description":description});
+			ui.modal.modal('hide');
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -792,6 +836,10 @@
 	app.directive('fleetCreatePanel',function() {
 		return {
 			restrict: 'E',
+			transclude: true,
+			replace: true,
+			scope: true,
+			controller: "be2CreateFleetController",
 			templateUrl: 'templates/fleet-create-panel.html'
 		};
 	});

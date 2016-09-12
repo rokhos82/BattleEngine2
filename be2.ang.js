@@ -48,6 +48,50 @@
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	// ImportModal - this is the service object for a generic import modal.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.service("be2QueryModal",["$uibModal",function($modal) {
+		var modalDefaults = {
+			backdrop: true,
+			keyboard: true,
+			modalFade: true,
+			templateUrl: 'templates/query-modal.html'
+		};
+
+		var modalOptions = {
+			headerText: "This is the query modal"
+		};
+
+		this.showModal = function(customModalDefaults,customModalOptions) {
+			if (!customModalDefaults) customModalDefaults = {};
+			customModalDefaults.backdrop = 'static';
+			return this.show(customModalDefaults,customModalOptions);
+		};
+
+		this.show = function(customModalDefaults,customModalOptions) {
+			var tempModalDefaults = {};
+			var tempModalOptions = {};
+
+			angular.extend(tempModalDefaults,modalDefaults,customModalDefaults);
+			angular.extend(tempModalOptions,modalOptions,customModalOptions);
+
+			if(!tempModalDefaults.controller) {
+				tempModalDefaults.controller = function($scope,$uibModalInstance) {
+					$scope.modalOptions = tempModalOptions;
+					$scope.modalOptions.ok = function(result) {
+						$uibModalInstance.close(result);
+					};
+					$scope.modalOptions.close = function(result) {
+						$uibModalInstance.dismiss('cancel');
+					};
+				}
+			}
+
+			return $modal.open(tempModalDefaults).result;
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// DataStore - this is the main data store for the entire application.
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("DataStore",[function() {
@@ -409,11 +453,17 @@
 			return arr;
 		};
 
+		// Return the list of units in the data store ----------------------------------------------
+		var _getList = function() {
+			return data.state.units.list;
+		};
+
 		return {
 			validate: _validate,
 			add: _add,
 			exists: _exists,
 			get: _getUnit,
+			getList: _getList,
 			getMultiple: _getMultiple
 		}
 	}]);
@@ -421,7 +471,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// UnitTemplateService
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("UnitTemplateService",["DataStore",function(data) {
+	app.factory("UnitTemplateService",["UnitService","DataStore",function($be2Units,data) {
 		var _logger = {
 			error: function(msg,caller) {if(data.ui.debug){console.log("UnitTemplateService: Error - " + msg);}},
 			success: function(msg,caller) {if(data.ui.debug){console.log("UnitTemplateService: Success - " + msg);}},
@@ -459,15 +509,7 @@
 
 		var _create = function(dict) {
 			var template = {};
-			/*for(var d in dict) {
-				if(typeof(dict[d] === "object")) {
-					angular.extend(template[d],_baseTemplate[d],dict[d]);
-				}
-				else {
-					template[d] = dict[d];
-				}
-			}//*/
-			angular.extend(template,_baseTemplate,dict);
+			angular.merge(template,_baseTemplate,dict);
 			_add(template);
 		};
 
@@ -484,6 +526,7 @@
 		};
 
 		var _validate = function(obj) {
+			console.log(obj);
 			var valid = true;
 			// Is there a 'unit' component
 			if(typeof(obj.unit) === "object") {
@@ -541,9 +584,22 @@
 			return valid;
 		};
 
+		_deploy = function(template,name) {
+			if(_exists(template) && typeof(name) === "string" && !$be2Units.exists(name)) {
+				var temp = {};
+				angular.copy(data.state.templates[template],temp);
+				temp.unit.name = name;
+				$be2Units.add(temp);
+			}
+			else {
+				_logger.error("Unable to deploy unit '" + name + "' from template '" + template + "'.");
+			}
+		};
+
 		return {
 			add: _add,
 			create: _create,
+			deploy: _deploy,
 			exists: _exists,
 			get: _get,
 			getList: _getList,
@@ -632,31 +688,6 @@
 		};
 		ui.state = ui.states.factions;
 		$scope.ui = ui;
-		
-		/*factions.add({"name":"Torr Combine High Command","description":"Combined New Haven/Torr Combine Federate"});
-		factions.add({"name":"Ancient Machine Race","description":"Horrible Threat!"});
-		
-		fleets.add({"name":"The Heavy","empire":"Torr Combine"});
-		fleets.add({"name":"The Scourge","empire":"New Haven Commmonwealth"});
-		factions.attachFleet("Torr Combine High Command","The Heavy");
-		factions.attachFleet("Torr Combine High Command","The Scourge");
-		
-		fleets.add({"name":"Machine Planetoid BG12ZK","empire":"Ancient Machine Race"});
-		fleets.add({"name":"Machine Ship ZZF1","empire":"Ancient Machine Race"});
-		factions.attachFleet("Ancient Machine Race","Machine Planetoid BG12ZK");
-		factions.attachFleet("Ancient Machine Race","Machine Ship ZZF1")
-
-		units.add({"unit": {"name": "Emma Rose","type": "Starship","defense": 30},"hull": {"base": 20,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []});
-		units.add({"unit": {"name": "Iron Maiden","type": "Starship","defense": 30},"hull": {"base": 20,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []});
-		units.add({"unit": {"name": "Jagermeister","type": "Starship","defense": 30},"hull": {"base": 10,"max": 15},"shield": {"max": 30},"direct-fire": [],"packet-fire": []});
-		units.add({"unit": {"name": "Machine Planetoid BG12ZK","type": "Base","defense": 30},"hull": {"base": 10,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []});
-		units.add({"unit": {"name": "Machine Ship ZZF1","type": "Starship","defense": 30},"hull": {"base": 100,"max": 1200},"shield": {"max": 60},"direct-fire": [],"packet-fire": []});
-		
-		fleets.attachUnit("The Heavy","Emma Rose");
-		fleets.attachUnit("The Heavy","Iron Maiden");
-		fleets.attachUnit("The Scourge","Jagermeister");
-		fleets.attachUnit("Machine Planetoid BG12ZK","Machine Planetoid BG12ZK");
-		fleets.attachUnit("Machine Ship ZZF1","Machine Ship ZZF1");*/
 
 		this.saveData = storage.save;
 		this.loadData = storage.load;
@@ -958,23 +989,57 @@
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	// be2UnitTemplateController
+	// be2UnitController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2UnitTemplateController",["$rootScope","$scope","UnitTemplateService","be2ImportModal","DataStore",function($rootScope,$scope,$be2Templates,ImportModal,data){
-		var ui = data.ui.template;
+	app.controller("be2UnitController",["$rootScope","$scope","UnitService","DataStore",function($rootScope,$scope,$be2Units,$be2Data){
+		var ui = $be2Data.ui.unit;
+		ui.units = $be2Units.getList();
 		ui.state = {
-			templates: $be2Templates.getList(),
 			show: {}
 		};
+		for(var i in ui.units) {
+			var unit = ui.units[i];
+			ui.state.show[unit] = false;
+		}
 		$scope.ui = ui;
 
-		$scope.hash = function(key) {
-			return key.replace(" ","");
+		// Service Mappings ------------------------------------------------------------------------
+		this.getUnitInfo = $be2Units.get;
+
+		// UI State Actions ------------------------------------------------------------------------
+		this.showAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = true;
+			}
 		};
 
-		for(var template in ui.state.templates) {
-			ui.state.show[template] = false;
+		this.hideAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = false;
+			}
+		};
+
+		this.toggleVisible = function(unit) {
+			ui.state.show[unit] = !ui.state.show[unit];
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2UnitTemplateController
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2UnitTemplateController",["$rootScope","$scope","UnitTemplateService","be2ImportModal","be2QueryModal","DataStore",function($rootScope,$scope,$be2Templates,ImportModal,QueryModal,data){
+		var ui = data.ui.template;
+		ui.templates = $be2Templates.getList();
+		ui.state = {
+			show: {}
+		};
+		
+		for(var i in ui.templates) {
+			var t = ui.templates[i];
+			ui.state.show[t] = false;
 		}
+
+		$scope.ui = ui;
 
 		// Service Mappings ------------------------------------------------------------------------
 		this.getTemplateInfo = $be2Templates.get;
@@ -994,7 +1059,20 @@
 
 		this.toggleVisible = function(template) {
 			ui.state.show[template] = !ui.state.show[template];
-		}
+		};
+
+		this.deploy = function(template) {
+			var modalOptions = {
+				headerText: "Deploy '" + template + "'",
+				queryHelperText: "Please enter the name of the unit to be deployed.",
+				queryLabelText: "Unit Name",
+				queryButtonText: "Deploy"
+			};
+			QueryModal.showModal({},modalOptions).then(function (result) {
+				$be2Templates.deploy(template,result);
+			});
+		};
+
 
 		// Import Modal Functions ------------------------------------------------------------------
 		ui.import = function() {

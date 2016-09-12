@@ -47,3 +47,11 @@
 .left-buffer-lg {
 	margin-left: 20px;
 }
+
+.left-buffer-md {
+	margin-left: 10px;
+}
+
+.left-buffer-sm {
+	margin-left: 5px;
+}

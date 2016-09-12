@@ -48,7 +48,7 @@
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	// ImportModal - this is the service object for a generic import modal.
+	// be2QueryModal - this is the service object for a generic import modal.
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.service("be2QueryModal",["$uibModal",function($modal) {
 		var modalDefaults = {
@@ -60,6 +60,51 @@
 
 		var modalOptions = {
 			headerText: "This is the query modal"
+		};
+
+		this.showModal = function(customModalDefaults,customModalOptions) {
+			if (!customModalDefaults) customModalDefaults = {};
+			customModalDefaults.backdrop = 'static';
+			return this.show(customModalDefaults,customModalOptions);
+		};
+
+		this.show = function(customModalDefaults,customModalOptions) {
+			var tempModalDefaults = {};
+			var tempModalOptions = {};
+
+			angular.extend(tempModalDefaults,modalDefaults,customModalDefaults);
+			angular.extend(tempModalOptions,modalOptions,customModalOptions);
+
+			if(!tempModalDefaults.controller) {
+				tempModalDefaults.controller = function($scope,$uibModalInstance) {
+					$scope.modalOptions = tempModalOptions;
+					$scope.modalOptions.ok = function(result) {
+						$uibModalInstance.close(result);
+					};
+					$scope.modalOptions.close = function(result) {
+						$uibModalInstance.dismiss('cancel');
+					};
+				}
+			}
+
+			return $modal.open(tempModalDefaults).result;
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2SelectModal - this is the service object for a generic import modal.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.service("be2SelectModal",["$uibModal",function($modal) {
+		var modalDefaults = {
+			backdrop: true,
+			keyboard: true,
+			modalFade: true,
+			templateUrl: 'templates/select-modal.html'
+		};
+
+		var modalOptions = {
+			headerText: "This is the select modal",
+			options: ["Option1","Option2"]
 		};
 
 		this.showModal = function(customModalDefaults,customModalOptions) {
@@ -402,6 +447,7 @@
 			warning: function(msg) {if(data.ui.debug){console.log("UnitService: Warning - " + msg);}}
 		};
 
+		// check that the unit is a valid unit -----------------------------------------------------
 		var _validate = function(obj) {
 			var valid = true;
 			if(obj.unit) {
@@ -428,6 +474,9 @@
 				_logger.error("Unable to Add Fleet.  Fleet may already exist.");
 			}
 		};
+
+		// Create a unit from a passed dictionary --------------------------------------------------
+		var _create = function(dict) {};
 
 		// Validate that a unit exists -------------------------------------------------------------
 		var _exists = function(unit) {
@@ -589,6 +638,7 @@
 				var temp = {};
 				angular.copy(data.state.templates[template],temp);
 				temp.unit.name = name;
+				temp.unit.template = template;
 				$be2Units.add(temp);
 			}
 			else {
@@ -703,6 +753,8 @@
 		var ui = data.ui.faction;
 		ui.factions = FactionService.getList();
 		ui.fleets = {};
+		ui.units = {};
+		ui.unitCount = 0;
 		ui.state = {
 			show: {}
 		};
@@ -716,8 +768,20 @@
 		this.initState = function() {
 			for(var i in ui.factions) {
 				var faction = ui.factions[i];
+				var fleets = FactionService.getFleets(faction);
 				ui.state.show[faction] = false;
-				ui.fleets[faction] = FactionService.getFleets(faction);
+				ui.fleets[faction] = fleets;
+				ui.units[faction] = {};
+				for(var f in fleets) {
+					var fleet = fleets[f];
+					ui.units[faction][fleet] = [];
+					var units = FleetService.getUnits(fleet);
+					for(var u in units) {
+						var unit = units[u];
+						ui.units[faction][fleet].push(UnitService.get(unit));
+						ui.unitCount++;
+					}
+				}
 			}			
 		};
 
@@ -861,12 +925,13 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FleetController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","DataStore",function($scope,FactionService,FleetService,UnitService,data){
+	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","be2SelectModal","DataStore",function($scope,FactionService,FleetService,UnitService,SelectModal,data){
 		var ui = data.ui.fleet;
 		ui.fleets = FleetService.getList();
 		ui.state = {
 			show: {}
 		};
+		ui.units = {};
 		ui.newFleet = {
 				name: "",
 				description: "",
@@ -881,6 +946,12 @@
 			for(var i in ui.fleets) {
 				var fleet = ui.fleets[i];
 				ui.state.show[fleet] = false;
+				ui.units[fleet] = [];
+				var units = FleetService.getUnits(fleet);
+				for(var u in units) {
+					var unit = units[u];
+					ui.units[fleet].push(UnitService.get(unit));
+				}
 			}
 		}
 
@@ -898,7 +969,20 @@
 
 		this.toggleVisible = function(fleet) {
 			ui.state.show[fleet] = !ui.state.show[fleet];
-		}
+		};
+
+		this.attachUnit = function(fleet) {
+			var modalOptions = {
+				headerText: "Attach Unit",
+				queryHelperText: "Select a unit to attach to fleet '" + fleet + "'.",
+				queryLabelText: "Units",
+				queryButtonText: "Attach",
+				options: UnitService.getList()
+			};
+			SelectModal.showModal({},modalOptions).then(function (result) {
+				FleetService.attachUnit(fleet,result);
+			});
+		};
 
 		// Fleet Creation Functions ----------------------------------------------------------------
 		this.closeCreateFleet = function() {
@@ -1066,7 +1150,8 @@
 				headerText: "Deploy '" + template + "'",
 				queryHelperText: "Please enter the name of the unit to be deployed.",
 				queryLabelText: "Unit Name",
-				queryButtonText: "Deploy"
+				queryButtonText: "Deploy",
+				queryPlaceholderText: template
 			};
 			QueryModal.showModal({},modalOptions).then(function (result) {
 				$be2Templates.deploy(template,result);

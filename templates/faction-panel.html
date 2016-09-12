@@ -53,11 +53,11 @@
 						</div>
 						<div class="panel-body" ng-init="units = factionCtl.getUnits(faction,fleet)">
 						</div>
-						<unit-table></unit-table>
+						<unit-table ng-init="units=ui.units[faction][fleet]"></unit-table>
 					</div>
 				</div>
 				<div class="panel-footer">
-					<span>Fleets <span class="badge">{{ui.fleets[faction].length}}</span></span> <span>Units <span class="badge">##</span></span>
+					<span>Fleets <span class="badge">{{ui.fleets[faction].length}}</span></span> <span>Units <span class="badge">{{ui.unitCount}}</span></span>
 				</div>
 			</div>
 		</div>

@@ -20,7 +20,21 @@
 					<h3 class="panel-title">{{templateInfo.unit.name}} - {{templateInfo.unit.type}}</h3>
 				</div>
 				<div class="panel-body">
-					<div class="well well-sm" ng-show="templateInfo.unit.description">{{templateInfo.unit.description}}</div>
+					<uib-tabset active="active">
+						<uib-tab ng-repeat="(key,component) in templateInfo" index="$index">
+							<uib-tab-heading>{{key}}</uib-tab-heading>
+							<div class="alert alert-dismissable alert-info top-buffer-lg">
+								<button type="button" class="close" data-dismiss="alert">&times;</button>
+								{{component}}
+							</div>
+							<div class="list-group top-buffer-lg">
+								<a href="#" class="list-group-item" ng-repeat="(element,value) in component" ng-show="value">
+									<h4 class="list-group-item-heading">{{element}}</h4>
+									<p class="list-group-time-text">{{value}}</p>
+								</a>
+							</div>
+						</uib-tab>
+					</uib-tab-set>
 				</div>
 				<div class="panel-footer">
 				</div>

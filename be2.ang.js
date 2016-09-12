@@ -431,12 +431,18 @@
 		var _baseTemplate = {
 			unit: {
 				name: "",
+				id: "",
 				type: ""
 			},
 			hull: {
 				"base": 0,
 				"max": 0
-			}
+			},
+			shield: {
+				"max": 0
+			},
+			"direct-fire": [],
+			"packet-fire": []
 		};
 
 		var _add = function(obj) {
@@ -453,6 +459,14 @@
 
 		var _create = function(dict) {
 			var template = {};
+			/*for(var d in dict) {
+				if(typeof(dict[d] === "object")) {
+					angular.extend(template[d],_baseTemplate[d],dict[d]);
+				}
+				else {
+					template[d] = dict[d];
+				}
+			}//*/
 			angular.extend(template,_baseTemplate,dict);
 			_add(template);
 		};
@@ -564,13 +578,14 @@
 				var json = localStorage.getItem(_key);
 				if(typeof(json) === "string") {
 					data.state = JSON.parse(json);
+					_logger.success("Data loaded from localStorage.");
 				}
 				else {
-					_logger.warning("No data in localStorage")
+					_logger.warning("No data in localStorage.")
 				}
 			}
 			else {
-				_logger.warning("Browser does not support localStorage");
+				_logger.warning("Browser does not support localStorage.");
 			}
 		};
 
@@ -578,18 +593,20 @@
 			if(typeof(localStorage) !== "undefined") {
 				var json = JSON.stringify(data.state);
 				localStorage.setItem(_key,json);
+				_logger.success("Data stored in localStorage.");
 			}
 			else {
-				_logger.warning("Browser does not support localStorage");
+				_logger.warning("Browser does not support localStorage.");
 			}
 		};
 
 		var _clear = function() {
 			if(typeof(localStorage) !== "undefined") {
 				localStorage.removeItem(_key);
+				_logger.warning("Data was purged from localStorage.");
 			}
 			else {
-				_logger.warning("Browser does not support localStorage");
+				_logger.warning("Browser does not support localStorage.");
 			}	
 		}
 
@@ -950,6 +967,10 @@
 			show: {}
 		};
 		$scope.ui = ui;
+
+		$scope.hash = function(key) {
+			return key.replace(" ","");
+		};
 
 		for(var template in ui.state.templates) {
 			ui.state.show[template] = false;

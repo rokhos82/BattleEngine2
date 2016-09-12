@@ -17,8 +17,21 @@
 	"shield": {
 		"max": 60
 	},
-	"direct-fire": [],
+	"direct-fire": [
+		{"volley": 10,"target": 15, "yield": 10}
+	],
 	"packet-fire": []
+}
+
+{
+	"unit": {
+		"name": "Interceptor",
+		"type": "Gunboat"
+	},
+	"hull": {
+		"base": 2,
+		"max": 3
+	}
 }
 
 // Example fleet ///////////////////////////////////////////////////////////////////////////////////

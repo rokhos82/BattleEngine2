@@ -33,20 +33,20 @@
 					<h3 class="panel-title panel-title-lg">{{faction}}</h3>
 				</div>
 				<div class="panel-body" ng-show="ui.state.show[faction]">
-					<div class="btn-toolbar bottom-buffer-md">
-					</div>
+					<p>Some text about the faction goes here!</p>
 					<div class="panel panel-default" ng-repeat="fleet in ui.fleets[faction]">
 						<div class="panel-heading">
 							<div class="btn-toolbar pull-right">
 								<div class="btn-group">
 									<button class="btn btn-default btn-xs disabled"><span class="glyphicon glyphicon-eye-open"></span></button>
+									<button class="btn btn-default btn-xs disabled" ng-show="$index > 0"><span class="glyphicon glyphicon-chevron-up"></span></button>
+									<button class="btn btn-default btn-xs disabled" ng-show="$index < (ui.fleets[faction].length - 1)"><span class="glyphicon glyphicon-chevron-down"></span></button>
 									<button class="btn btn-warning btn-xs" ng-click="factionCtl.detachFleet(faction,fleet)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 								</div>
 							</div>
 							<h3 class="panel-title">{{factionCtl.getFleet(fleet).name}} - {{factionCtl.getFleet(fleet).nickname}}</h3>
 						</div>
 						<div class="panel-body" ng-init="units = factionCtl.getUnits(faction,fleet)">
-							Some text about the faction goes here!
 						</div>
 						<unit-table></unit-table>
 					</div>

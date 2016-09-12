@@ -1,12 +1,14 @@
-<div>
+<div ng-controller="be2UnitTemplateController as ctl">
 	<div class="row top-buffer-lg bottom-buffer-lg">
 		<div class="col-lg-12 col-md-12 col-sm-12">
 			<div class="btn-toolbar">
 				<div class="btn-group">
-					<button class="btn btn-primary disabled">Create Template</button>
-					<button class="btn btn-default disabled">Import Template</button>
-					<button class="btn btn-default disabled">Export Template</button>
-					<button class="btn btn-danger disabled">Purge Templates</button>
+					<button class="btn btn-primary" ng-click="ui.import()"><span class="glyphicon glyphicon-plus-sign"></span> Create Template</button>
+					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-import"></span> Import Templates</button>
+					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-export"></span> Export Templates</button>
+					<button class="btn btn-default disabled" ng-click="ui.showAll()"><span class="glyphicon glyphicon-eye-open"></span> Show All</button>
+					<button class="btn btn-default disabled" ng-click="ui.hideAll()"><span class="glyphicon glyphicon-eye-close"></span> Hide All</button>
+					<button class="btn btn-danger disabled"><span class="glyphicon glyphicon-remove-sign"></span> Purge Templates</button>
 				</div>
 			</div>
 		</div>

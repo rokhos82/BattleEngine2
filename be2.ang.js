@@ -1,7 +1,51 @@
 (function(){
-	var app = angular.module("be2",[]);
+	var app = angular.module("be2",["ui.bootstrap","ngAnimate","ngTouch"]);
 
 	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex","list"];
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// ImportModal - this is the service object for a generic import modal.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.service("be2ImportModal",["$uibModal",function($modal) {
+		var modalDefaults = {
+			backdrop: true,
+			keyboard: true,
+			modalFade: true,
+			templateUrl: 'templates/import-modal.html'
+		};
+
+		var modalOptions = {
+			importType: "something"
+		};
+
+		this.showModal = function(customModalDefaults,customModalOptions) {
+			if (!customModalDefaults) customModalDefaults = {};
+			customModalDefaults.backdrop = 'static';
+			return this.show(customModalDefaults,customModalOptions);
+		};
+
+		this.show = function(customModalDefaults,customModalOptions) {
+			var tempModalDefaults = {};
+			var tempModalOptions = {};
+
+			angular.extend(tempModalDefaults,modalDefaults,customModalDefaults);
+			angular.extend(tempModalOptions,modalOptions,customModalOptions);
+
+			if(!tempModalDefaults.controller) {
+				tempModalDefaults.controller = function($scope,$uibModalInstance) {
+					$scope.modalOptions = tempModalOptions;
+					$scope.modalOptions.ok = function(result) {
+						$uibModalInstance.close(result);
+					};
+					$scope.modalOptions.close = function(result) {
+						$uibModalInstance.dismiss('cancel');
+					};
+				}
+			}
+
+			return $modal.open(tempModalDefaults).result;
+		};
+	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// DataStore - this is the main data store for the entire application.
@@ -371,6 +415,120 @@
 			exists: _exists,
 			get: _getUnit,
 			getMultiple: _getMultiple
+		}
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// UnitTemplateService
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.factory("UnitTemplateService",["DataStore",function(data) {
+		var _logger = {
+			error: function(msg,caller) {if(data.ui.debug){console.log("UnitTemplateService: Error - " + msg);}},
+			success: function(msg,caller) {if(data.ui.debug){console.log("UnitTemplateService: Success - " + msg);}},
+			warning: function(msg,caller) {if(data.ui.debug){console.log("UnitTemplateService: Warning - " + msg);}}
+		};
+
+		var _baseTemplate = {
+			unit: {
+				name: "",
+				type: ""
+			},
+			hull: {
+				"base": 0,
+				"max": 0
+			}
+		};
+
+		var _add = function(obj) {
+			// Is it unique and valid
+			if(_validate(obj) && !_exists(obj.unit.name)) {
+				data.state.templates[obj.unit.name] = obj;
+				data.state.templates.list.push(obj.unit.name);
+				_logger.success("Added template '" + obj.unit.name + "'.");
+			}
+			else {
+				_logger.error("Unable to add template.  Either template is invalid or already exists.");
+			}
+		};
+
+		var _create = function(dict) {
+			var template = {};
+			angular.extend(template,_baseTemplate,dict);
+			_add(template);
+		};
+
+		var _exists = function(name) {
+			return (typeof(name) === "string" && typeof(data.state.templates[name]) === "object");
+		};
+
+		var _get = function(name) {
+			return _exists(name) ? data.state.templates[name] : undefined;
+		};
+
+		var _validate = function(obj) {
+			var valid = true;
+			// Is there a 'unit' component
+			if(typeof(obj.unit) === "object") {
+				// Is there a 'name' element and is it a non-empty string
+				if(typeof(obj.unit.name) !== "string" || (obj.unit.name.length == 0)) {
+					_logger.error("Template has no name.");
+					valid = false;
+				}
+
+				// Is there a 'type' element and is it a non-empty string
+				if(typeof(obj.unit.type) !== "string" || (obj.unit.type.length == 0)) {
+					_logger.error("Template has no type.");
+					valid = false;
+				}
+
+				// Is the name not in the restricted list
+				for(var i in reservedNames) {
+					if(!valid) {
+						break;
+					}
+					if(obj.unit.name === reservedNames[i]) {
+						_logger.error("The template name is in the restricted names list.");
+						valid = false;
+						break;
+					}
+				}
+			}
+			else {
+				_logger.error("Template has no 'unit' component.");
+				valid = false;
+			}
+
+			// Is the a 'hull' component
+			if(typeof(obj.hull) === "object" && valid) {
+				// Is there a 'base' element and is it non-zero
+				if(typeof(obj.hull.base) !== "number" || (obj.hull.base == 0)) {
+					_logger.error("Template has no base hull.");
+					valid = false;
+				}
+
+				// Is there a 'max' element and is it non-zero
+				if(typeof(obj.hull.max) !== "number" || (obj.hull.max == 0)) {
+					_logger.error("Template has no max hull.")
+					valid = false;
+				}
+			}
+			else {
+				_logger.error("Template has no 'hull' component.");
+				valid = false;
+			}
+
+			if(valid)
+				_logger.success("Template is valid.");
+
+			return valid;
+		};
+
+		return {
+			add: _add,
+			create: _create,
+			exists: _exists,
+			get: _get,
+			validate: _validate
 		}
 	}]);
 
@@ -774,6 +932,46 @@
 		this.resetCombat = function() {
 			$scope.combat.status = "uninitiated";
 			$scope.combat.log = "";
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2UnitTemplateController
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.controller("be2UnitTemplateController",["$rootScope","$scope","UnitTemplateService","be2ImportModal","DataStore",function($rootScope,$scope,$be2Templates,ImportModal,data){
+		var ui = data.ui.template;
+		ui.state = {
+			show: {}
+		};
+		$scope.ui = ui;
+
+		// UI State Actions ------------------------------------------------------------------------
+		this.showAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = true;
+			}
+		};
+
+		this.hideAll = function() {
+			for(var i in ui.state.show) {
+				ui.state.show[i] = false;
+			}
+		};
+
+		this.toggleVisible = function(template) {
+			ui.state.show[template] = !ui.state.show[template];
+		}
+
+		// Import Modal Functions ------------------------------------------------------------------
+		ui.import = function() {
+			var modalOptions = {
+				importType: "Template"
+			};
+			console.log("Showing import modal");
+			ImportModal.showModal({},modalOptions).then(function (result) {
+				console.log(result);
+				$be2Templates.create(JSON.parse(result));
+			});
 		};
 	}]);
 

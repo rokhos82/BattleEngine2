@@ -1001,9 +1001,7 @@
 			var modalOptions = {
 				importType: "Template"
 			};
-			console.log("Showing import modal");
 			ImportModal.showModal({},modalOptions).then(function (result) {
-				console.log(result);
 				$be2Templates.create(JSON.parse(result));
 			});
 		};

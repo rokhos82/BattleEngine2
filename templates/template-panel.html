@@ -13,4 +13,18 @@
 			</div>
 		</div>
 	</div>
+	<div class="row" ng-repeat="template in ui.state.templates">
+		<div class="col-lg-12 col-md-12 col-sm-12" ng-init="templateInfo = ctl.getTemplateInfo(template)">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">{{templateInfo.unit.name}} - {{templateInfo.unit.type}}</h3>
+				</div>
+				<div class="panel-body">
+					<div class="well well-sm" ng-show="templateInfo.unit.description">{{templateInfo.unit.description}}</div>
+				</div>
+				<div class="panel-footer">
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

@@ -465,6 +465,10 @@
 			return _exists(name) ? data.state.templates[name] : undefined;
 		};
 
+		var _getList = function() {
+			return data.state.templates.list;
+		};
+
 		var _validate = function(obj) {
 			var valid = true;
 			// Is there a 'unit' component
@@ -528,6 +532,7 @@
 			create: _create,
 			exists: _exists,
 			get: _get,
+			getList: _getList,
 			validate: _validate
 		}
 	}]);
@@ -941,9 +946,17 @@
 	app.controller("be2UnitTemplateController",["$rootScope","$scope","UnitTemplateService","be2ImportModal","DataStore",function($rootScope,$scope,$be2Templates,ImportModal,data){
 		var ui = data.ui.template;
 		ui.state = {
+			templates: $be2Templates.getList(),
 			show: {}
 		};
 		$scope.ui = ui;
+
+		for(var template in ui.state.templates) {
+			ui.state.show[template] = false;
+		}
+
+		// Service Mappings ------------------------------------------------------------------------
+		this.getTemplateInfo = $be2Templates.get;
 
 		// UI State Actions ------------------------------------------------------------------------
 		this.showAll = function() {

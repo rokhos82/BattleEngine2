@@ -11,13 +11,13 @@
 		<div class="col-lg-12 col-md-12 col-sm-12">
 			<div class="btn-toolbar">
 				<div class="btn-group">
-				<button class="btn btn-primary" data-toggle="modal" data-target="#factionCreateModal"><span class="glyphicon glyphicon-plus-sign"></span> Create Faction</button>
-				<button class="btn btn-default disabled"><span class="glyphicon glyphicon-import"></span> Import Factions</button>
-				<button class="btn btn-default disabled"><span class="glyphicon glyphicon-export"></span> Export Factions</button>
-				<button class="btn btn-default" ng-click="factionCtl.showAll()"><span class="glyphicon glyphicon-eye-open"></span> Show All</button>
-				<button class="btn btn-default" ng-click="factionCtl.hideAll()"><span class="glyphicon glyphicon-eye-close"></span> Hide All</button>
-				<button class="btn btn-danger disabled"><span class="glyphicon glyphicon-remove-sign"></span> Purge Factions</button>
-			</div>
+					<button class="btn btn-primary" data-toggle="modal" data-target="#factionCreateModal"><span class="glyphicon glyphicon-plus-sign"></span> Create Faction</button>
+					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-import"></span> Import Factions</button>
+					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-export"></span> Export Factions</button>
+					<button class="btn btn-default" ng-click="factionCtl.showAll()"><span class="glyphicon glyphicon-eye-open"></span> Show All</button>
+					<button class="btn btn-default" ng-click="factionCtl.hideAll()"><span class="glyphicon glyphicon-eye-close"></span> Hide All</button>
+					<button class="btn btn-danger disabled"><span class="glyphicon glyphicon-remove-sign"></span> Purge Factions</button>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -27,34 +27,34 @@
 				<div class="panel-heading">
 					<div class="btn-toolbar pull-right">
 						<div class="btn-group">
-							<button class="btn btn-success btn-sm" ng-attr-data-faction="{{faction}}" data-toggle="modal" data-target="#attachFleetModal"><span class="glyphicon glyphicon-link" aria-hidden="true"></span></button>
+							<button class="btn btn-success btn-sm" ng-attr-data-faction="{{faction}}" tooltip-placement="auto bottom" uib-tooltip="Attach a fleet to this faction." data-toggle="modal" data-target="#attachFleetModal"><span class="glyphicon glyphicon-link" aria-hidden="true"></span></button>
 							<button class="btn btn-default btn-sm disabled"><span class="glyphicon glyphicon-collapse-down"></span></button>
 						</div>
 						<div class="btn-group">
-							<button class="btn btn-default btn-sm" ng-class="{active:ui.state.show[faction]}" ng-click="factionCtl.toggleVisible(faction)"><span class="glyphicon glyphicon-eye-open"></span></button>
+							<button class="btn btn-default btn-sm" ng-class="{active:ui.state.show.factions[faction]}" ng-click="factionCtl.toggleVisible(faction)" tooltip-placement="auto bottom" uib-tooltip="Show/hide faction information."><span class="glyphicon glyphicon-eye-open"></span></button>
 							<button class="btn btn-default btn-sm disabled"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></button>
 							<button class="btn btn-danger btn-sm disabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 						</div>
 					</div>
 					<h3 class="panel-title panel-title-lg">{{faction}}</h3>
 				</div>
-				<div class="panel-body" ng-show="ui.state.show[faction]">
-					<p>Some text about the faction goes here!</p>
+				<div class="panel-body" ng-show="ui.state.show.factions[faction]">
+					<p class="well well-sm">{{factionInfo.description}}</p>
 					<div class="panel panel-default" ng-repeat="fleet in ui.fleets[faction]">
 						<div class="panel-heading">
 							<div class="btn-toolbar pull-right">
 								<div class="btn-group">
-									<button class="btn btn-default btn-xs disabled"><span class="glyphicon glyphicon-eye-open"></span></button>
-									<button class="btn btn-default btn-xs disabled" ng-show="$index > 0"><span class="glyphicon glyphicon-chevron-up"></span></button>
-									<button class="btn btn-default btn-xs disabled" ng-show="$index < (ui.fleets[faction].length - 1)"><span class="glyphicon glyphicon-chevron-down"></span></button>
+									<button class="btn btn-default btn-xs" ng-click="factionCtl.toggleFleetVisible(faction,fleet)" ng-class="{active:ui.state.show.fleets[faction][fleet]}"><span class="glyphicon glyphicon-eye-open"></span></button>
+									<button class="btn btn-default btn-xs disabled" ng-show="!$first"><span class="glyphicon glyphicon-chevron-up"></span></button>
+									<button class="btn btn-default btn-xs disabled" ng-show="!$last"><span class="glyphicon glyphicon-chevron-down"></span></button>
 									<button class="btn btn-warning btn-xs" ng-click="factionCtl.detachFleet(faction,fleet)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 								</div>
 							</div>
 							<h3 class="panel-title">{{factionCtl.getFleet(fleet).name}} - {{factionCtl.getFleet(fleet).nickname}}</h3>
 						</div>
-						<div class="panel-body" ng-init="units = factionCtl.getUnits(faction,fleet)">
+						<div class="panel-body" ng-init="units = factionCtl.getUnits(faction,fleet)" ng-show="ui.state.show.fleets[faction][fleet]">
 						</div>
-						<unit-table ng-init="units=ui.units[faction][fleet]"></unit-table>
+						<unit-table ng-init="units=ui.units[faction][fleet]" ng-show="ui.state.show.fleets[faction][fleet]"></unit-table>
 					</div>
 				</div>
 				<div class="panel-footer">

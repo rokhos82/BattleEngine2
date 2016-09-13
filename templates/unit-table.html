@@ -1,8 +1,8 @@
 <table class="table table-hover">
 	<thead>
-		<tr><th>#</th><th>Unit</th><th>Type</th><th>Base Hull</th></tr>
+		<tr><th>#</th><th>Unit</th><th>Type</th><th>Base Hull</th><th>Max Hull</th><th>Shield</th></tr>
 	</thead>
 	<tbody>
-		<tr ng-repeat="unit in getMultiple(units)"><td>{{$index}}</td><td>{{unit.unit.name}}</td><td>{{unit.unit.type}}</td><td>{{unit.hull.base}}</td></tr>
+		<tr ng-repeat="unit in getMultiple(units)"><td>{{$index}}</td><td>{{unit.unit.name}}</td><td>{{unit.unit.type}}</td><td>{{unit.hull.base}}</td><td>{{unit.hull.max}}</td><td>{{unit.shield.max}}</td></tr>
 	</tbody>
 </table>

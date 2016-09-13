@@ -29,7 +29,7 @@
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="glyphicon glyphicon-send"></span> Units <span class="caret"></span></a>
 							<ul class="dropdown-menu" role="menu">
 								<li ng-class="{active:ui.state === ui.states.units}"><a href="#" ng-click="ui.state = ui.states.units">Deployed</a></li>
-								<li><a href="#" class="disabled">Mothballed</a></li>
+								<li ng-class="{active:ui.state === ui.states.mothballs}"><a href="#" ng-click="ui.state = ui.states.mothballs">Mothballed</a></li>
 								<li ng-class="{active:ui.state === ui.states.templates}"><a href="#" ng-click="ui.state = ui.states.templates">Templates</a></li>
 							</ul>
 						</li>
@@ -71,6 +71,9 @@
 		</div>
 		<div class="container" ng-show="ui.state === ui.states.templates">
 			<template-panel></template-panel>
+		</div>
+		<div class="container" ng-show="ui.state === ui.states.mothballs">
+			<mothball-panel></mothball-panel>
 		</div>
 		<script type="text/javascript" src="js/be2.helper.js"></script>
 		<script type="text/javascript" src="js/jquery-3.1.0.js"></script>

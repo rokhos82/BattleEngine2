@@ -1,9 +1,15 @@
 <div ng-controller="be2UnitController as ctl">
-	<div class="row top-buffer-lg bottom-buffer-lg">
+	<div class="row">
+		<div class="col-lg-12 col-md-12 col-sm-12">
+			<h2><span class="glyphicon glyphicon-share"></span> Deployed Units</h2>
+			<p class="well well-sm">This page is used for managing deployed units.  All deployed units are listed here and it is possible to see damage taken in combat and to calculate repair costs.</p>
+		</div>
+	</div>
+	<div class="row bottom-buffer-lg">
 		<div class="col-lg-12 col-md-12 col-sm-12">
 			<div class="btn-toolbar">
 				<div class="btn-group">
-					<button class="btn btn-primary diabled"><span class="glyphicon glyphicon-plus-sign"></span> Deploy Unit</button>
+					<button class="btn btn-primary disabled"><span class="glyphicon glyphicon-plus-sign"></span> Deploy Unit</button>
 					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-import"></span> Import Units</button>
 					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-export"></span> Export Units</button>
 					<button class="btn btn-default" ng-click="ctl.showAll()"><span class="glyphicon glyphicon-eye-open"></span> Show All</button>

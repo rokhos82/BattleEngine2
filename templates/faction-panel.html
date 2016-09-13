@@ -1,65 +1,63 @@
 <div ng-controller="be2FactionController as factionCtl">
-	<div id="factionCreateModal" class="modal fade" role="dialog">
-		<faction-create-panel></faction-create-panel>
+	<faction-create-panel></faction-create-panel>
+	<attach-fleet-modal></attach-fleet-modal>
+	<div class="row">
+		<div class="col-lg-12 col-md-12 col-sm-12">
+			<h2><span class="glyphicon glyphicon-globe"></span> Factions</h2>
+		</div>
 	</div>
-	<div id="factionModifyModal" class="modal fade" role="dialog">
-	</div>
-	<div class="row top-buffer-lg bottom-buffer-lg">
+	<div class="row bottom-buffer-lg">
 		<div class="col-lg-12 col-md-12 col-sm-12">
 			<div class="btn-toolbar">
 				<div class="btn-group">
-				<button class="btn btn-primary" data-toggle="modal" data-target="#factionCreateModal">Create Faction</button>
-				<button class="btn btn-default disabled">Import Faction</button>
-				<button class="btn btn-default disabled">Export Faction</button>
-				<button class="btn btn-danger disabled">Purge Factions</button>
+				<button class="btn btn-primary" data-toggle="modal" data-target="#factionCreateModal"><span class="glyphicon glyphicon-plus-sign"></span> Create Faction</button>
+				<button class="btn btn-default disabled"><span class="glyphicon glyphicon-import"></span> Import Factions</button>
+				<button class="btn btn-default disabled"><span class="glyphicon glyphicon-export"></span> Export Factions</button>
+				<button class="btn btn-default" ng-click="factionCtl.showAll()"><span class="glyphicon glyphicon-eye-open"></span> Show All</button>
+				<button class="btn btn-default" ng-click="factionCtl.hideAll()"><span class="glyphicon glyphicon-eye-close"></span> Hide All</button>
+				<button class="btn btn-danger disabled"><span class="glyphicon glyphicon-remove-sign"></span> Purge Factions</button>
 			</div>
 			</div>
 		</div>
 	</div>
 	<div class="row" ng-repeat="faction in ui.factions">
 		<div class="col-lg-12 col-md-12 col-sm-12">
-			<div class="panel panel-primary">
+			<div class="panel panel-primary" ng-init="factionInfo = factionCtl.getFaction(faction)">
 				<div class="panel-heading">
-					<div class="btn-group pull-right">
-						<a href="#" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="caret"></span></a>
-						<ul class="dropdown-menu">
-							<li><a href="#">Attach Fleet</a></li>
-							<li><a href="#">Remove Fleet</a></li>
-							<li class="divider"></li>
-							<li><a href="#">Modify Faction</a></li>
-							<li><a href="#" ng-click="factionCtl.removeFaction($index)">Remove Faction</a></li>
-						</ul>
+					<div class="btn-toolbar pull-right">
+						<div class="btn-group">
+							<button class="btn btn-success btn-sm" ng-attr-data-faction="{{faction}}" data-toggle="modal" data-target="#attachFleetModal"><span class="glyphicon glyphicon-link" aria-hidden="true"></span></button>
+							<button class="btn btn-default btn-sm disabled"><span class="glyphicon glyphicon-collapse-down"></span></button>
+						</div>
+						<div class="btn-group">
+							<button class="btn btn-default btn-sm" ng-class="{active:ui.state.show[faction]}" ng-click="factionCtl.toggleVisible(faction)"><span class="glyphicon glyphicon-eye-open"></span></button>
+							<button class="btn btn-default btn-sm disabled"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></button>
+							<button class="btn btn-danger btn-sm disabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+						</div>
 					</div>
-					<h3 class="panel-title">{{faction.name}}</h3>
+					<h3 class="panel-title panel-title-lg">{{faction}}</h3>
 				</div>
-				<div class="panel-body">
-					<div class="col-lg-3">
-						<ul class="nav nav-pills nav-stacked" ng-init="facIndex = $index">
-							<li ng-class="{active:ui.factions[facIndex].activeFleet === ui.factions[facIndex].fleets[$index]}" ng-repeat="fleet in faction.fleets"><a href="#" ng-click="ui.factions[facIndex].activeFleet = ui.factions[facIndex].fleets[$index]">{{fleet}}</a></li>
-						</ul>
+				<div class="panel-body" ng-show="ui.state.show[faction]">
+					<p>Some text about the faction goes here!</p>
+					<div class="panel panel-default" ng-repeat="fleet in ui.fleets[faction]">
+						<div class="panel-heading">
+							<div class="btn-toolbar pull-right">
+								<div class="btn-group">
+									<button class="btn btn-default btn-xs disabled"><span class="glyphicon glyphicon-eye-open"></span></button>
+									<button class="btn btn-default btn-xs disabled" ng-show="$index > 0"><span class="glyphicon glyphicon-chevron-up"></span></button>
+									<button class="btn btn-default btn-xs disabled" ng-show="$index < (ui.fleets[faction].length - 1)"><span class="glyphicon glyphicon-chevron-down"></span></button>
+									<button class="btn btn-warning btn-xs" ng-click="factionCtl.detachFleet(faction,fleet)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+								</div>
+							</div>
+							<h3 class="panel-title">{{factionCtl.getFleet(fleet).name}} - {{factionCtl.getFleet(fleet).nickname}}</h3>
+						</div>
+						<div class="panel-body" ng-init="units = factionCtl.getUnits(faction,fleet)">
+						</div>
+						<unit-table ng-init="units=ui.units[faction][fleet]"></unit-table>
 					</div>
-					<div class="col-lg-9">
-						<table class="table table-bordered table-condensed table-hover">
-							<thead>
-								<tr>
-									<th class="col-md-1">#</th>
-									<th class="col-md-4">Unit</th>
-									<th class="col-md-2">Type</th>
-									<th class="col-md-2">Base Hull</th>
-									<th class="col-md-2">Max Hull</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr ng-repeat="unit in factionCtl.getUnits($index)">
-									<td>{{$index}}</td>
-									<td>{{unit.unit.name}}</td>
-									<td>{{unit.unit.type}}</td>
-									<td>{{unit.hull.base}}</td>
-									<td>{{unit.hull.max}}</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
+				</div>
+				<div class="panel-footer">
+					<span>Fleets <span class="badge">{{ui.fleets[faction].length}}</span></span> <span>Units <span class="badge">{{ui.unitCount}}</span></span>
 				</div>
 			</div>
 		</div>

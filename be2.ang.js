@@ -1060,7 +1060,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2CombatController - Combat controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2CombatController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService) {
+	app.controller("be2CombatController",["$scope","DataStore",function($scope,$data) {
 		$scope.combat = {
 			status: "uninitiated",
 			log: "Combat results will be posted here!"
@@ -1080,7 +1080,9 @@
 			var worker = new Worker("be2.combat.js");
 
 			worker.addEventListener("message",workerCallback,false);
-			worker.postMessage(FleetService.combatInfo());
+			var temp = {};
+			angular.copy($data.state,temp);
+			worker.postMessage(temp);
 
 			$scope.worker = worker;
 		};

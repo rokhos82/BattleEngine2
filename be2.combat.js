@@ -7,7 +7,7 @@ function sleep(milliseconds) {
 
 	do {
 		curDate = new Date();
-	} while (curDate - date < milliseconds)
+	} while ((curDate - date) < milliseconds)
 }
 
 function randomBetween(low,high) {
@@ -15,23 +15,23 @@ function randomBetween(low,high) {
 }
 
 function initCombat(event) {
-	var combatData = event.data;
-	startCombat(combatData);
+	var state = event.data;
+	startCombat(state);
 }
 
-function startCombat(combatData) {
+function startCombat(state) {
 	logger("Starting Combat!");
 	logger("Fleets: ");
-	for(var f in combatData.fleets) {
-		var fleet = combatData.fleets[f];
+	for(var f in state.fleets) {
+		var fleet = state.fleets[f];
 		logger("  " + fleet.name + " - " + fleet.empire);
 	}
 
-	initCombatState(combatData);
+	initCombatState(state);
 
 	logger("");
-	while(!combatData.state.done) {
-		doCombatRound(combatData);
+	while(!state.state.done) {
+		doCombatRound(state);
 	}
 
 	logger("Combat Finished");
@@ -41,6 +41,7 @@ function startCombat(combatData) {
 function doCombatRound(combatData) {
 	var state = combatData.state;
 	var fleets = combatData.fleets;
+	var units = combatData.units;
 	var roundState = {
 		round: state.round
 	};
@@ -51,12 +52,12 @@ function doCombatRound(combatData) {
 	// List fleets and combatants
 	for(var f in fleets) {
 		var fleet = fleets[f];
-		var units = fleet.units;
+		var unitList = fleet.units;
 
 		logger("Fleet: " + fleet.name);
 
-		for(var u in units) {
-			var unit = units[u];
+		for(var u in unitList) {
+			var unit = units[unitList[u]];
 			logger("  " + unit.unit.name + " - " + unit.unit.type);
 		}
 	}

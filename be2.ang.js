@@ -1080,8 +1080,10 @@
 			var worker = new Worker("be2.combat.js");
 
 			worker.addEventListener("message",workerCallback,false);
-			var temp = {};
-			angular.copy($data.state,temp);
+			var temp = {
+				state: {}
+			};
+			angular.copy($data.state,temp.state);
 			worker.postMessage(temp);
 
 			$scope.worker = worker;

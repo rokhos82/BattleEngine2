@@ -776,11 +776,7 @@
 					var fleet = fleets[f];
 					ui.units[faction][fleet] = [];
 					var units = FleetService.getUnits(fleet);
-					for(var u in units) {
-						var unit = units[u];
-						ui.units[faction][fleet].push(UnitService.get(unit));
-						ui.unitCount++;
-					}
+					ui.units[faction][fleet] = units;
 				}
 			}			
 		};
@@ -846,6 +842,7 @@
 		};
 
 		this.getFaction = FactionService.get;
+		$scope.getMultiple = UnitService.getMultiple;
 
 		// Set the first fleet in the list to active!
 		for(var i in ui.factions) {
@@ -940,6 +937,7 @@
 
 		// Mappings to Service factories -----------------------------------------------------------
 		this.getFleet = FleetService.get;
+		$scope.getMultiple = UnitService.getMultiple;
 
 		// UI State Actions ------------------------------------------------------------------------
 		this.initState = function() {
@@ -948,10 +946,7 @@
 				ui.state.show[fleet] = false;
 				ui.units[fleet] = [];
 				var units = FleetService.getUnits(fleet);
-				for(var u in units) {
-					var unit = units[u];
-					ui.units[fleet].push(UnitService.get(unit));
-				}
+				ui.units[fleet] = units;
 			}
 		}
 

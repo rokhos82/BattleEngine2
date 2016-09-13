@@ -751,7 +751,8 @@
 			fleets: "fleets",
 			units: "units",
 			entities: "entities",
-			templates: "templates"
+			templates: "templates",
+			mothballs: "mothballs"
 		};
 		ui.state = ui.states.factions;
 		$scope.ui = ui;
@@ -1238,6 +1239,13 @@
 		return {
 			restrict: 'E',
 			templateUrl: 'templates/template-panel.html'
+		};
+	});
+
+	app.directive('mothballPanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/mothball-panel.html'
 		};
 	});
 

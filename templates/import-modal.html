@@ -1,0 +1,19 @@
+<div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	<h4 class="modal-title">Import {{modalOptions.importType}}</h4>
+</div>
+<div class="modal-body">
+	<form class="form-horizontal">
+		<p class="well well-sm">Copy and paste a JSON string into the field below.</p>
+		<div class="form-group">
+			<label for="importJSON" class="col-lg-2 control-label">JSON</label>
+			<div class="col-lg-10">
+				<textarea class="form-control" rows=5 id="importJSON" ng-model="import"></textarea>
+			</div>
+		</div>
+	</form>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-default" ng-click="modalOptions.close()">Cancel</button>
+	<button type="button" class="btn btn-primary" ng-click="modalOptions.ok(import)">Import</button>
+</div>

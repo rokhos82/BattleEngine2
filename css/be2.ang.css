@@ -35,3 +35,23 @@
 .panel-title-left {
 	float: left;
 }
+
+.panel-title-lg {
+	font-size: 18pt;
+}
+
+.top-padding-lg {
+	padding-top: 20px;
+}
+
+.left-buffer-lg {
+	margin-left: 20px;
+}
+
+.left-buffer-md {
+	margin-left: 10px;
+}
+
+.left-buffer-sm {
+	margin-left: 5px;
+}

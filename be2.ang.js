@@ -838,6 +838,18 @@
 			}
 		};
 
+		this.showAllFleets = function(faction) {
+			for(var f in ui.state.show.fleets[faction]) {
+				ui.state.show.fleets[faction][f] = true;
+			}
+		};
+
+		this.hideAllFleets = function(faction) {
+			for(var f in ui.state.show.fleets[faction]) {
+				ui.state.show.fleets[faction][f] = false;
+			}
+		};
+
 		this.attachFleet = function(faction) {
 			var fleet = "1st Vanguard Fleet";
 			FleetService.add({"name":fleet,"nickname":"The Heavy","description":"All about the battleships baby!"});

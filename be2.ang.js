@@ -1,5 +1,5 @@
 (function(){
-	var app = angular.module("be2",["ui.bootstrap","ngAnimate","ngTouch"]);
+	var app = angular.module("be2",["ui.bootstrap","ngAnimate","ngTouch","ngResource"]);
 
 	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex","list"];
 
@@ -671,7 +671,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// StorageService
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.factory("StorageService",["DataStore",function(data) {
+	app.factory("StorageService",["$resource","DataStore",function($resource,data) {
 		var _key = "be2.datastore";
 		var _logger = {
 			error: function(msg) { console.log("StorageService: Error - " + msg); },
@@ -714,19 +714,36 @@
 			else {
 				_logger.warning("Browser does not support localStorage.");
 			}	
-		}
+		};
+
+		var _export = function() {
+			var json = localStorage.getItem(_key);
+			console.log(json);
+		};
+
+		var _example = function() {
+			$resource('examples.json').get(function(d) {
+				data.state.templates = d.templates;
+				data.state.units = d.units;
+				data.state.entities = d.entities;
+				data.state.fleets = d.fleets;
+				data.state.factions = d.factions;
+			});
+		};
 
 		return {
 			save: _save,
 			load: _load,
-			clear: _clear
+			clear: _clear,
+			export: _export,
+			example: _example
 		}
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2MainController - Main controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2MainController",["$scope","FactionService","FleetService","UnitService","StorageService","DataStore",function($scope,factions,fleets,units,storage,data){
+	app.controller("be2MainController",["$rootScope","$scope","FactionService","FleetService","UnitService","StorageService","DataStore",function($rootScope,$scope,factions,fleets,units,storage,data){
 		var ui = data.ui.main;
 		ui.states = {
 			combat: "combat",
@@ -742,6 +759,13 @@
 		this.saveData = storage.save;
 		this.loadData = storage.load;
 		this.purgeData = storage.clear;
+		this.exportData = storage.export;
+		this.loadExampleData = function() {
+			storage.example();
+			$rootScope.$broadcast('be2.init.ui.state');
+		};
+
+		this.importData = function() {};
 
 		this.loadData();
 	}]);
@@ -751,7 +775,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.controller("be2FactionController",["$rootScope","$scope","FactionService","FleetService","UnitService","DataStore",function($rootScope,$scope,FactionService,FleetService,UnitService,data){
 		var ui = data.ui.faction;
-		ui.factions = FactionService.getList();
+		ui.factions = [];
 		ui.fleets = {};
 		ui.units = {};
 		ui.unitCount = 0;
@@ -763,9 +787,9 @@
 				name: "",
 				description: ""
 		};
-		$scope.ui = ui;
 
-		this.initState = function() {
+		var _initState = function() {
+			ui.factions = FactionService.getList();
 			for(var i in ui.factions) {
 				var faction = ui.factions[i];
 				var fleets = FactionService.getFleets(faction);
@@ -778,8 +802,15 @@
 					var units = FleetService.getUnits(fleet);
 					ui.units[faction][fleet] = units;
 				}
-			}			
+			}
+			$scope.ui = ui;			
 		};
+
+		this.initState = _initState;
+
+		$rootScope.$on('be2.init.ui.state',function(event,args) {
+			_initState();
+		});
 
 		this.toggleVisible = function(faction) {
 			ui.state.show[faction] = !ui.state.show[faction];			

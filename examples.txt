@@ -1,0 +1,45 @@
+// Example Unit ////////////////////////////////////////////////////////////////////////////////////
+{
+	"unit": {
+		"name": "Emma Rose",
+		"type": "Starship",
+		"defense": 20,
+		"ecm": 10,
+		"wf": {
+			"safe": 5,
+			"max": 6
+		}
+	},
+	"hull": {
+		"base": 20,
+		"max": 1200
+	},
+	"shield": {
+		"max": 60
+	},
+	"direct-fire": [
+		{"volley": 10,"target": 15, "yield": 10}
+	],
+	"packet-fire": []
+}
+
+{
+	"unit": {
+		"name": "Interceptor",
+		"type": "Gunboat"
+	},
+	"hull": {
+		"base": 2,
+		"max": 3
+	}
+}
+
+// Example fleet ///////////////////////////////////////////////////////////////////////////////////
+{
+	"name": "",
+	"nickname": "",
+	"faction": "",
+	"combat": {},
+	"flag": "name of entity",
+	"units": []
+}

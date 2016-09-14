@@ -535,7 +535,8 @@
 			},
 			hull: {
 				"base": 0,
-				"max": 0
+				"max": 0,
+				"current": 0
 			},
 			shield: {
 				"max": 0
@@ -751,7 +752,8 @@
 			fleets: "fleets",
 			units: "units",
 			entities: "entities",
-			templates: "templates"
+			templates: "templates",
+			mothballs: "mothballs"
 		};
 		ui.state = ui.states.factions;
 		$scope.ui = ui;
@@ -780,7 +782,10 @@
 		ui.units = {};
 		ui.unitCount = 0;
 		ui.state = {
-			show: {}
+			show: {
+				factions: {},
+				fleets: {}
+			}
 		};
 		ui.activeFleet = {};
 		ui.newFaction = {
@@ -793,12 +798,14 @@
 			for(var i in ui.factions) {
 				var faction = ui.factions[i];
 				var fleets = FactionService.getFleets(faction);
-				ui.state.show[faction] = false;
+				ui.state.show.factions[faction] = false;
 				ui.fleets[faction] = fleets;
 				ui.units[faction] = {};
+				ui.state.show.fleets[faction] = {};
 				for(var f in fleets) {
 					var fleet = fleets[f];
 					ui.units[faction][fleet] = [];
+					ui.state.show.fleets[faction][fleet] = false;
 					var units = FleetService.getUnits(fleet);
 					ui.units[faction][fleet] = units;
 				}
@@ -813,18 +820,34 @@
 		});
 
 		this.toggleVisible = function(faction) {
-			ui.state.show[faction] = !ui.state.show[faction];			
+			ui.state.show.factions[faction] = !ui.state.show.factions[faction];			
+		};
+
+		this.toggleFleetVisible = function(faction,fleet) {
+			ui.state.show.fleets[faction][fleet] = !ui.state.show.fleets[faction][fleet];
 		};
 
 		this.showAll = function() {
-			for(var i in ui.state.show) {
-				ui.state.show[i] = true;
+			for(var i in ui.state.show.factions) {
+				ui.state.show.factions[i] = true;
 			}
 		};
 
 		this.hideAll = function() {
-			for(var i in ui.state.show) {
-				ui.state.show[i] = false;
+			for(var i in ui.state.show.factions) {
+				ui.state.show.factions[i] = false;
+			}
+		};
+
+		this.showAllFleets = function(faction) {
+			for(var f in ui.state.show.fleets[faction]) {
+				ui.state.show.fleets[faction][f] = true;
+			}
+		};
+
+		this.hideAllFleets = function(faction) {
+			for(var f in ui.state.show.fleets[faction]) {
+				ui.state.show.fleets[faction][f] = false;
 			}
 		};
 
@@ -869,7 +892,7 @@
 			FactionService.add({"name":faction,"description":ui.newFaction.description,"fleets":[]});
 			this.closeCreateFaction();
 			ui.fleets[faction] = FactionService.getFleets(faction);
-			ui.state.show[faction] = true;
+			ui.state.show.factions[faction] = true;
 		};
 
 		this.getFaction = FactionService.get;
@@ -885,7 +908,7 @@
 		// Custom Event Handlers -------------------------------------------------------------------
 		$rootScope.$on('factionCreated',function(event,data) {
 			var faction = data.faction;
-			ui.state.show[faction] = true;
+			ui.state.show.factions[faction] = true;
 			ui.fleets[faction] = $scope.getFleetList(faction);
 		});
 
@@ -1242,6 +1265,13 @@
 		return {
 			restrict: 'E',
 			templateUrl: 'templates/template-panel.html'
+		};
+	});
+
+	app.directive('mothballPanel',function() {
+		return {
+			restrict: 'E',
+			templateUrl: 'templates/mothball-panel.html'
 		};
 	});
 

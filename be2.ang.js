@@ -535,7 +535,8 @@
 			},
 			hull: {
 				"base": 0,
-				"max": 0
+				"max": 0,
+				"current": 0
 			},
 			shield: {
 				"max": 0

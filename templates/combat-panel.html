@@ -22,7 +22,7 @@
 	<div class="row">
 		<div class="col-sm-12 col-md-12 col-lg-12">
 			<h4>Combat Progress: {{ui.combat.status}}</h4>
-			<uib-progressbar class="progress-striped active" value="ui.combat.progress" type="info">{{ui.combat.current}}/{{ui.combat.max}}</uib-progressbar>
+			<uib-progressbar class="progress-striped active" value="ui.combat.progress" type="info"><span ng-show="ui.combat.current > 0">{{ui.combat.current}}/{{ui.combat.max}}</span></uib-progressbar>
 		</div>
 	</div>
 	<div class="row">

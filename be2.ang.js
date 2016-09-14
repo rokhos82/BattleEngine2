@@ -666,7 +666,53 @@
 	// CombatService
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("CombatService",["$q",function($q) {
-		var _worker = undefined;
+		//var _worker = new WebWorker("be2.combat.js");
+
+		var _eventListener = function(event) {};
+
+		var _start = function(combatants) {
+			// Setup combat data.
+		};
+
+		/*
+		function workerCallback(event) {
+			$scope.combat.log += event.data.log;
+			if(event.data.done)
+				$scope.combat.status = "finished";
+			$scope.$apply();
+		}
+
+		this.startCombat = function() {
+			$scope.combat.status = "started";
+			$scope.combat.log = "";
+
+			var worker = new Worker("be2.combat.js");
+
+			worker.addEventListener("message",workerCallback,false);
+			var temp = {
+				state: {}
+			};
+			angular.copy($data.state,temp.state);
+			worker.postMessage(temp);
+
+			$scope.worker = worker;
+		};
+
+		this.stopCombat = function() {
+			$scope.combat.status = "stopped";
+
+			$scope.worker.terminate();
+			$scope.worker = undefined;
+		};
+
+		this.resetCombat = function() {
+			$scope.combat.status = "uninitiated";
+			$scope.combat.log = "";
+		};*/
+
+		return {
+			start: _start
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1083,46 +1129,48 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2CombatController - Combat controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2CombatController",["$scope","DataStore",function($scope,$data) {
-		$scope.combat = {
-			status: "uninitiated",
-			log: "Combat results will be posted here!"
+	app.controller("be2CombatController",["$scope","CombatService","DataStore",function($scope,$combat,$data) {
+		var ui = {
+			combat: $data.combat,
+			fleets: $data.state.fleets,
+			factions: $data.state.factions
 		};
 
-		function workerCallback(event) {
-			$scope.combat.log += event.data.log;
-			if(event.data.done)
-				$scope.combat.status = "finished";
+		ui.combat.statuses = [
+			"Uninitialized",
+			"Initializing Combat",
+			"Getting Combatants",
+			"Running Combat Simulation",
+			"Cleaning Up",
+			"Finished"
+		];
+
+		ui.combat.max = ui.combat.statuses.length - 1;
+		ui.combat.current = 0;
+		ui.combat.status = ui.combat.statuses[ui.combat.current];
+		ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
+		
+		$scope.ui = ui;
+
+		$scope.startCombat = function() {
+			ui.combat.current = 1;
+			ui.combat.status = ui.combat.statuses[ui.combat.current];
+			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
+
+			setTimeout(doCombat,1000);
+		};
+
+		function doCombat() {
+			ui.combat.current++;
+			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
+			ui.combat.status = ui.combat.statuses[ui.combat.current];
 			$scope.$apply();
+
+			if(ui.combat.current < ui.combat.max) {
+				setTimeout(doCombat,1000);
+			}
+			console.log(ui.combat.current);
 		}
-
-		this.startCombat = function() {
-			$scope.combat.status = "started";
-			$scope.combat.log = "";
-
-			var worker = new Worker("be2.combat.js");
-
-			worker.addEventListener("message",workerCallback,false);
-			var temp = {
-				state: {}
-			};
-			angular.copy($data.state,temp.state);
-			worker.postMessage(temp);
-
-			$scope.worker = worker;
-		};
-
-		this.stopCombat = function() {
-			$scope.combat.status = "stopped";
-
-			$scope.worker.terminate();
-			$scope.worker = undefined;
-		};
-
-		this.resetCombat = function() {
-			$scope.combat.status = "uninitiated";
-			$scope.combat.log = "";
-		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

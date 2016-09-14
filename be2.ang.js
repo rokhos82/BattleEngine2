@@ -799,7 +799,8 @@
 			units: "units",
 			entities: "entities",
 			templates: "templates",
-			mothballs: "mothballs"
+			mothballs: "mothballs",
+			logs: "logs"
 		};
 		ui.state = ui.states.factions;
 		$scope.ui = ui;
@@ -1169,7 +1170,6 @@
 			if(ui.combat.current < ui.combat.max) {
 				setTimeout(doCombat,1000);
 			}
-			console.log(ui.combat.current);
 		}
 	}]);
 

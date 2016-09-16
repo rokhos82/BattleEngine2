@@ -866,6 +866,10 @@
 			_initState();
 		});
 
+		$scope.countUnits = function(faction) {
+			return _.reduce(ui.units[faction],function(memo,arr){return memo+arr.length;},0);
+		};
+
 		this.toggleVisible = function(faction) {
 			ui.state.show.factions[faction] = !ui.state.show.factions[faction];			
 		};

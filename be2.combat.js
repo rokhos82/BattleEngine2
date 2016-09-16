@@ -1,94 +1,62 @@
-var _log = "";
-var _done = false;
+(function(){
+	var _log = "";
+	var state = undefined;
+	
+	function sleep(milliseconds) {
+		var date = new Date();
+		var curDate = null;
 
-function sleep(milliseconds) {
-	var date = new Date();
-	var curDate = null;
-
-	do {
-		curDate = new Date();
-	} while (curDate - date < milliseconds)
-}
-
-function randomBetween(low,high) {
-	return Math.floor((Math.random() * (high - low)) + low);
-}
-
-function initCombat(event) {
-	var combatData = event.data;
-	startCombat(combatData);
-}
-
-function startCombat(combatData) {
-	logger("Starting Combat!");
-	logger("Fleets: ");
-	for(var f in combatData.fleets) {
-		var fleet = combatData.fleets[f];
-		logger("  " + fleet.name + " - " + fleet.empire);
+		do {
+			curDate = new Date();
+		} while ((curDate - date) < milliseconds)
 	}
 
-	initCombatState(combatData);
-
-	logger("");
-	while(!combatData.state.done) {
-		doCombatRound(combatData);
+	function randomBetween(low,high) {
+		return Math.floor((Math.random() * (high - low)) + low);
 	}
 
-	logger("Combat Finished");
-	this.close();
-}
-
-function doCombatRound(combatData) {
-	var state = combatData.state;
-	var fleets = combatData.fleets;
-	var roundState = {
-		round: state.round
+	function chooseCombatant(faction) {
+		var c = undefined;
+		
+		// Get a list of enemies for the faction
+		var enemies = state.combatant[faction].enemies;
+		if(enemies.length > 0) {
+			// Select a random enemy faction to attack
+			var k = randomBetween(0,enemies.length - 1);
+			c = enemies[k];
+		}
+		else {
+			break;
+		}
+		
+		return c;
 	};
-	state.rounds.push(roundState);
 
-	logger("Begin round " + state.round);
+	function selectTarget() {
+		for(var c in state.combatants) {
+			var faction = state.combatants[c];
+			var fleets = faction.fleets;
 
-	// List fleets and combatants
-	for(var f in fleets) {
-		var fleet = fleets[f];
-		var units = fleet.units;
+			// Which enemy faction do we pick from?
+			var targetFaction = chooseCombatant(faction.name);
 
-		logger("Fleet: " + fleet.name);
-
-		for(var u in units) {
-			var unit = units[u];
-			logger("  " + unit.unit.name + " - " + unit.unit.type);
+			// Get a list of targets from the faction
+			var targets = state.combatants[targetFaction].units;
 		}
 	}
 
+	function doRound(event) {
+		state = event.data.state;
 
-	logger("");
-	state.round++;
-	if(state.round > 9)
-		state.done = true;
-}
+		// Select targets
 
-function initCombatState(combatData) {
-	var state = {};
+		// Resolve hits
 
-	state.done = false;
-	state.round = 1;
-	state.rounds = [];
+		// Change values in state depending on targets & hits
 
-	combatData.state = state;
-}
+		// Transmit the state back to the main application
+		this.postMessage(state);
+	}
 
-function selectTarget(combatants) {
-
-}
-
-function logger(entry) {
-	_log = entry + "\n";
-	syncLog();
-}
-
-function syncLog() {
-	this.postMessage({log:_log,done:_done});
-}
-
-this.addEventListener('message',initCombat,false);
+	this.addEventListener('message',doRound,false);
+})();

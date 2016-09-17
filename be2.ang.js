@@ -768,13 +768,39 @@
 			console.log(json);
 		};
 
+		function cloneState(state,src) {
+			// Preserve the original list array
+			var arr = state.list;
+			
+			// Clear out all of the old objects (except the list array)
+			for(var s in state) {
+				if(s === "list") {
+					delete state[s];
+				}
+			}
+			
+			// Do a shallow copy of the src object to the state object.
+			for(var v in src) {
+				state[v] = src[v];
+			}
+			
+			// Clear out the list array and copy in the src list array.
+			arr.length = 0;
+			for(var i in src.list) {
+				arr.push(src.list[i]);
+			}
+
+			// Reassign the list array to the state object.
+			state.list = arr;
+		}
+
 		var _example = function() {
 			$resource('examples.json').get(function(d) {
-				data.state.templates = d.templates;
-				data.state.units = d.units;
-				data.state.entities = d.entities;
-				data.state.fleets = d.fleets;
-				data.state.factions = d.factions;
+				cloneState(data.state.templates,d.templates);
+				cloneState(data.state.units,d.units);
+				cloneState(data.state.entities,d.entities);
+				cloneState(data.state.fleets,d.fleets);
+				cloneState(data.state.factions,d.factions);
 			});
 		};
 

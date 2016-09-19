@@ -593,9 +593,10 @@
 		var _add = function(obj) {
 			// Is it unique and valid
 			if(_validate(obj) && !_exists(obj.unit.name)) {
-				data.state.templates[obj.unit.name] = obj;
-				data.state.templates.list.push(obj.unit.name);
-				_logger.success("Added template '" + obj.unit.name + "'.");
+				var id = window.uuid.v4({node:[0x01,0x42,0x45,0x32,0xFF,0xFF]})
+				data.state.templates[id] = obj;
+				data.state.templates.list.push(id);
+				_logger.success("Added template '" + obj.unit.name + "' " + id + ".");
 			}
 			else {
 				_logger.error("Unable to add template.  Either template is invalid or already exists.");
@@ -1324,6 +1325,8 @@
 			var t = ui.templates[i];
 			ui.state.show[t] = false;
 		}
+
+		console.log(ui.templates);
 
 		$scope.ui = ui;
 

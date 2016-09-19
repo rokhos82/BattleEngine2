@@ -19,8 +19,8 @@
 			</div>
 		</div>
 	</div>
-	<div class="row" ng-repeat="template in ui.templates">
-		<div class="col-lg-12 col-md-12 col-sm-12" ng-init="templateInfo = ctl.getTemplateInfo(template)">
+	<div class="row">
+		<div class="col-lg-6 col-md-6 col-sm-12" ng-repeat="template in ui.templates" ng-init="templateInfo = ctl.getTemplateInfo(template)">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					<div class="btn-toolbar pull-right">
@@ -30,7 +30,7 @@
 							<button type="button" class="btn btn-danger btn-sm disabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 						</div>
 					</div>
-					<h3 class="panel-title panel-title-lg">{{templateInfo.unit.name}} - {{templateInfo.unit.type}}</h3>
+					<h3 class="panel-title panel-title-lg">{{templateInfo.unit.name}}</h3>
 				</div>
 				<div class="panel-body" ng-show="ui.state.show[template]">
 					<uib-tabset active="active">
@@ -50,6 +50,8 @@
 					</uib-tab-set>
 				</div>
 				<div class="panel-footer">
+					<span class="pull-right"><code>{{template}}</code></span>
+					<span class="label label-primary">{{templateInfo.unit.type}}</span>
 				</div>
 			</div>
 		</div>

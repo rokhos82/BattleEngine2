@@ -625,7 +625,6 @@
 		};
 
 		var _validate = function(obj) {
-			console.log(obj);
 			var valid = true;
 			// Is there a 'unit' component
 			if(typeof(obj.unit) === "object") {
@@ -1325,8 +1324,6 @@
 			var t = ui.templates[i];
 			ui.state.show[t] = false;
 		}
-
-		console.log(ui.templates);
 
 		$scope.ui = ui;
 

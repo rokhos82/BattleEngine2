@@ -137,6 +137,50 @@
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2InfoModal - this is the service object for a generic import modal.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.service("be2InfoModal",["$uibModal",function($modal) {
+		var modalDefaults = {
+			backdrop: true,
+			keyboard: true,
+			modalFade: true,
+			templateUrl: 'templates/info-modal.html'
+		};
+
+		var modalOptions = {
+			headerText: "This is the information modal",
+		};
+
+		this.showModal = function(customModalDefaults,customModalOptions) {
+			if (!customModalDefaults) customModalDefaults = {};
+			customModalDefaults.backdrop = 'static';
+			return this.show(customModalDefaults,customModalOptions);
+		};
+
+		this.show = function(customModalDefaults,customModalOptions) {
+			var tempModalDefaults = {};
+			var tempModalOptions = {};
+
+			angular.extend(tempModalDefaults,modalDefaults,customModalDefaults);
+			angular.extend(tempModalOptions,modalOptions,customModalOptions);
+
+			if(!tempModalDefaults.controller) {
+				tempModalDefaults.controller = function($scope,$uibModalInstance) {
+					$scope.modalOptions = tempModalOptions;
+					$scope.modalOptions.ok = function(result) {
+						$uibModalInstance.close(result);
+					};
+					$scope.modalOptions.close = function(result) {
+						$uibModalInstance.dismiss('cancel');
+					};
+				}
+			}
+
+			return $modal.open(tempModalDefaults).result;
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// DataStore - this is the main data store for the entire application.
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("DataStore",[function() {
@@ -528,23 +572,24 @@
 		};
 
 		var _baseTemplate = {
-			unit: {
-				name: "",
-				id: "",
-				type: ""
+			"unit": {
+				"name": "",
+				"id": "",
+				"type": ""
 			},
-			hull: {
+			"hull": {
 				"base": 0,
 				"max": 0,
 				"current": 0
 			},
-			shield: {
+			"shield": {
 				"max": 0
 			},
 			"direct-fire": [],
 			"packet-fire": []
 		};
 
+		// Adds a unit template object to the program state ----------------------------------------
 		var _add = function(obj) {
 			// Is it unique and valid
 			if(_validate(obj) && !_exists(obj.unit.name)) {
@@ -557,16 +602,19 @@
 			}
 		};
 
+		// Creates and adds a unit template object to the program state ----------------------------
 		var _create = function(dict) {
-			var template = {};
-			angular.merge(template,_baseTemplate,dict);
+			var template = angular.copy(_baseTemplate);
+			angular.merge(template,dict);
 			_add(template);
 		};
 
+		// Checks to see if the template exists ----------------------------------------------------
 		var _exists = function(name) {
 			return (typeof(name) === "string" && typeof(data.state.templates[name]) === "object");
 		};
 
+		// Returns the template object from the program state --------------------------------------
 		var _get = function(name) {
 			return _exists(name) ? data.state.templates[name] : undefined;
 		};
@@ -640,10 +688,22 @@
 				angular.copy(data.state.templates[template],temp);
 				temp.unit.name = name;
 				temp.unit.template = template;
+				temp.hull.current = temp.hull.max;
 				$be2Units.add(temp);
 			}
 			else {
 				_logger.error("Unable to deploy unit '" + name + "' from template '" + template + "'.");
+			}
+		};
+
+		var _updateTemplates = function() {
+			for(var t in data.state.templates) {
+				if(t === "list") {
+					continue;
+				}
+				var temp = angular.copy(_baseTemplate);
+				angular.merge(temp,data.state.templates[t]);
+				data.state.templates[t] = temp;
 			}
 		};
 
@@ -654,7 +714,8 @@
 			exists: _exists,
 			get: _get,
 			getList: _getList,
-			validate: _validate
+			validate: _validate,
+			update: _updateTemplates
 		}
 	}]);
 
@@ -816,7 +877,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2MainController - Main controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2MainController",["$rootScope","$scope","FactionService","FleetService","UnitService","StorageService","DataStore",function($rootScope,$scope,factions,fleets,units,storage,data){
+	app.controller("be2MainController",["$rootScope","$scope","FactionService","FleetService","UnitService","UnitTemplateService","StorageService","DataStore",function($rootScope,$scope,factions,fleets,units,$templates,storage,data){
 		var ui = data.ui.main;
 		ui.states = {
 			combat: "combat",
@@ -837,6 +898,7 @@
 		this.exportData = storage.export;
 		this.loadExampleData = function() {
 			storage.example();
+			$templates.update();
 			$rootScope.$broadcast('be2.init.ui.state');
 		};
 
@@ -848,7 +910,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FactionController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FactionController",["$rootScope","$scope","FactionService","FleetService","UnitService","DataStore",function($rootScope,$scope,FactionService,FleetService,UnitService,data){
+	app.controller("be2FactionController",["$rootScope","$scope","FactionService","FleetService","UnitService","DataStore","be2InfoModal",function($rootScope,$scope,FactionService,FleetService,UnitService,data,infoModal){
 		var ui = data.ui.faction;
 		ui.factions = [];
 		ui.fleets = {};
@@ -990,6 +1052,15 @@
 		});
 
 		this.initState();
+
+		ui.export = function() {
+			var modalOptions = {
+				headerText: "Factions Export",
+				infoText: btoa(JSON.stringify(data.state.factions)),
+				infoTextPlain: JSON.stringify(data.state.factions)
+			};
+			infoModal.showModal({},modalOptions).then(function (result) {});
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

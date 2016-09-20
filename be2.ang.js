@@ -409,8 +409,9 @@
 		// Add a fleet object to the dictionary ----------------------------------------------------
 		var _add = function(fleet) {
 			if(_validate(fleet) && !_exists(fleet)) {
-				data.state.fleets[fleet.name] = fleet;
-				var l = data.state.fleets.list.push(fleet.name);
+				var id = window.uuid.v4();
+				data.state.fleets[id] = fleet;
+				var l = data.state.fleets.list.push(id);
 				_logger.success("Added Fleet " + fleet.name + ".  " + l + " fleet(s) currently in system.");
 			}
 			else {
@@ -510,8 +511,9 @@
 		// Add a unit object to the dictionary ----------------------------------------------------
 		var _add = function(unit) {
 			if(_validate(unit) && !_exists(unit.unit.name)) {
-				data.state.units[unit.unit.name] = unit;
-				var l = data.state.units.list.push(unit.unit.name);
+				var id = window.uuid.v4();
+				data.state.units[id] = unit;
+				var l = data.state.units.list.push(id);
 				_logger.success("Added unit " + unit.name + ".  " + l + " unit(s) currently in system.");
 			}
 			else {

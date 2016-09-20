@@ -35,7 +35,8 @@
 					<div class="well well-sm">Detailed information about the unit will be in here.</div>
 				</div>
 				<div class="panel-footer">
-					<span class="label label-primary">Base Hull: {{info.hull.base}}</span><span class="label label-warning left-buffer-sm">Hull: {{info.hull.max}}</span><span class="label label-info left-buffer-sm">Shield: {{info.shield.max}}</span>
+					<span class="pull-right"><code>{{unit}}</code></span>
+					<span class="label label-well" ng-class="{'text-danger':info.unit.type==='Starship','text-warning':info.unit.type==='Gunboat','text-info':info.unit.type==='Fighter','text-success':info.unit.type==='Base'}">{{info.unit.type}}</span><span class="label label-primary">Base Hull: {{info.hull.base}}</span><span class="label label-warning left-buffer-sm">Hull: {{info.hull.max}}</span><span class="label label-info left-buffer-sm">Shield: {{info.shield.max}}</span>
 				</div>
 			</div>
 		</div>

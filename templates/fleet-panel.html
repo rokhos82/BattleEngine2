@@ -12,7 +12,7 @@
 				<div class="btn-group">
 					<button class="btn btn-primary " data-toggle="modal" data-target="#fleetCreateModal"><span class="glyphicon glyphicon-plus-sign"></span> Create Fleet</button>
 					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-import"></span> Import Fleets</button>
-					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-export"></span> Export Fleets</button>
+					<button class="btn btn-default" ng-click="ui.export()"><span class="glyphicon glyphicon-export"></span> Export Fleets</button>
 					<button class="btn btn-default" ng-click="fleetCtl.showAll()"><span class="glyphicon glyphicon-eye-open"></span> Show All</button>
 					<button class="btn btn-default" ng-click="fleetCtl.hideAll()"><span class="glyphicon glyphicon-eye-close"></span> Hide All</button>
 					<button class="btn btn-danger disabled"><span class="glyphicon glyphicon-remove-sign"></span> Purge Fleets</button>

@@ -593,7 +593,7 @@
 		var _add = function(obj) {
 			// Is it unique and valid
 			if(_validate(obj) && !_exists(obj.unit.name)) {
-				var id = window.uuid.v4({node:[0x01,0x42,0x45,0x32,0xFF,0xFF]})
+				var id = window.uuid.v4();
 				data.state.templates[id] = obj;
 				data.state.templates.list.push(id);
 				_logger.success("Added template '" + obj.unit.name + "' " + id + ".");
@@ -1124,7 +1124,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FleetController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","be2SelectModal","DataStore",function($scope,FactionService,FleetService,UnitService,SelectModal,data){
+	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","be2SelectModal","DataStore","be2InfoModal",function($scope,FactionService,FleetService,UnitService,SelectModal,data,infoModal){
 		var ui = data.ui.fleet;
 		ui.fleets = FleetService.getList();
 		ui.state = {
@@ -1196,6 +1196,15 @@
 
 		// Initialize the ui.state -----------------------------------------------------------------
 		this.initState();
+
+		ui.export = function() {
+			var modalOptions = {
+				headerText: "Factions Export",
+				infoText: btoa(JSON.stringify(data.state.fleets)),
+				infoTextPlain: JSON.stringify(data.state.fleets)
+			};
+			infoModal.showModal({},modalOptions).then(function (result) {});
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1277,7 +1286,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2UnitController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2UnitController",["$rootScope","$scope","UnitService","DataStore",function($rootScope,$scope,$be2Units,$be2Data){
+	app.controller("be2UnitController",["$rootScope","$scope","UnitService","DataStore","be2InfoModal",function($rootScope,$scope,$be2Units,$be2Data,$infoModal){
 		var ui = $be2Data.ui.unit;
 		ui.units = $be2Units.getList();
 		ui.state = {
@@ -1308,12 +1317,21 @@
 		this.toggleVisible = function(unit) {
 			ui.state.show[unit] = !ui.state.show[unit];
 		};
+
+		ui.export = function() {
+			var modalOptions = {
+				headerText: "Factions Export",
+				infoText: btoa(JSON.stringify($be2Data.state.units)),
+				infoTextPlain: JSON.stringify($be2Data.state.units)
+			};
+			$infoModal.showModal({},modalOptions).then(function (result) {});
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2UnitTemplateController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2UnitTemplateController",["$rootScope","$scope","UnitTemplateService","be2ImportModal","be2QueryModal","DataStore",function($rootScope,$scope,$be2Templates,ImportModal,QueryModal,data){
+	app.controller("be2UnitTemplateController",["$rootScope","$scope","UnitTemplateService","be2ImportModal","be2QueryModal","DataStore","be2InfoModal",function($rootScope,$scope,$be2Templates,ImportModal,QueryModal,data,infoModal){
 		var ui = data.ui.template;
 		ui.templates = $be2Templates.getList();
 		ui.state = {
@@ -1369,6 +1387,15 @@
 			ImportModal.showModal({},modalOptions).then(function (result) {
 				$be2Templates.create(JSON.parse(result));
 			});
+		};
+
+		ui.export = function() {
+			var modalOptions = {
+				headerText: "Factions Export",
+				infoText: btoa(JSON.stringify(data.state.units)),
+				infoTextPlain: JSON.stringify(data.state.units)
+			};
+			infoModal.showModal({},modalOptions).then(function (result) {});
 		};
 	}]);
 

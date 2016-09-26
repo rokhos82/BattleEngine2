@@ -1,0 +1,53 @@
+{
+	"state": {
+		"factions": {
+			"uuid": xxxx-4567-xxxx-xxxx
+			"fleets": {
+				"fleet-uuid": {
+					"uuid": xxxx-3456-xxxx-xxxx
+					"units": {
+						"unit-uuid": {
+							"uuid": xxxx-2345-xxxx-xxxx,
+							"template": {
+								"uuid": xxxx-1234-xxxx-xxxx
+							}
+						}
+					}
+				}
+			}
+		},
+		"fleets": {
+			"uuid": xxxx-3456-xxxx-xxxx
+			"units": {
+				"unit-uuid": {
+					"uuid": xxxx-2345-xxxx-xxxx,
+					"template": {
+						"uuid": xxxx-1234-xxxx-xxxx
+					}
+				}
+			}
+		},
+		"units": {
+			"unit-uuid": {
+				"uuid": xxxx-2345-xxxx-xxxx,
+				"template": {
+					"uuid": xxxx-1234-xxxx-xxxx
+				}
+			}
+		},
+		"templates": {
+			"template-uuid": {
+				"uuid": xxxx-1234-xxxx-xxxx
+			}
+		},
+	}
+}
+
+<==>
+
+{
+	"factions": [],
+	"fleets": [],
+	"units": [],
+	"templates": []
+}

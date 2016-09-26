@@ -867,6 +867,17 @@
 			});
 		};
 
+		// This function expands the stored arrays back into the nested object references.
+		var _expand = function(flat) {
+			// Load templates first
+			var units = flat.units;
+			for(var u in units) {
+				var unit = units[u];
+				var key = unit.uuid;
+				data.state.units[key] = unit;
+			}
+		}
+
 		return {
 			save: _save,
 			load: _load,

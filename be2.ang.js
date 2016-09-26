@@ -867,16 +867,58 @@
 			});
 		};
 
-		// This function expands the stored arrays back into the nested object references.
+		// This function expands the stored arrays back into the nested object references ----------
 		var _expand = function(flat) {
-			// Load templates first
+			// 1 - Load Templates
+			var templates = flat.templates;
+			for(var t in templates) {
+				var template = templates[t];
+				var key = template.uuid;
+				data.state.templates[key] = template;
+			}
+
+			// 2 - Load Units
 			var units = flat.units;
 			for(var u in units) {
 				var unit = units[u];
 				var key = unit.uuid;
 				data.state.units[key] = unit;
+				var templateKey = unit.template;
+				unit.template = data.state.templates[templateKey];
 			}
-		}
+
+			// 3 - Load Fleets
+			var fleets = flat.fleets;
+			for(var f in fleets) {
+				var fleet = fleets[f];
+				var key = fleet.uuid;
+				data.state.fleets[key] = fleet;
+				var units = fleet.units;
+				fleet.units = {};
+				for(var u in units) {
+					var unitKey = units[u];
+					fleet.units[unitKey] = data.state.units[unitKey];
+				}
+			}
+
+			// 4 - Load Factions
+			var factions = flat.factions;
+			for(var f in factions) {
+				var faction = factions[f];
+				var key = faction.uuid;
+				data.state.factions[key] = faction;
+				var fleets = faction.fleets;
+				faction.fleets = {};
+				for(var e in fleets) {
+					var fleetKey = fleets[e];
+					faciton.fleets[fleetKey] = data.state.fleets[fleetKey];
+				}
+			}
+		};
+
+		// This function flattens the data structure into arrays for storage -----------------------
+		var _flatten = function(dat) {
+		};
 
 		return {
 			save: _save,

@@ -869,7 +869,7 @@
 
 		// This function expands the stored arrays back into the nested object references ----------
 		var _expand = function(flat) {
-			// 1 - Load Templates
+			// 1 - Load Templates -----
 			var templates = flat.templates;
 			for(var t in templates) {
 				var template = templates[t];
@@ -877,7 +877,7 @@
 				data.state.templates[key] = template;
 			}
 
-			// 2 - Load Units
+			// 2 - Load Units ---------
 			var units = flat.units;
 			for(var u in units) {
 				var unit = units[u];
@@ -887,7 +887,7 @@
 				unit.template = data.state.templates[templateKey];
 			}
 
-			// 3 - Load Fleets
+			// 3 - Load Fleets --------
 			var fleets = flat.fleets;
 			for(var f in fleets) {
 				var fleet = fleets[f];
@@ -901,7 +901,7 @@
 				}
 			}
 
-			// 4 - Load Factions
+			// 4 - Load Factions ------
 			var factions = flat.factions;
 			for(var f in factions) {
 				var faction = factions[f];
@@ -918,6 +918,33 @@
 
 		// This function flattens the data structure into arrays for storage -----------------------
 		var _flatten = function(dat) {
+			var dat = angular.copy(dat);
+
+			var factions = dat.factions;
+			var factionList = [];
+			for(var f in factions) {
+				var faction = factions[f];
+				factionList.push(faction);
+				faction.fleets = _.pluck(faction.fleets,"uuid");
+			}
+			dat.factions = factionList;
+
+			var fleets = dat.fleets;
+			var fleetList = [];
+			for(var f in fleets) {
+				var fleet = fleets[f];
+				fleetList.push(fleet);
+				fleet.units = _.pluck(fleet.units,"uuid");
+			}
+			dat.fleets = fleetList;
+
+			var units = dat.units;
+			var unitList = [];
+			for(Var u in units) {
+				var unit = units[u];
+				unitList.push(unit);
+				unit.template = unit.template.uuid;
+			}
 		};
 
 		return {

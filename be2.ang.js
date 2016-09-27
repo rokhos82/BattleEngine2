@@ -940,11 +940,12 @@
 
 			var units = dat.units;
 			var unitList = [];
-			for(Var u in units) {
+			for(var u in units) {
 				var unit = units[u];
 				unitList.push(unit);
 				unit.template = unit.template.uuid;
 			}
+			dat.units = unitList;
 		};
 
 		return {
@@ -1478,6 +1479,46 @@
 				infoTextPlain: JSON.stringify(data.state.units)
 			};
 			infoModal.showModal({},modalOptions).then(function (result) {});
+		};
+
+		// Test functions --------------------------------------------------------------------------
+		this.test = function() {
+			var arrExpandTest = {
+				"factions":{
+					"FX001":{"uuid":"FX001","fleets":{"FL001":"FL001","FL003":"FL003"}},
+					"FX002":{"uuid":"FX002","fleets":{"FL002":"FL002","FL004":"FL004","FL005":"Fl005"}}
+				},
+				"fleets": {
+					"FL001":{"uuid":"FL001","units":{"U000":"U000","U003":"U003"}},
+					"FL002":{"uuid":"FL002","units":{"U002":"U002"}},
+					"FL003":{"uuid":"FL003","units":{"U004":"U004"}},
+					"FL004":{"uuid":"FL004","units":{"U007":"U007"}},
+					"FL005":{"uuid":"FL005","units":{"U001":"U001"}}
+				},
+				"units": {
+					"U000":{"uuid":"U000","template":"T000"},
+					"U001":{"uuid":"U001","template":"T001"},
+					"U002":{"uuid":"U002","template":"T000"},
+					"U003":{"uuid":"U003","template":"T002"},
+					"U004":{"uuid":"U004","template":"T002"},
+					"U005":{"uuid":"U005","template":"T001"},
+					"U006":{"uuid":"U006","template":"T000"},
+					"U007":{"uuid":"U007","template":"T002"},
+					"U008":{"uuid":"U008","template":"T001"}
+				},
+				"templates": {
+					"T000":{"uuid":"T000"},
+					"T001":{"uuid":"T001"},
+					"T002":{"uuid":"T002"},
+					"T003":{"uuid":"T003"}
+				}
+			};
+
+			_.map(arrExpandTest.factions,function(value){value.fleets = _.mapObject(value.fleets,function(value,key){return this[key];},arrExpandTest.fleets);});
+			_.map(arrExpandTest.fleets,function(value){value.units = _.mapObject(value.units,function(value,key){return this[key];},arrExpandTest.units)});
+			_.map(arrExpandTest.units,function(value,key){value.template = this[value.template];},arrExpandTest.templates);
+
+			console.log(arrExpandTest);
 		};
 	}]);
 

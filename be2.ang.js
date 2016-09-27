@@ -227,6 +227,22 @@
 			warning: function(msg) {if(data.ui.debug){console.log("FactionService: Warning - " + msg);}}
 		};
 
+		var _factionDefaults = {
+			"fleets": {},
+			"enemies": {},
+			"name": "",
+			"description": ""
+		};
+
+		// Creates a new faction from a dictionary on elements -------------------------------------
+		var _create = function(elements) {
+			for(var e in elements) {
+				faction[e] = elements[e];
+			}
+
+			_add(faction);
+		};
+
 		// Validate that the passed object is a proper Faction object ------------------------------
 		var _validate = function(faction) {
 			var valid = true;
@@ -264,26 +280,12 @@
 			return valid;
 		};
 
-		// Creates a new faction from a dictionary on elements -------------------------------------
-		var _create = function(elements) {
-			var faction = {
-				name: "",
-				description: "",
-				fleets: [],
-				enemies: []
-			};
-
-			for(var e in elements) {
-				faction[e] = elements[e];
-			}
-
-			_add(faction);
-		};
-
 		// Adds a Faction to the array -------------------------------------------------------------
 		var _add = function(faction) {
 			if(_validate(faction) && !_exists(faction)) {
-				data.state.factions[faction.name] = faction;
+				var id = window.uuid.v4();
+				data.state.factions[id] = faction;
+				faction.uuid = id;
 				var l = data.state.factions.list.push(faction.name);
 				_logger.success("Added Faction " + faction.name + ".  " + l + " faction(s) currently in system.");
 			}
@@ -410,6 +412,7 @@
 		var _add = function(fleet) {
 			if(_validate(fleet) && !_exists(fleet)) {
 				var id = window.uuid.v4();
+				fleet.uuid = id;
 				data.state.fleets[id] = fleet;
 				var l = data.state.fleets.list.push(id);
 				_logger.success("Added Fleet " + fleet.name + ".  " + l + " fleet(s) currently in system.");
@@ -449,9 +452,9 @@
 		var _attachUnit = function(fleet,unit) {
 			if(_exists(fleet) && UnitService.exists(unit)) {
 				var f = data.state.fleets[fleet];
-				if(!Array.isArray(f.units))
-					f.units = [];
-				f.units.push(unit);
+				if(typeof(f.units) !== "object")
+					f.units = {};
+				f.units[unit.uuid] = unit;
 				_logger.success("Attached unit '" + unit + "'' to fleet '" + fleet + "'.");
 			}
 			else {
@@ -512,6 +515,7 @@
 		var _add = function(unit) {
 			if(_validate(unit) && !_exists(unit.unit.name)) {
 				var id = window.uuid.v4();
+				unit.uuid = id;
 				data.state.units[id] = unit;
 				var l = data.state.units.list.push(id);
 				_logger.success("Added unit " + unit.name + ".  " + l + " unit(s) currently in system.");
@@ -596,6 +600,7 @@
 			// Is it unique and valid
 			if(_validate(obj) && !_exists(obj.unit.name)) {
 				var id = window.uuid.v4();
+				obj.uuid = id;
 				data.state.templates[id] = obj;
 				data.state.templates.list.push(id);
 				_logger.success("Added template '" + obj.unit.name + "' " + id + ".");
@@ -689,7 +694,7 @@
 				var temp = {};
 				angular.copy(data.state.templates[template],temp);
 				temp.unit.name = name;
-				temp.unit.template = template;
+				temp.unit.template = data.state.templates[template];
 				temp.hull.current = temp.hull.max;
 				$be2Units.add(temp);
 			}

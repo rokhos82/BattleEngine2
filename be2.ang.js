@@ -1171,9 +1171,11 @@
 		ui.units = {};
 		ui.newFleet = {
 				name: "",
-				description: "",
+				description: ""
 		};
 		$scope.ui = ui;
+
+		this.data = data.state;
 
 		// Mappings to Service factories -----------------------------------------------------------
 		this.getFleet = FleetService.get;

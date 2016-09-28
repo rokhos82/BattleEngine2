@@ -55,3 +55,12 @@
 .left-buffer-sm {
 	margin-left: 5px;
 }
+
+.label-well {
+	background-color: #1c1e22;
+	margin-right: .6em;
+}
+
+.label-lg {
+	font-size: 85%;
+}

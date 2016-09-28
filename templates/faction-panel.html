@@ -13,7 +13,7 @@
 				<div class="btn-group">
 					<button class="btn btn-primary" data-toggle="modal" data-target="#factionCreateModal"><span class="glyphicon glyphicon-plus-sign"></span> Create Faction</button>
 					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-import"></span> Import Factions</button>
-					<button class="btn btn-default disabled"><span class="glyphicon glyphicon-export"></span> Export Factions</button>
+					<button class="btn btn-default" ng-click="ui.export()"><span class="glyphicon glyphicon-export"></span> Export Factions</button>
 					<button class="btn btn-default" ng-click="factionCtl.showAll()"><span class="glyphicon glyphicon-eye-open"></span> Show All</button>
 					<button class="btn btn-default" ng-click="factionCtl.hideAll()"><span class="glyphicon glyphicon-eye-close"></span> Hide All</button>
 					<button class="btn btn-danger disabled"><span class="glyphicon glyphicon-remove-sign"></span> Purge Factions</button>
@@ -59,7 +59,7 @@
 					</div>
 				</div>
 				<div class="panel-footer">
-					<span>Fleets <span class="badge">{{ui.fleets[faction].length}}</span></span> <span>Units <span class="badge">{{ui.unitCount}}</span></span>
+					<span>Fleets <span class="badge">{{ui.fleets[faction].length}}</span></span> <span>Units <span class="badge">{{countUnits(faction)}}</span></span>
 				</div>
 			</div>
 		</div>

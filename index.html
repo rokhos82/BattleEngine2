@@ -34,7 +34,13 @@
 							</ul>
 						</li>
 						<li ng-class="{active:ui.state === ui.states.entities}"><a href="" ng-click="ui.state = ui.states.entities"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Officers</a></li>
-						<li ng-class="{active:ui.state === ui.states.combat}"><a href="" ng-click="ui.state = ui.states.combat"><span class="glyphicon glyphicon-fire" aria-hidden="true"></span> Combat</a></li>
+						<li class="dropdown" ng-class="{active:ui.state === ui.states.logs || ui.state === ui.states.combat}">
+							<a href="#" class="dropdown-toggle"data-toggle="dropdown" role="button" aria-expanded="false"><span class="glyphicon glyphicon-fire" aria-hidden="true"></span> Combat <span class="caret"></span></a>
+							<ul class="dropdown-menu" role="menu">
+								<li ng-class="{active:ui.state === ui.states.logs}"><a href="" ng-click="ui.state = ui.states.logs">Logs</a></li>
+								<li ng-class="{active:ui.state === ui.states.combat}"><a href="" ng-click="ui.state = ui.states.combat">Simulator</a></li>
+							</ul>
+						</li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li class="dropdown">
@@ -48,6 +54,7 @@
 								<li><a href="#" ng-click="main.importData()">Import Data</a></li>
 								<li class="divider"></li>
 								<li><a href="#" ng-click="main.loadExampleData()">Load Example</a></li>
+								<li><a href="#" ng-click="main.dataDump()">Data Dump</a></li>
 							</ul>
 						</li>
 					</ul>
@@ -75,6 +82,7 @@
 		<div class="container" ng-show="ui.state === ui.states.mothballs">
 			<mothball-panel></mothball-panel>
 		</div>
+		<script type="text/javascript" src="js/uuid.js"></script>
 		<script type="text/javascript" src="js/be2.helper.js"></script>
 		<script type="text/javascript" src="js/jquery-3.1.0.js"></script>
 		<script type="text/javascript" src="js/bootstrap.js"></script>
@@ -83,6 +91,7 @@
 		<script type="text/javascript" src="js/angular-touch.js"></script>
 		<script type="text/javascript" src="js/angular-resource.js"></script>
 		<script type="text/javascript" src="js/ui-bootstrap-2.1.3.js"></script>
+		<script type="text/javascript" src="js/underscore.js"></script>
 		<script type="text/javascript" src="be2.ang.js"></script>
 	</body>
 </html>

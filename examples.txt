@@ -37,7 +37,8 @@
 		"wf": {
 			"safe":5,
 			"max":6
-		}
+		},
+		"size": 18
 	},
 	"cic": {
 		"target":5,
@@ -45,7 +46,6 @@
 	},
 	"flag bridge": {},
 	"hull": {
-		"base":18,
 		"max":29
 	},
 	"shield": {

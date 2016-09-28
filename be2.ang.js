@@ -137,6 +137,50 @@
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2InfoModal - this is the service object for a generic import modal.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.service("be2InfoModal",["$uibModal",function($modal) {
+		var modalDefaults = {
+			backdrop: true,
+			keyboard: true,
+			modalFade: true,
+			templateUrl: 'templates/info-modal.html'
+		};
+
+		var modalOptions = {
+			headerText: "This is the information modal",
+		};
+
+		this.showModal = function(customModalDefaults,customModalOptions) {
+			if (!customModalDefaults) customModalDefaults = {};
+			customModalDefaults.backdrop = 'static';
+			return this.show(customModalDefaults,customModalOptions);
+		};
+
+		this.show = function(customModalDefaults,customModalOptions) {
+			var tempModalDefaults = {};
+			var tempModalOptions = {};
+
+			angular.extend(tempModalDefaults,modalDefaults,customModalDefaults);
+			angular.extend(tempModalOptions,modalOptions,customModalOptions);
+
+			if(!tempModalDefaults.controller) {
+				tempModalDefaults.controller = function($scope,$uibModalInstance) {
+					$scope.modalOptions = tempModalOptions;
+					$scope.modalOptions.ok = function(result) {
+						$uibModalInstance.close(result);
+					};
+					$scope.modalOptions.close = function(result) {
+						$uibModalInstance.dismiss('cancel');
+					};
+				}
+			}
+
+			return $modal.open(tempModalDefaults).result;
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// DataStore - this is the main data store for the entire application.
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("DataStore",[function() {
@@ -183,6 +227,22 @@
 			warning: function(msg) {if(data.ui.debug){console.log("FactionService: Warning - " + msg);}}
 		};
 
+		var _factionDefaults = {
+			"fleets": {},
+			"enemies": {},
+			"name": "",
+			"description": ""
+		};
+
+		// Creates a new faction from a dictionary on elements -------------------------------------
+		var _create = function(elements) {
+			for(var e in elements) {
+				faction[e] = elements[e];
+			}
+
+			_add(faction);
+		};
+
 		// Validate that the passed object is a proper Faction object ------------------------------
 		var _validate = function(faction) {
 			var valid = true;
@@ -220,26 +280,12 @@
 			return valid;
 		};
 
-		// Creates a new faction from a dictionary on elements -------------------------------------
-		var _create = function(elements) {
-			var faction = {
-				name: "",
-				description: "",
-				fleets: [],
-				enemies: []
-			};
-
-			for(var e in elements) {
-				faction[e] = elements[e];
-			}
-
-			_add(faction);
-		};
-
 		// Adds a Faction to the array -------------------------------------------------------------
 		var _add = function(faction) {
 			if(_validate(faction) && !_exists(faction)) {
-				data.state.factions[faction.name] = faction;
+				var id = window.uuid.v4();
+				data.state.factions[id] = faction;
+				faction.uuid = id;
 				var l = data.state.factions.list.push(faction.name);
 				_logger.success("Added Faction " + faction.name + ".  " + l + " faction(s) currently in system.");
 			}
@@ -280,7 +326,7 @@
 
 		// Get a list of fleets assigned to a faction ----------------------------------------------
 		var _getFleets = function(faction) {
-			return data.state.factions[faction].fleets;
+			return _exists(faction) ? data.state.factions[faction].fleets : undefined;
 		};
 
 		// Get a list of factions ------------------------------------------------------------------
@@ -365,8 +411,10 @@
 		// Add a fleet object to the dictionary ----------------------------------------------------
 		var _add = function(fleet) {
 			if(_validate(fleet) && !_exists(fleet)) {
-				data.state.fleets[fleet.name] = fleet;
-				var l = data.state.fleets.list.push(fleet.name);
+				var id = window.uuid.v4();
+				fleet.uuid = id;
+				data.state.fleets[id] = fleet;
+				var l = data.state.fleets.list.push(id);
 				_logger.success("Added Fleet " + fleet.name + ".  " + l + " fleet(s) currently in system.");
 			}
 			else {
@@ -380,7 +428,7 @@
 				name: "",
 				nickname: "",
 				description: "",
-				units: []
+				units: {}
 			};
 
 			for(var e in elements) {
@@ -404,10 +452,12 @@
 		var _attachUnit = function(fleet,unit) {
 			if(_exists(fleet) && UnitService.exists(unit)) {
 				var f = data.state.fleets[fleet];
-				if(!Array.isArray(f.units))
-					f.units = [];
-				f.units.push(unit);
-				_logger.success("Attached unit '" + unit + "'' to fleet '" + fleet + "'.");
+				var u = data.state.units[unit];
+				if(!_.isObject(f.units)) {
+					f.units = {};
+				}
+				f.units[unit] = u;
+				_logger.success("Attached unit '" + u.unit.name + "'' to fleet '" + f.name + "'.");
 			}
 			else {
 				_logger.error("Unable to attach unit to a fleet.  Either the unit or the fleet does not exist.");
@@ -416,7 +466,7 @@
 
 		// Get all the units from the passed fleet object ------------------------------------------
 		var _getUnits = function(fleet) {
-			return data.state.fleets[fleet].units;
+			return _exists(fleet) ? data.state.fleets[fleet].units : undefined;
 		};
 
 		var _getList = function() {
@@ -466,8 +516,10 @@
 		// Add a unit object to the dictionary ----------------------------------------------------
 		var _add = function(unit) {
 			if(_validate(unit) && !_exists(unit.unit.name)) {
-				data.state.units[unit.unit.name] = unit;
-				var l = data.state.units.list.push(unit.unit.name);
+				var id = window.uuid.v4();
+				unit.uuid = id;
+				data.state.units[id] = unit;
+				var l = data.state.units.list.push(id);
 				_logger.success("Added unit " + unit.name + ".  " + l + " unit(s) currently in system.");
 			}
 			else {
@@ -497,7 +549,7 @@
 				}
 			}
 			else {
-				_logger.warning("List must be an array");
+				_logger.warning("Unit list must be an array");
 			}
 			return arr;
 		};
@@ -528,44 +580,50 @@
 		};
 
 		var _baseTemplate = {
-			unit: {
-				name: "",
-				id: "",
-				type: ""
+			"unit": {
+				"name": "",
+				"id": "",
+				"type": ""
 			},
-			hull: {
-				"base": 0,
-				"max": 0
+			"hull": {
+				"max": 0,
+				"current": 0
 			},
-			shield: {
+			"shield": {
 				"max": 0
 			},
 			"direct-fire": [],
 			"packet-fire": []
 		};
 
+		// Adds a unit template object to the program state ----------------------------------------
 		var _add = function(obj) {
 			// Is it unique and valid
 			if(_validate(obj) && !_exists(obj.unit.name)) {
-				data.state.templates[obj.unit.name] = obj;
-				data.state.templates.list.push(obj.unit.name);
-				_logger.success("Added template '" + obj.unit.name + "'.");
+				var id = window.uuid.v4();
+				obj.uuid = id;
+				data.state.templates[id] = obj;
+				data.state.templates.list.push(id);
+				_logger.success("Added template '" + obj.unit.name + "' " + id + ".");
 			}
 			else {
 				_logger.error("Unable to add template.  Either template is invalid or already exists.");
 			}
 		};
 
+		// Creates and adds a unit template object to the program state ----------------------------
 		var _create = function(dict) {
-			var template = {};
-			angular.merge(template,_baseTemplate,dict);
+			var template = angular.copy(_baseTemplate);
+			angular.merge(template,dict);
 			_add(template);
 		};
 
+		// Checks to see if the template exists ----------------------------------------------------
 		var _exists = function(name) {
 			return (typeof(name) === "string" && typeof(data.state.templates[name]) === "object");
 		};
 
+		// Returns the template object from the program state --------------------------------------
 		var _get = function(name) {
 			return _exists(name) ? data.state.templates[name] : undefined;
 		};
@@ -575,7 +633,6 @@
 		};
 
 		var _validate = function(obj) {
-			console.log(obj);
 			var valid = true;
 			// Is there a 'unit' component
 			if(typeof(obj.unit) === "object") {
@@ -611,7 +668,7 @@
 			// Is the a 'hull' component
 			if(typeof(obj.hull) === "object" && valid) {
 				// Is there a 'base' element and is it non-zero
-				if(typeof(obj.hull.base) !== "number" || (obj.hull.base == 0)) {
+				if(typeof(obj.unit.size) !== "number" || (obj.unit.size == 0)) {
 					_logger.error("Template has no base hull.");
 					valid = false;
 				}
@@ -638,11 +695,23 @@
 				var temp = {};
 				angular.copy(data.state.templates[template],temp);
 				temp.unit.name = name;
-				temp.unit.template = template;
+				temp.template = data.state.templates[template];
+				temp.hull.current = temp.hull.max;
 				$be2Units.add(temp);
 			}
 			else {
 				_logger.error("Unable to deploy unit '" + name + "' from template '" + template + "'.");
+			}
+		};
+
+		var _updateTemplates = function() {
+			for(var t in data.state.templates) {
+				if(t === "list") {
+					continue;
+				}
+				var temp = angular.copy(_baseTemplate);
+				angular.merge(temp,data.state.templates[t]);
+				data.state.templates[t] = temp;
 			}
 		};
 
@@ -653,7 +722,8 @@
 			exists: _exists,
 			get: _get,
 			getList: _getList,
-			validate: _validate
+			validate: _validate,
+			update: _updateTemplates
 		}
 	}]);
 
@@ -665,7 +735,53 @@
 	// CombatService
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.factory("CombatService",["$q",function($q) {
-		var _worker = undefined;
+		//var _worker = new WebWorker("be2.combat.js");
+
+		var _eventListener = function(event) {};
+
+		var _start = function(combatants) {
+			// Setup combat data.
+		};
+
+		/*
+		function workerCallback(event) {
+			$scope.combat.log += event.data.log;
+			if(event.data.done)
+				$scope.combat.status = "finished";
+			$scope.$apply();
+		}
+
+		this.startCombat = function() {
+			$scope.combat.status = "started";
+			$scope.combat.log = "";
+
+			var worker = new Worker("be2.combat.js");
+
+			worker.addEventListener("message",workerCallback,false);
+			var temp = {
+				state: {}
+			};
+			angular.copy($data.state,temp.state);
+			worker.postMessage(temp);
+
+			$scope.worker = worker;
+		};
+
+		this.stopCombat = function() {
+			$scope.combat.status = "stopped";
+
+			$scope.worker.terminate();
+			$scope.worker = undefined;
+		};
+
+		this.resetCombat = function() {
+			$scope.combat.status = "uninitiated";
+			$scope.combat.log = "";
+		};*/
+
+		return {
+			start: _start
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -683,7 +799,8 @@
 			if(typeof(localStorage) !== "undefined") {
 				var json = localStorage.getItem(_key);
 				if(typeof(json) === "string") {
-					data.state = JSON.parse(json);
+					var flat = JSON.parse(json);
+					data.state = _expand(flat);
 					_logger.success("Data loaded from localStorage.");
 				}
 				else {
@@ -697,7 +814,8 @@
 
 		var _save = function() {
 			if(typeof(localStorage) !== "undefined") {
-				var json = JSON.stringify(data.state);
+				var dat = _flatten(data.state);
+				var json = JSON.stringify(dat);
 				localStorage.setItem(_key,json);
 				_logger.success("Data stored in localStorage.");
 			}
@@ -721,14 +839,63 @@
 			console.log(json);
 		};
 
+		function cloneState(state,src) {
+			// Preserve the original list array
+			var arr = state.list;
+			
+			// Clear out all of the old objects (except the list array)
+			for(var s in state) {
+				if(s === "list") {
+					delete state[s];
+				}
+			}
+			
+			// Do a shallow copy of the src object to the state object.
+			for(var v in src) {
+				state[v] = src[v];
+			}
+			
+			// Clear out the list array and copy in the src list array.
+			arr.length = 0;
+			for(var i in src.list) {
+				arr.push(src.list[i]);
+			}
+
+			// Reassign the list array to the state object.
+			state.list = arr;
+		}
+
 		var _example = function() {
 			$resource('examples.json').get(function(d) {
-				data.state.templates = d.templates;
-				data.state.units = d.units;
-				data.state.entities = d.entities;
-				data.state.fleets = d.fleets;
-				data.state.factions = d.factions;
+				cloneState(data.state.templates,d.templates);
+				cloneState(data.state.units,d.units);
+				cloneState(data.state.entities,d.entities);
+				cloneState(data.state.fleets,d.fleets);
+				cloneState(data.state.factions,d.factions);
 			});
+		};
+
+		// This function expands the stored arrays back into the nested object references ----------
+		var _expand = function(flat) {
+			_.map(flat.factions,function(value){value.fleets = _.mapObject(value.fleets,function(value,key){return this[key];},flat.fleets);});
+			flat.factions.list = _.keys(flat.factions);
+			_.map(flat.fleets,function(value){value.units = _.mapObject(value.units,function(value,key){return this[key];},flat.units)});
+			flat.fleets.list = _.keys(flat.fleets);
+			_.map(flat.units,function(value,key){value.template = this[value.template];},flat.templates);
+			flat.units.list = _.keys(flat.units);
+			return flat;
+		};
+
+		// This function flattens the data structure into arrays for storage -----------------------
+		var _flatten = function(dat) {
+			var dat = angular.copy(dat);
+			delete dat.factions.list;
+			_.map(dat.factions,function(faction,key){ if(key !== "list"){ _.mapObject(faction.fleets,function(faction,key){ return key; }); } });
+			delete dat.fleets.list;
+			_.map(dat.fleets,function(fleet,key){ if(key !== "list"){ _.mapObject(fleet.units,function(unit,uuid){ return uuid; }); } });
+			delete dat.units.list;
+			_.map(dat.units,function(unit){ if(_.isObject(unit.template)){ unit.template = unit.template.uuid; } });
+			return dat;
 		};
 
 		return {
@@ -743,7 +910,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2MainController - Main controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2MainController",["$rootScope","$scope","FactionService","FleetService","UnitService","StorageService","DataStore",function($rootScope,$scope,factions,fleets,units,storage,data){
+	app.controller("be2MainController",["$rootScope","$scope","FactionService","FleetService","UnitService","UnitTemplateService","StorageService","DataStore",function($rootScope,$scope,factions,fleets,units,$templates,storage,data){
 		var ui = data.ui.main;
 		ui.states = {
 			combat: "combat",
@@ -752,7 +919,8 @@
 			units: "units",
 			entities: "entities",
 			templates: "templates",
-			mothballs: "mothballs"
+			mothballs: "mothballs",
+			logs: "logs"
 		};
 		ui.state = ui.states.factions;
 		$scope.ui = ui;
@@ -763,18 +931,23 @@
 		this.exportData = storage.export;
 		this.loadExampleData = function() {
 			storage.example();
+			$templates.update();
 			$rootScope.$broadcast('be2.init.ui.state');
 		};
 
 		this.importData = function() {};
 
 		this.loadData();
+
+		this.dataDump = function() {
+			console.log(data);
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FactionController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FactionController",["$rootScope","$scope","FactionService","FleetService","UnitService","DataStore",function($rootScope,$scope,FactionService,FleetService,UnitService,data){
+	app.controller("be2FactionController",["$rootScope","$scope","FactionService","FleetService","UnitService","DataStore","be2InfoModal",function($rootScope,$scope,FactionService,FleetService,UnitService,data,infoModal){
 		var ui = data.ui.faction;
 		ui.factions = [];
 		ui.fleets = {};
@@ -817,6 +990,10 @@
 		$rootScope.$on('be2.init.ui.state',function(event,args) {
 			_initState();
 		});
+
+		$scope.countUnits = function(faction) {
+			return _.reduce(ui.units[faction],function(memo,arr){return memo+arr.length;},0);
+		};
 
 		this.toggleVisible = function(faction) {
 			ui.state.show.factions[faction] = !ui.state.show.factions[faction];			
@@ -912,6 +1089,15 @@
 		});
 
 		this.initState();
+
+		ui.export = function() {
+			var modalOptions = {
+				headerText: "Factions Export",
+				infoText: btoa(JSON.stringify(data.state.factions)),
+				infoTextPlain: JSON.stringify(data.state.factions)
+			};
+			infoModal.showModal({},modalOptions).then(function (result) {});
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -975,18 +1161,21 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FleetController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","be2SelectModal","DataStore",function($scope,FactionService,FleetService,UnitService,SelectModal,data){
+	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","be2SelectModal","DataStore","be2InfoModal",function($scope,FactionService,FleetService,UnitService,SelectModal,data,infoModal){
 		var ui = data.ui.fleet;
 		ui.fleets = FleetService.getList();
 		ui.state = {
 			show: {}
 		};
+		ui.data = data.state;
 		ui.units = {};
 		ui.newFleet = {
 				name: "",
-				description: "",
+				description: ""
 		};
 		$scope.ui = ui;
+
+		this.data = data.state;
 
 		// Mappings to Service factories -----------------------------------------------------------
 		this.getFleet = FleetService.get;
@@ -997,9 +1186,7 @@
 			for(var i in ui.fleets) {
 				var fleet = ui.fleets[i];
 				ui.state.show[fleet] = false;
-				ui.units[fleet] = [];
-				var units = FleetService.getUnits(fleet);
-				ui.units[fleet] = units;
+				ui.units[fleet] = _.map(data.state.fleets[fleet].units,function(value,key){ return (key !== "list") ? value.uuid : ""; });
 			}
 		}
 
@@ -1047,6 +1234,15 @@
 
 		// Initialize the ui.state -----------------------------------------------------------------
 		this.initState();
+
+		ui.export = function() {
+			var modalOptions = {
+				headerText: "Factions Export",
+				infoText: btoa(JSON.stringify(data.state.fleets)),
+				infoTextPlain: JSON.stringify(data.state.fleets)
+			};
+			infoModal.showModal({},modalOptions).then(function (result) {});
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1082,48 +1278,53 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2CombatController - Combat controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2CombatController",["$scope","FleetService","UnitService",function($scope,FleetService,UnitService) {
-		$scope.combat = {
-			status: "uninitiated",
-			log: "Combat results will be posted here!"
+	app.controller("be2CombatController",["$scope","CombatService","DataStore",function($scope,$combat,$data) {
+		var ui = {
+			combat: $data.combat,
+			fleets: $data.state.fleets,
+			factions: $data.state.factions
 		};
 
-		function workerCallback(event) {
-			$scope.combat.log += event.data.log;
-			if(event.data.done)
-				$scope.combat.status = "finished";
+		ui.combat.statuses = [
+			"Uninitialized",
+			"Initializing Combat",
+			"Getting Combatants",
+			"Running Combat Simulation",
+			"Cleaning Up",
+			"Finished"
+		];
+
+		ui.combat.max = ui.combat.statuses.length - 1;
+		ui.combat.current = 0;
+		ui.combat.status = ui.combat.statuses[ui.combat.current];
+		ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
+		
+		$scope.ui = ui;
+
+		$scope.startCombat = function() {
+			ui.combat.current = 1;
+			ui.combat.status = ui.combat.statuses[ui.combat.current];
+			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
+
+			setTimeout(doCombat,1000);
+		};
+
+		function doCombat() {
+			ui.combat.current++;
+			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
+			ui.combat.status = ui.combat.statuses[ui.combat.current];
 			$scope.$apply();
+
+			if(ui.combat.current < ui.combat.max) {
+				setTimeout(doCombat,1000);
+			}
 		}
-
-		this.startCombat = function() {
-			$scope.combat.status = "started";
-			$scope.combat.log = "";
-
-			var worker = new Worker("be2.combat.js");
-
-			worker.addEventListener("message",workerCallback,false);
-			worker.postMessage(FleetService.combatInfo());
-
-			$scope.worker = worker;
-		};
-
-		this.stopCombat = function() {
-			$scope.combat.status = "stopped";
-
-			$scope.worker.terminate();
-			$scope.worker = undefined;
-		};
-
-		this.resetCombat = function() {
-			$scope.combat.status = "uninitiated";
-			$scope.combat.log = "";
-		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2UnitController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2UnitController",["$rootScope","$scope","UnitService","DataStore",function($rootScope,$scope,$be2Units,$be2Data){
+	app.controller("be2UnitController",["$rootScope","$scope","UnitService","DataStore","be2InfoModal",function($rootScope,$scope,$be2Units,$be2Data,$infoModal){
 		var ui = $be2Data.ui.unit;
 		ui.units = $be2Units.getList();
 		ui.state = {
@@ -1134,6 +1335,8 @@
 			ui.state.show[unit] = false;
 		}
 		$scope.ui = ui;
+
+		this.data = $be2Data.state;
 
 		// Service Mappings ------------------------------------------------------------------------
 		this.getUnitInfo = $be2Units.get;
@@ -1154,17 +1357,28 @@
 		this.toggleVisible = function(unit) {
 			ui.state.show[unit] = !ui.state.show[unit];
 		};
+
+		ui.export = function() {
+			var modalOptions = {
+				headerText: "Factions Export",
+				infoText: btoa(JSON.stringify($be2Data.state.units)),
+				infoTextPlain: JSON.stringify($be2Data.state.units)
+			};
+			$infoModal.showModal({},modalOptions).then(function (result) {});
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2UnitTemplateController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2UnitTemplateController",["$rootScope","$scope","UnitTemplateService","be2ImportModal","be2QueryModal","DataStore",function($rootScope,$scope,$be2Templates,ImportModal,QueryModal,data){
+	app.controller("be2UnitTemplateController",["$rootScope","$scope","UnitTemplateService","be2ImportModal","be2QueryModal","DataStore","be2InfoModal",function($rootScope,$scope,$be2Templates,ImportModal,QueryModal,data,infoModal){
 		var ui = data.ui.template;
 		ui.templates = $be2Templates.getList();
 		ui.state = {
 			show: {}
 		};
+
+		this.data = data.state;
 		
 		for(var i in ui.templates) {
 			var t = ui.templates[i];
@@ -1215,6 +1429,55 @@
 			ImportModal.showModal({},modalOptions).then(function (result) {
 				$be2Templates.create(JSON.parse(result));
 			});
+		};
+
+		ui.export = function() {
+			var modalOptions = {
+				headerText: "Factions Export",
+				infoText: btoa(JSON.stringify(data.state.units)),
+				infoTextPlain: JSON.stringify(data.state.units)
+			};
+			infoModal.showModal({},modalOptions).then(function (result) {});
+		};
+
+		// Test functions --------------------------------------------------------------------------
+		this.test = function() {
+			var arrExpandTest = {
+				"factions":{
+					"FX001":{"uuid":"FX001","fleets":{"FL001":"FL001","FL003":"FL003"}},
+					"FX002":{"uuid":"FX002","fleets":{"FL002":"FL002","FL004":"FL004","FL005":"Fl005"}}
+				},
+				"fleets": {
+					"FL001":{"uuid":"FL001","units":{"U000":"U000","U003":"U003"}},
+					"FL002":{"uuid":"FL002","units":{"U002":"U002"}},
+					"FL003":{"uuid":"FL003","units":{"U004":"U004"}},
+					"FL004":{"uuid":"FL004","units":{"U007":"U007"}},
+					"FL005":{"uuid":"FL005","units":{"U001":"U001"}}
+				},
+				"units": {
+					"U000":{"uuid":"U000","template":"T000"},
+					"U001":{"uuid":"U001","template":"T001"},
+					"U002":{"uuid":"U002","template":"T000"},
+					"U003":{"uuid":"U003","template":"T002"},
+					"U004":{"uuid":"U004","template":"T002"},
+					"U005":{"uuid":"U005","template":"T001"},
+					"U006":{"uuid":"U006","template":"T000"},
+					"U007":{"uuid":"U007","template":"T002"},
+					"U008":{"uuid":"U008","template":"T001"}
+				},
+				"templates": {
+					"T000":{"uuid":"T000"},
+					"T001":{"uuid":"T001"},
+					"T002":{"uuid":"T002"},
+					"T003":{"uuid":"T003"}
+				}
+			};
+
+			_.map(arrExpandTest.factions,function(value){value.fleets = _.mapObject(value.fleets,function(value,key){return this[key];},arrExpandTest.fleets);});
+			_.map(arrExpandTest.fleets,function(value){value.units = _.mapObject(value.units,function(value,key){return this[key];},arrExpandTest.units)});
+			_.map(arrExpandTest.units,function(value,key){value.template = this[value.template];},arrExpandTest.templates);
+
+			console.log(arrExpandTest);
 		};
 	}]);
 

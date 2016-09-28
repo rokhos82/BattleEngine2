@@ -428,7 +428,7 @@
 				name: "",
 				nickname: "",
 				description: "",
-				units: []
+				units: {}
 			};
 
 			for(var e in elements) {
@@ -452,10 +452,12 @@
 		var _attachUnit = function(fleet,unit) {
 			if(_exists(fleet) && UnitService.exists(unit)) {
 				var f = data.state.fleets[fleet];
-				if(typeof(f.units) !== "object")
+				var u = data.state.units[unit];
+				if(!_.isObject(f.units)) {
 					f.units = {};
-				f.units[unit.uuid] = unit;
-				_logger.success("Attached unit '" + unit + "'' to fleet '" + fleet + "'.");
+				}
+				f.units[unit] = u;
+				_logger.success("Attached unit '" + u.unit.name + "'' to fleet '" + f.name + "'.");
 			}
 			else {
 				_logger.error("Unable to attach unit to a fleet.  Either the unit or the fleet does not exist.");
@@ -547,7 +549,7 @@
 				}
 			}
 			else {
-				_logger.warning("List must be an array");
+				_logger.warning("Unit list must be an array");
 			}
 			return arr;
 		};
@@ -584,7 +586,6 @@
 				"type": ""
 			},
 			"hull": {
-				"base": 0,
 				"max": 0,
 				"current": 0
 			},
@@ -667,7 +668,7 @@
 			// Is the a 'hull' component
 			if(typeof(obj.hull) === "object" && valid) {
 				// Is there a 'base' element and is it non-zero
-				if(typeof(obj.hull.base) !== "number" || (obj.hull.base == 0)) {
+				if(typeof(obj.unit.size) !== "number" || (obj.unit.size == 0)) {
 					_logger.error("Template has no base hull.");
 					valid = false;
 				}
@@ -877,16 +878,22 @@
 		// This function expands the stored arrays back into the nested object references ----------
 		var _expand = function(flat) {
 			_.map(flat.factions,function(value){value.fleets = _.mapObject(value.fleets,function(value,key){return this[key];},flat.fleets);});
+			flat.factions.list = _.keys(flat.factions);
 			_.map(flat.fleets,function(value){value.units = _.mapObject(value.units,function(value,key){return this[key];},flat.units)});
+			flat.fleets.list = _.keys(flat.fleets);
 			_.map(flat.units,function(value,key){value.template = this[value.template];},flat.templates);
+			flat.units.list = _.keys(flat.units);
 			return flat;
 		};
 
 		// This function flattens the data structure into arrays for storage -----------------------
 		var _flatten = function(dat) {
 			var dat = angular.copy(dat);
-			_.map(dat.factions,function(value){ _.mapObject(value.fleets,function(value,key){ return key; }); });
-			_.map(dat.fleets,function(fleet){ _.mapObject(fleet.units,function(unit,uuid){ return uuid; }); });
+			delete dat.factions.list;
+			_.map(dat.factions,function(faction,key){ if(key !== "list"){ _.mapObject(faction.fleets,function(faction,key){ return key; }); } });
+			delete dat.fleets.list;
+			_.map(dat.fleets,function(fleet,key){ if(key !== "list"){ _.mapObject(fleet.units,function(unit,uuid){ return uuid; }); } });
+			delete dat.units.list;
 			_.map(dat.units,function(unit){ if(_.isObject(unit.template)){ unit.template = unit.template.uuid; } });
 			return dat;
 		};
@@ -931,6 +938,10 @@
 		this.importData = function() {};
 
 		this.loadData();
+
+		this.dataDump = function() {
+			console.log(data);
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1156,6 +1167,7 @@
 		ui.state = {
 			show: {}
 		};
+		ui.data = data.state;
 		ui.units = {};
 		ui.newFleet = {
 				name: "",
@@ -1172,9 +1184,7 @@
 			for(var i in ui.fleets) {
 				var fleet = ui.fleets[i];
 				ui.state.show[fleet] = false;
-				ui.units[fleet] = [];
-				var units = FleetService.getUnits(fleet);
-				ui.units[fleet] = units;
+				ui.units[fleet] = _.map(data.state.fleets[fleet].units,function(value,key){ return (key !== "list") ? value.uuid : ""; });
 			}
 		}
 

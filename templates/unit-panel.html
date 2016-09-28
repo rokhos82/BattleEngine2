@@ -20,7 +20,7 @@
 		</div>
 	</div>
 	<div class="row" ng-repeat="unit in ui.units">
-		<div class="col-lg-12 col-md-12 col-sm-12" ng-init="info = ctl.getUnitInfo(unit)">
+		<div class="col-lg-12 col-md-12 col-sm-12">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					<div class="btn-toolbar pull-right">
@@ -29,14 +29,14 @@
 							<button type="button" class="btn btn-sm btn-danger disabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 						</div>
 					</div>
-					<h3 class="panel-title panel-title-lg">{{info.unit.name}} - '{{info.unit.template.unit.name}}'-class {{info.unit.type}}</h3>
+					<h3 class="panel-title panel-title-lg">{{ctl.data.units[unit].unit.name}} - '{{ctl.data.units[unit].template.unit.name}}'-class {{ctl.data.units[unit].unit.type}}</h3>
 				</div>
 				<div class="panel-body" ng-show="ui.state.show[unit]">
 					<div class="well well-sm">Detailed information about the unit will be in here.</div>
 				</div>
 				<div class="panel-footer">
 					<span class="pull-right"><code>{{unit}}</code></span>
-					<span class="label label-well" ng-class="{'text-danger':info.unit.type==='Starship','text-warning':info.unit.type==='Gunboat','text-info':info.unit.type==='Fighter','text-success':info.unit.type==='Base'}">{{info.unit.type}}</span><span class="label label-primary">Base Hull: {{info.hull.base}}</span><span class="label label-warning left-buffer-sm">Hull: {{info.hull.max}}</span><span class="label label-info left-buffer-sm">Shield: {{info.shield.max}}</span>
+					<span class="label label-well" ng-class="{'text-danger':ctl.data.units[unit].unit.type==='Starship','text-warning':ctl.data.units[unit].unit.type==='Gunboat','text-info':ctl.data.units[unit].unit.type==='Fighter','text-success':ctl.data.units[unit].unit.type==='Base'}">{{ctl.data.units[unit].unit.type}}</span><span class="label label-primary">Base Hull: {{ctl.data.units[unit].hull.base}}</span><span class="label label-warning left-buffer-sm">Hull: {{ctl.data.units[unit].hull.max}}</span><span class="label label-info left-buffer-sm">Shield: {{ctl.data.units[unit].shield.max}}</span>
 				</div>
 			</div>
 		</div>

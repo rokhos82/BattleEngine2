@@ -326,7 +326,7 @@
 
 		// Get a list of fleets assigned to a faction ----------------------------------------------
 		var _getFleets = function(faction) {
-			return data.state.factions[faction].fleets;
+			return _exists(faction) ? data.state.factions[faction].fleets : undefined;
 		};
 
 		// Get a list of factions ------------------------------------------------------------------
@@ -464,7 +464,7 @@
 
 		// Get all the units from the passed fleet object ------------------------------------------
 		var _getUnits = function(fleet) {
-			return data.state.fleets[fleet].units;
+			return _exists(fleet) ? data.state.fleets[fleet].units : undefined;
 		};
 
 		var _getList = function() {
@@ -694,7 +694,7 @@
 				var temp = {};
 				angular.copy(data.state.templates[template],temp);
 				temp.unit.name = name;
-				temp.unit.template = data.state.templates[template];
+				temp.template = data.state.templates[template];
 				temp.hull.current = temp.hull.max;
 				$be2Units.add(temp);
 			}
@@ -798,7 +798,8 @@
 			if(typeof(localStorage) !== "undefined") {
 				var json = localStorage.getItem(_key);
 				if(typeof(json) === "string") {
-					data.state = JSON.parse(json);
+					var flat = JSON.parse(json);
+					data.state = _expand(flat);
 					_logger.success("Data loaded from localStorage.");
 				}
 				else {
@@ -812,7 +813,8 @@
 
 		var _save = function() {
 			if(typeof(localStorage) !== "undefined") {
-				var json = JSON.stringify(data.state);
+				var dat = _flatten(data.state);
+				var json = JSON.stringify(dat);
 				localStorage.setItem(_key,json);
 				_logger.success("Data stored in localStorage.");
 			}
@@ -874,83 +876,19 @@
 
 		// This function expands the stored arrays back into the nested object references ----------
 		var _expand = function(flat) {
-			// 1 - Load Templates -----
-			var templates = flat.templates;
-			for(var t in templates) {
-				var template = templates[t];
-				var key = template.uuid;
-				data.state.templates[key] = template;
-			}
-
-			// 2 - Load Units ---------
-			var units = flat.units;
-			for(var u in units) {
-				var unit = units[u];
-				var key = unit.uuid;
-				data.state.units[key] = unit;
-				var templateKey = unit.template;
-				unit.template = data.state.templates[templateKey];
-			}
-
-			// 3 - Load Fleets --------
-			var fleets = flat.fleets;
-			for(var f in fleets) {
-				var fleet = fleets[f];
-				var key = fleet.uuid;
-				data.state.fleets[key] = fleet;
-				var units = fleet.units;
-				fleet.units = {};
-				for(var u in units) {
-					var unitKey = units[u];
-					fleet.units[unitKey] = data.state.units[unitKey];
-				}
-			}
-
-			// 4 - Load Factions ------
-			var factions = flat.factions;
-			for(var f in factions) {
-				var faction = factions[f];
-				var key = faction.uuid;
-				data.state.factions[key] = faction;
-				var fleets = faction.fleets;
-				faction.fleets = {};
-				for(var e in fleets) {
-					var fleetKey = fleets[e];
-					faciton.fleets[fleetKey] = data.state.fleets[fleetKey];
-				}
-			}
+			_.map(flat.factions,function(value){value.fleets = _.mapObject(value.fleets,function(value,key){return this[key];},flat.fleets);});
+			_.map(flat.fleets,function(value){value.units = _.mapObject(value.units,function(value,key){return this[key];},flat.units)});
+			_.map(flat.units,function(value,key){value.template = this[value.template];},flat.templates);
+			return flat;
 		};
 
 		// This function flattens the data structure into arrays for storage -----------------------
 		var _flatten = function(dat) {
 			var dat = angular.copy(dat);
-
-			var factions = dat.factions;
-			var factionList = [];
-			for(var f in factions) {
-				var faction = factions[f];
-				factionList.push(faction);
-				faction.fleets = _.pluck(faction.fleets,"uuid");
-			}
-			dat.factions = factionList;
-
-			var fleets = dat.fleets;
-			var fleetList = [];
-			for(var f in fleets) {
-				var fleet = fleets[f];
-				fleetList.push(fleet);
-				fleet.units = _.pluck(fleet.units,"uuid");
-			}
-			dat.fleets = fleetList;
-
-			var units = dat.units;
-			var unitList = [];
-			for(var u in units) {
-				var unit = units[u];
-				unitList.push(unit);
-				unit.template = unit.template.uuid;
-			}
-			dat.units = unitList;
+			_.map(dat.factions,function(value){ _.mapObject(value.fleets,function(value,key){ return key; }); });
+			_.map(dat.fleets,function(fleet){ _.mapObject(fleet.units,function(unit,uuid){ return uuid; }); });
+			_.map(dat.units,function(unit){ if(_.isObject(unit.template)){ unit.template = unit.template.uuid; } });
+			return dat;
 		};
 
 		return {
@@ -1386,6 +1324,8 @@
 		}
 		$scope.ui = ui;
 
+		this.data = $be2Data.state;
+
 		// Service Mappings ------------------------------------------------------------------------
 		this.getUnitInfo = $be2Units.get;
 
@@ -1425,6 +1365,8 @@
 		ui.state = {
 			show: {}
 		};
+
+		this.data = data.state;
 		
 		for(var i in ui.templates) {
 			var t = ui.templates[i];

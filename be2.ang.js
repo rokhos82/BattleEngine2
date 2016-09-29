@@ -555,13 +555,20 @@
 			return data.state.units.list;
 		};
 
+		var _getOptions = function() {
+			return _.chain(data.state.units.list).map(function(uuid){
+				return {"key":uuid,"label":this[uuid].unit.name,"group":this[uuid].unit.type};
+			},data.state.units).value();
+		};
+
 		return {
 			validate: _validate,
 			add: _add,
 			exists: _exists,
 			get: _getUnit,
 			getList: _getList,
-			getMultiple: _getMultiple
+			getMultiple: _getMultiple,
+			getOptions: _getOptions
 		}
 	}]);
 
@@ -978,7 +985,7 @@
 					ui.units[faction][fleet.uuid] = [];
 					ui.state.show.fleets[faction][fleet.uuid] = false;
 					var units = FleetService.getUnits(fleet.uuid);
-					ui.units[faction][fleet.uuid] = _.keys(units);
+					ui.units[faction][fleet.uuid] = units;
 				}
 			}
 			$scope.ui = ui;			
@@ -1185,7 +1192,7 @@
 			for(var i in ui.fleets) {
 				var fleet = ui.fleets[i];
 				ui.state.show[fleet] = false;
-				ui.units[fleet] = _.map(data.state.fleets[fleet].units,function(value,key){ return (key !== "list") ? value.uuid : ""; });
+				ui.units[fleet] = data.state.fleets[fleet].units;
 			}
 		}
 
@@ -1208,10 +1215,10 @@
 		this.attachUnit = function(fleet) {
 			var modalOptions = {
 				headerText: "Attach Unit",
-				queryHelperText: "Select a unit to attach to fleet '" + fleet + "'.",
+				queryHelperText: "Select a unit to attach to fleet '" + data.state.fleets[fleet].name + "'.",
 				queryLabelText: "Units",
 				queryButtonText: "Attach",
-				options: UnitService.getList()
+				options: UnitService.getOptions()
 			};
 			SelectModal.showModal({},modalOptions).then(function (result) {
 				FleetService.attachUnit(fleet,result);

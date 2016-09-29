@@ -21,7 +21,7 @@
 	</div>
 	<div class="row">
 		<div class="col-lg-12 col-md-12 col-sm-12" ng-repeat="template in ui.templates">
-			<div class="panel panel-default">
+			<div class="panel panel-default" ng-class="{'dropshadow-md-gb':ctl.data.templates[template].unit.type === 'Gunboat','dropshadow-md-ss':ctl.data.templates[template].unit.type === 'Starship','dropshadow-md-ff':ctl.data.templates[template].unit.type === 'Fighter'}">
 				<div class="panel-heading">
 					<div class="btn-toolbar pull-right">
 						<div class="btn-group">

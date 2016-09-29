@@ -8,14 +8,14 @@
 			"safe":5,
 			"max":6
 		},
-		"cost":261
+		"cost":261,
+		"size":18
 	},
 	"cic":{
 		"target":5,
 		"defense":5
 	},
 	"hull":{
-		"base":18,
 		"max":29
 	},
 	"shield":{
@@ -63,6 +63,7 @@
 	"unit": {
 		"name": "Minesweeper Cruiser",
 		"type": "Starship",
+		"size":12,
 		"defense":15,
 		"wf": {
 			"safe":5,
@@ -74,7 +75,6 @@
 		"cost": 168
 	},
 	"hull": {
-		"base":12,
 		"max":20
 	},
 	"shield": {
@@ -90,8 +90,9 @@
 
 {
 	"unit": {
-		"name": "Light Beam Cruiser",
-		"type": "Starship",
+		"name":"Light Beam Cruiser",
+		"type":"Starship",
+		"size":12,
 		"defense":15,
 		"wf": {
 			"safe":5,
@@ -103,7 +104,6 @@
 		"cost": 167
 	},
 	"hull": {
-		"base":12,
 		"max":20
 	},
 	"shield": {
@@ -119,6 +119,7 @@
 	"unit": {
 		"name": "Fleet Scout 1",
 		"type": "Starship",
+		"size":6,
 		"defense":15,
 		"wf": {
 			"safe":5,
@@ -137,7 +138,6 @@
 		}
 	},
 	"hull": {
-		"base":6,
 		"max":9
 	},
 	"shield": {
@@ -151,6 +151,7 @@
 	"unit": {
 		"name": "Fleet Light Tender 1",
 		"type": "Starship",
+		"size":12,
 		"defense":15,
 		"wf": {
 			"safe":5,
@@ -172,7 +173,6 @@
 		"defense":5
 	},
 	"hull": {
-		"base":12,
 		"max":18
 	},
 	"shield": {
@@ -186,6 +186,7 @@
 	"unit": {
 		"name": "Fleet Light Carrier 1",
 		"type": "Starship",
+		"size":12,
 		"defense":15,
 		"wf": {
 			"safe":5,
@@ -207,7 +208,6 @@
 		"defense":5
 	},
 	"hull": {
-		"base":12,
 		"max":18
 	},
 	"shield": {
@@ -245,6 +245,7 @@
 		"name": "Interception Gunboat",
 		"type": "Gunboat",
 		"defense": 15,
+		"size": 2,
 		"wf": {
 			"safe": 6,
 			"max": 6
@@ -256,7 +257,6 @@
 		"cost": 46
 	},
 	"hull": {
-		"base": 2,
 		"max": 3
 	},
 	"direct-fire": [
@@ -271,11 +271,11 @@
 	"unit": {
 		"name": "Fighter II",
 		"type": "Fighter",
+		"size": 1,
 		"defense": 15,
 		"cost": 4
 	},
 	"hull": {
-		"base": 1,
 		"max": 1
 	},
 	"packet-fire": [

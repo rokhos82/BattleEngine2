@@ -343,7 +343,14 @@
 				delete factions[i];
 				_buildIndex();
 			}
-		}
+		};
+
+		// Purge all factions from the data store --------------------------------------------------
+		var _purge = function() {
+			data.state.factions.list.length = 0;
+			data.state.factions = {};
+			data.state.factions.list = [];
+		};
 
 		return {
 			add: _add,
@@ -354,7 +361,8 @@
 			getFleets: _getFleets,
 			getList: _getList,
 			validate: _validate,
-			remove: _remove
+			remove: _remove,
+			purge: _purge
 		};
 	}]);
 
@@ -970,6 +978,12 @@
 
 		ui.data = data.state;
 		this.data = data.state;
+		this.purge = function() {
+			if(confirm("Do you wish to purge all faction information?")) {
+				FactionService.purge();
+				_initState();
+			}
+		};
 
 		var _initState = function() {
 			ui.factions = FactionService.getList();

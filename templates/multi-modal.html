@@ -6,9 +6,10 @@
 	<form class="form-horizontal">
 		<p class="well well-sm" ng-show="modalOptions.queryHelperText">{{modalOptions.queryHelperText}}</p>
 		<div class="form-group">
-			<label for="queryText" class="col-lg-2 control-label">{{modalOptions.queryLabelText}}</label>
-			<div class="col-lg-10">
-				<select class="form-control" rows=5 id="queryText" ng-model="query" ng-options="option.key as option.label group by option.group for option in modalOptions.options"></select>
+			<div class="col-lg-4" ng-repeat="option in modalOptions.options">
+				<div class="checkbox">
+					<label><input type="checkbox" ng-model="option.checked" />{{option.label}}</label>
+				</div>
 			</div>
 		</div>
 	</form>

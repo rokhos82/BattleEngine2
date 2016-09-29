@@ -137,6 +137,51 @@
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
+	// be2MultiModal - this is the service object for a generic import modal.
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	app.service("be2MultiModal",["$uibModal",function($modal) {
+		var modalDefaults = {
+			backdrop: true,
+			keyboard: true,
+			modalFade: true,
+			templateUrl: 'templates/multi-modal.html'
+		};
+
+		var modalOptions = {
+			headerText: "This is the select modal",
+			options: [{key:1,checked:false,label:"Checkbox 1"},{key:2,checked:false,label:"Checkbox 2"}]
+		};
+
+		this.showModal = function(customModalDefaults,customModalOptions) {
+			if (!customModalDefaults) customModalDefaults = {};
+			customModalDefaults.backdrop = 'static';
+			return this.show(customModalDefaults,customModalOptions);
+		};
+
+		this.show = function(customModalDefaults,customModalOptions) {
+			var tempModalDefaults = {};
+			var tempModalOptions = {};
+
+			angular.extend(tempModalDefaults,modalDefaults,customModalDefaults);
+			angular.extend(tempModalOptions,modalOptions,customModalOptions);
+
+			if(!tempModalDefaults.controller) {
+				tempModalDefaults.controller = function($scope,$uibModalInstance) {
+					$scope.modalOptions = tempModalOptions;
+					$scope.modalOptions.ok = function() {
+						$uibModalInstance.close(_.filter(tempModalOptions.options,function(option){return option.checked;}));
+					};
+					$scope.modalOptions.close = function(result) {
+						$uibModalInstance.dismiss('cancel');
+					};
+				}
+			}
+
+			return $modal.open(tempModalDefaults).result;
+		};
+	}]);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2InfoModal - this is the service object for a generic import modal.
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app.service("be2InfoModal",["$uibModal",function($modal) {
@@ -686,7 +731,7 @@
 
 				// Is there a 'max' element and is it non-zero
 				if(typeof(obj.hull.max) !== "number" || (obj.hull.max == 0)) {
-					_logger.error("Template has no max hull.")
+					_logger.error("Template has no max hull.");
 					valid = false;
 				}
 			}
@@ -702,16 +747,24 @@
 		};
 
 		_deploy = function(template,name) {
-			if(_exists(template) && typeof(name) === "string" && !$be2Units.exists(name)) {
+			if(_exists(template) && typeof(name) === "string") {
 				var temp = {};
 				angular.copy(data.state.templates[template],temp);
 				temp.unit.name = name;
 				temp.template = data.state.templates[template];
 				temp.hull.current = temp.hull.max;
+				temp.shield.current = temp.shield.max;
 				$be2Units.add(temp);
 			}
 			else {
 				_logger.error("Unable to deploy unit '" + name + "' from template '" + template + "'.");
+			}
+		};
+
+		_massDeploy = function(template,name,count) {
+			for(var i = 1;i <= count;i++) {
+				var n = name + i;
+				_deploy(template,n);
 			}
 		};
 
@@ -733,6 +786,7 @@
 			exists: _exists,
 			get: _get,
 			getList: _getList,
+			massDeploy: _massDeploy,
 			validate: _validate,
 			update: _updateTemplates
 		}
@@ -921,7 +975,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2MainController - Main controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2MainController",["$rootScope","$scope","FactionService","FleetService","UnitService","UnitTemplateService","StorageService","DataStore",function($rootScope,$scope,factions,fleets,units,$templates,storage,data){
+	app.controller("be2MainController",["$rootScope","$scope","$window","FactionService","FleetService","UnitService","UnitTemplateService","StorageService","DataStore",function($rootScope,$scope,$window,factions,fleets,units,$templates,storage,data){
 		var ui = data.ui.main;
 		ui.states = {
 			combat: "combat",
@@ -1204,7 +1258,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2FleetController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","be2SelectModal","DataStore","be2InfoModal",function($scope,FactionService,FleetService,UnitService,SelectModal,data,infoModal){
+	app.controller("be2FleetController",["$scope","FactionService","FleetService","UnitService","be2SelectModal","DataStore","be2InfoModal","be2MultiModal",function($scope,FactionService,FleetService,UnitService,SelectModal,data,infoModal,multiModal){
 		var ui = data.ui.fleet;
 		ui.fleets = FleetService.getList();
 		ui.state = {
@@ -1260,6 +1314,19 @@
 			SelectModal.showModal({},modalOptions).then(function (result) {
 				FleetService.attachUnit(fleet,result);
 			});
+		};
+
+		this.attachUnitMass = function(fleet) {
+			var modalOptions = {
+				headerText: "Attach Units",
+				queryHelperText: "Select the units to attach to fleet '" + data.state.fleets[fleet].name + "'.",
+				queryButtonText: "Attach",
+				options:UnitService.getOptions()
+			};
+			_.each(modalOptions.options,function(element){ element.checked=false; });
+			multiModal.showModal({},modalOptions).then(function (result) {
+				_.map(result,function(option){FleetService.attachUnit(fleet,option.key)});
+			})
 		};
 
 		// Fleet Creation Functions ----------------------------------------------------------------
@@ -1465,6 +1532,20 @@
 			};
 			QueryModal.showModal({},modalOptions).then(function (result) {
 				$be2Templates.deploy(template,result);
+			});
+		};
+
+		this.massDeploy = function(template) {
+			var modalOptions = {
+				headerText: "Deploy '" + template + "'",
+				queryHelperText: "Please enter the name of the unit to be deployed.",
+				queryLabelText: "Unit Name",
+				queryButtonText: "Deploy",
+				queryPlaceholderText: template
+			};
+			QueryModal.showModal({},modalOptions).then(function (result) {
+				var count = prompt("How many to deploy?");
+				$be2Templates.massDeploy(template,result,count);
 			});
 		};
 

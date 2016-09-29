@@ -6,6 +6,7 @@
 		<meta charset="utf-8">
 		<link rel="stylesheet" type="text/css" href="css\slate\bootstrap.min.css" />
 		<link rel="stylesheet" type="text/css" href="css\starter-template.css" />
+		<link rel="stylesheet" type="text/css" href="css\angular-editable-text.css" />
 		<link rel="stylesheet" type="text/css" href="css\be2.ang.css" />
 	</head>
 	<body ng-controller="be2MainController as main">
@@ -54,6 +55,7 @@
 								<li><a href="#" ng-click="main.importData()">Import Data</a></li>
 								<li class="divider"></li>
 								<li><a href="#" ng-click="main.loadExampleData()">Load Example</a></li>
+								<li><a href="#" ng-click="main.dataDump()">Data Dump</a></li>
 							</ul>
 						</li>
 					</ul>
@@ -81,6 +83,7 @@
 		<div class="container" ng-show="ui.state === ui.states.mothballs">
 			<mothball-panel></mothball-panel>
 		</div>
+		<script type="text/javascript" src="js/uuid.js"></script>
 		<script type="text/javascript" src="js/be2.helper.js"></script>
 		<script type="text/javascript" src="js/jquery-3.1.0.js"></script>
 		<script type="text/javascript" src="js/bootstrap.js"></script>
@@ -90,6 +93,7 @@
 		<script type="text/javascript" src="js/angular-resource.js"></script>
 		<script type="text/javascript" src="js/ui-bootstrap-2.1.3.js"></script>
 		<script type="text/javascript" src="js/underscore.js"></script>
+		<script type="text/javascript" src="js/angular-editable-text.js"></script>
 		<script type="text/javascript" src="be2.ang.js"></script>
 	</body>
 </html>

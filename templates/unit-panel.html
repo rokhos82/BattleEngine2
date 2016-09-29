@@ -21,7 +21,7 @@
 	</div>
 	<div class="row" ng-repeat="unit in ui.units">
 		<div class="col-lg-12 col-md-12 col-sm-12">
-			<div class="panel panel-default">
+			<div class="panel panel-default dropshadow-md">
 				<div class="panel-heading">
 					<div class="btn-toolbar pull-right">
 						<div class="btn-group">
@@ -29,7 +29,7 @@
 							<button type="button" class="btn btn-sm btn-danger disabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 						</div>
 					</div>
-					<h3 class="panel-title panel-title-lg">{{ctl.data.units[unit].unit.name}} - '{{ctl.data.units[unit].template.unit.name}}'-class {{ctl.data.units[unit].unit.type}}</h3>
+					<h3 class="panel-title panel-title-lg"><span editable-text="ctl.data.units[unit].unit.name"></span> - '{{ctl.data.units[unit].template.unit.name}}'-class {{ctl.data.units[unit].unit.type}}</h3>
 				</div>
 				<div class="panel-body" ng-show="ui.state.show[unit]">
 					<div class="well well-sm">Detailed information about the unit will be in here.</div>

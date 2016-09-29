@@ -1,8 +1,8 @@
 <table class="table table-hover">
 	<thead>
-		<tr><th>#</th><th>Unit</th><th>Type</th><th>Size</th><th>Hull</th><th>Shield</th></tr>
+		<tr><th>Unit</th><th>Type</th><th>Size</th><th>Hull</th><th>Shield</th></tr>
 	</thead>
 	<tbody>
-		<tr ng-repeat="unit in units" ng-class="{warning:unit.hull.current != 0 && unit.hull.current != unit.hull.max,danger:!unit.hull.current}"><td>{{$index+1}}</td><td>{{unit.unit.name}}</td><td>{{unit.unit.type}}</td><td>{{unit.unit.size}}</td><td>{{unit.hull.current}} ({{unit.hull.max}})</td><td>{{unit.shield.max}}</td></tr>
+		<tr ng-repeat="unit in units" ng-class="{warning:unit.hull.current != 0 && unit.hull.current != unit.hull.max,danger:!unit.hull.current}"><td>{{unit.unit.name}}</td><td>{{unit.unit.type}}</td><td>{{unit.unit.size}}</td><td>{{unit.hull.current}} ({{unit.hull.max}})</td><td>{{unit.shield.max}}</td></tr>
 	</tbody>
 </table>

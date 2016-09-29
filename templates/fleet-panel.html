@@ -22,7 +22,7 @@
 	</div>
 	<div class="row" ng-repeat="fleet in ui.fleets">
 		<div class="col-sm-12 col-md-12 col-lg-12">
-			<div class="panel panel-primary">
+			<div class="panel panel-primary dropshadow-md">
 				<div class="panel-heading">
 					<div class="btn-toolbar pull-right">
 						<div class="btn-group">
@@ -30,21 +30,20 @@
 						</div>
 						<div class="btn-group">
 							<button class="btn btn-default btn-sm" ng-class="{active:ui.state.show[fleet]}" ng-click="fleetCtl.toggleVisible(fleet)"><span class="glyphicon glyphicon-eye-open"></span></button>
-							<button class="btn btn-default btn-sm disabled"><span class="glyphicon glyphicon-edit" aria-hidden="true"></button>
+							<button class="btn btn-default btn-sm" ng-click="fleetCtl.toggleEdit()"><span class="glyphicon glyphicon-edit" aria-hidden="true"></button>
 							<button class="btn btn-danger btn-sm disabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 						</div>
 					</div>
-					<h3 class="panel-title panel-title-lg">{{fleetCtl.data.fleets[fleet].name}}</h3>
+					<h3 class="panel-title panel-title-lg"><span editable-text="fleetCtl.data.fleets[fleet].name"></span> - <span editable-text="fleetCtl.data.fleets[fleet].nickname"></span></h3>
 				</div>
 				<div class="panel-body" ng-show="ui.state.show[fleet]">
-					<div class="well well-sm" ng-show="fleetCtl.data.fleets[fleet].description">
-						{{fleetCtl.data.fleets[fleet].description}}
+					<div class="well well-sm" ng-show="fleetCtl.data.fleets[fleet].description || fleetCtl.editable" editable-text="fleetCtl.data.fleets[fleet].description" place-holder="Enter a description here!">
 					</div>
 				</div>
 				<unit-table ng-show="ui.state.show[fleet]" ng-init="units = ui.units[fleet]"></unit-table>
 				<div class="panel-footer">
 					<span class="pull-right"><code>{{fleet}}</code></span>
-					<span class="label label-primary">Units: {{ui.units[fleet].length}}</span>
+					<span class="label label-primary">Units: {{fleetCtl.countUnits(fleet)}}</span>
 				</div>
 			</div>
 		</div>

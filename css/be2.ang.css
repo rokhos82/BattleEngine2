@@ -64,3 +64,15 @@
 .label-lg {
 	font-size: 85%;
 }
+
+.dropshadow-lg {
+	box-shadow: 10px 10px 20px -5px #f89406;
+}
+
+.dropshadow-md {
+	box-shadow: 6px 6px 6px -4px #f89406;
+}
+
+.well-text-warning {
+	color: #f89406;
+}

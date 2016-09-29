@@ -23,7 +23,7 @@
 	</div>
 	<div class="row" ng-repeat="faction in ui.factions">
 		<div class="col-lg-12 col-md-12 col-sm-12">
-			<div class="panel panel-primary">
+			<div class="panel panel-primary dropshadow-md">
 				<div class="panel-heading">
 					<div class="btn-toolbar pull-right">
 						<div class="btn-group">
@@ -33,14 +33,14 @@
 						</div>
 						<div class="btn-group">
 							<button class="btn btn-default btn-sm" ng-class="{active:ui.state.show.factions[faction]}" ng-click="ctl.toggleVisible(faction)" tooltip-placement="auto bottom" uib-tooltip="Show/hide faction information."><span class="glyphicon glyphicon-eye-open"></span></button>
-							<button class="btn btn-default btn-sm disabled"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></button>
+							<button class="btn btn-default btn-sm" ng-click="ctl.toggleEdit()"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></button>
 							<button class="btn btn-danger btn-sm disabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 						</div>
 					</div>
-					<h3 class="panel-title panel-title-lg">{{ctl.data.factions[faction].name}}</h3>
+					<h3 class="panel-title panel-title-lg" editable-text="ctl.data.factions[faction].name"></h3>
 				</div>
 				<div class="panel-body" ng-show="ui.state.show.factions[faction]">
-					<p class="well well-sm">{{ctl.data.factions[faction].description}}</p>
+					<p class="well well-sm text-warning" ng-show="ctl.data.factions[faction].description || ctl.editable" editable-text="ctl.data.factions[faction].description"></p>
 					<div class="panel panel-default" ng-repeat="fleet in ui.fleets[faction]">
 						<div class="panel-heading">
 							<div class="btn-toolbar pull-right">
@@ -57,10 +57,15 @@
 							<p class="well well-sm" ng-show="fleet.description">{{fleet.description}}</p>
 						</div>
 						<unit-table ng-init="units = ui.units[faction][fleet.uuid]" ng-show="ui.state.show.fleets[faction][fleet.uuid]"></unit-table>
+						<div class="panel-footer">
+							<span class="pull-right"><code>{{fleet.uuid}}</code></span>
+							<span class="label label-primary">Units: {{ctl.fleetInfo(fleet).unitCount}}</span>
+						</div>
 					</div>
 				</div>
 				<div class="panel-footer">
-					<span>Fleets <span class="badge">0</span></span> <span>Units <span class="badge">{{countUnits(faction)}}</span></span>
+					<span class="pull-right"><code>{{faction}}</code></span>
+					<span class="label label-primary">Fleets: {{ctl.countFleets(faction)}}</span> <span class="label label-primary">Units: {{countUnits(faction)}}</span>
 				</div>
 			</div>
 		</div>

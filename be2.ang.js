@@ -1,5 +1,5 @@
 (function(){
-	var app = angular.module("be2",["ui.bootstrap","ngAnimate","ngTouch","ngResource"]);
+	var app = angular.module("be2",["ui.bootstrap","ngAnimate","ngTouch","ngResource","gg.editableText"]);
 
 	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex","list"];
 
@@ -284,7 +284,7 @@
 				var id = window.uuid.v4();
 				data.state.factions[id] = faction;
 				faction.uuid = id;
-				var l = data.state.factions.list.push(faction.name);
+				var l = data.state.factions.list.push(id);
 				_logger.success("Added Faction " + faction.name + ".  " + l + " faction(s) currently in system.");
 			}
 			else {
@@ -997,6 +997,16 @@
 			_initState();
 		});
 
+		this.fleetInfo = function(fleet) {
+			return {
+				unitCount: _.keys(fleet.units).length
+			};
+		};
+
+		this.countFleets = function(faction) {
+			return _.keys(ui.fleets[faction]).length;
+		};
+
 		$scope.countUnits = function(faction) {
 			return _.chain(ui.fleets[faction]).map(function(fleet){return _.keys(fleet.units).length;}).reduce(function(memo,count){return memo + count;},0).value();
 		};
@@ -1104,6 +1114,11 @@
 			};
 			infoModal.showModal({},modalOptions).then(function (result) {});
 		};
+
+		this.editable = false;
+		this.toggleEdit = function() {
+			this.editable = !this.editable;
+		};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1143,6 +1158,8 @@
 			fleets: [],
 			modal: $("#attachFleetModal")
 		};
+
+		ui.data = data.state;
 		
 		$scope.ui = ui;
 
@@ -1249,6 +1266,11 @@
 			};
 			infoModal.showModal({},modalOptions).then(function (result) {});
 		};
+
+		this.editable = false;
+		this.toggleEdit = function() { this.editable = !this.editable; console.log(this.editable); };
+
+		this.countUnits = function(fleet) { return _.keys(ui.units[fleet]).length;}
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

@@ -34,7 +34,7 @@
 						<div class="btn-group">
 							<button class="btn btn-default btn-sm" ng-class="{active:ui.state.show.factions[faction]}" ng-click="ctl.toggleVisible(faction)" tooltip-placement="auto bottom" uib-tooltip="Show/hide faction information."><span class="glyphicon glyphicon-eye-open"></span></button>
 							<button class="btn btn-default btn-sm" ng-click="ctl.toggleEdit()"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span></button>
-							<button class="btn btn-danger btn-sm disabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+							<button class="btn btn-danger btn-sm" ng-click="ctl.remove(faction)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 						</div>
 					</div>
 					<h3 class="panel-title panel-title-lg" editable-text="ctl.data.factions[faction].name"></h3>

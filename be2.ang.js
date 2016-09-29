@@ -338,10 +338,10 @@
 		// Remove a faction ------------------------------------------------------------------------
 		var _remove = function(faction) {
 			if(_exists(faction)) {
-				console.log("Removing " + faction);
-				var i = factionIndex[faction];
-				delete factions[i];
-				_buildIndex();
+				_logger.warning("Removing faction '" + faction + "'");
+				delete data.state.factions[faction];
+				var i = data.state.factions.list.indexOf(faction);
+				data.state.factions.list.splice(i,1);
 			}
 		};
 
@@ -981,6 +981,12 @@
 		this.purge = function() {
 			if(confirm("Do you wish to purge all faction information?")) {
 				FactionService.purge();
+				_initState();
+			}
+		};
+		this.remove = function(faction) {
+			if(confirm("Do you want to remove '" + data.state.factions[faction] + "'?")) {
+				FactionService.remove(faction);
 				_initState();
 			}
 		};

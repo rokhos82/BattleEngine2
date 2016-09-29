@@ -276,7 +276,8 @@
 			"fleets": {},
 			"enemies": {},
 			"name": "",
-			"description": ""
+			"description": "",
+			"notes": ""
 		};
 
 		// Creates a new faction from a dictionary on elements -------------------------------------
@@ -478,12 +479,12 @@
 				name: "",
 				nickname: "",
 				description: "",
+				orders: "",
+				notes: "",
 				units: {}
 			};
 
-			for(var e in elements) {
-				fleet[e] = elements[e];
-			}
+			angular.merge(fleet,elements);
 
 			_add(fleet);
 		};

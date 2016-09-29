@@ -41,6 +41,13 @@
 				</div>
 				<div class="panel-body" ng-show="ui.state.show.factions[faction]">
 					<p class="well well-sm text-warning" ng-show="ctl.data.factions[faction].description || ctl.editable" editable-text="ctl.data.factions[faction].description"></p>
+					<div class="panel panel-info" ng-show="ctl.data.factions[faction].notes || ctl.editable">
+						<div class="panel-heading">
+							<h3 class="panel-title">Notes</h3>
+						</div>
+						<div class="panel-body" editable-text="ctl.data.factions[faction].notes">
+						</div>
+					</div>
 					<div class="panel panel-default" ng-repeat="fleet in ui.fleets[faction]">
 						<div class="panel-heading">
 							<div class="btn-toolbar pull-right">

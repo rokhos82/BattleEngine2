@@ -236,10 +236,8 @@
 
 		// Creates a new faction from a dictionary on elements -------------------------------------
 		var _create = function(elements) {
-			for(var e in elements) {
-				faction[e] = elements[e];
-			}
-
+			var faction = {};
+			angular.merge(faction,elements);
 			_add(faction);
 		};
 
@@ -303,9 +301,7 @@
 		var _attachFleet = function(faction,fleet) {
 			if(_exists(faction) && FleetService.exists(fleet)) {
 				var f = data.state.factions[faction];
-				if(!Array.isArray(f.fleets))
-					f.fleets = [];
-				f.fleets.push(fleet);
+				f.fleets[fleet] = data.state.fleets[fleet];
 				_logger.success("Attached fleet '" + fleet + "'' to faction '" + faction + "'.");
 			}
 			else {
@@ -965,6 +961,9 @@
 				description: ""
 		};
 
+		ui.data = data.state;
+		this.data = data.state;
+
 		var _initState = function() {
 			ui.factions = FactionService.getList();
 			for(var i in ui.factions) {
@@ -976,10 +975,10 @@
 				ui.state.show.fleets[faction] = {};
 				for(var f in fleets) {
 					var fleet = fleets[f];
-					ui.units[faction][fleet] = [];
-					ui.state.show.fleets[faction][fleet] = false;
-					var units = FleetService.getUnits(fleet);
-					ui.units[faction][fleet] = units;
+					ui.units[faction][fleet.uuid] = [];
+					ui.state.show.fleets[faction][fleet.uuid] = false;
+					var units = FleetService.getUnits(fleet.uuid);
+					ui.units[faction][fleet.uuid] = _.keys(units);
 				}
 			}
 			$scope.ui = ui;			
@@ -992,7 +991,7 @@
 		});
 
 		$scope.countUnits = function(faction) {
-			return _.reduce(ui.units[faction],function(memo,arr){return memo+arr.length;},0);
+			return _.chain(ui.fleets[faction]).map(function(fleet){return _.keys(fleet.units).length;}).reduce(function(memo,count){return memo + count;},0).value();
 		};
 
 		this.toggleVisible = function(faction) {

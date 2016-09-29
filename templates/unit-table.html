@@ -3,6 +3,6 @@
 		<tr><th>#</th><th>Unit</th><th>Type</th><th>Size</th><th>Hull</th><th>Shield</th></tr>
 	</thead>
 	<tbody>
-		<tr ng-repeat="unit in ui.units[fleet]" ng-class="{warning:ui.data.units[unit].hull.current != 0 && ui.data.units[unit].hull.current != ui.data.units[unit].hull.max,danger:!ui.data.units[unit].hull.current}"><td>{{$index+1}}</td><td>{{ui.data.units[unit].unit.name}}</td><td>{{ui.data.units[unit].unit.type}}</td><td>{{ui.data.units[unit].unit.size}}</td><td>{{ui.data.units[unit].hull.current}} ({{ui.data.units[unit].hull.max}})</td><td>{{ui.data.units[unit].shield.max}}</td></tr>
+		<tr ng-repeat="unit in units" ng-class="{warning:ui.data.units[unit].hull.current != 0 && ui.data.units[unit].hull.current != ui.data.units[unit].hull.max,danger:!ui.data.units[unit].hull.current}"><td>{{$index+1}}</td><td>{{ui.data.units[unit].unit.name}}</td><td>{{ui.data.units[unit].unit.type}}</td><td>{{ui.data.units[unit].unit.size}}</td><td>{{ui.data.units[unit].hull.current}} ({{ui.data.units[unit].hull.max}})</td><td>{{ui.data.units[unit].shield.max}}</td></tr>
 	</tbody>
 </table>

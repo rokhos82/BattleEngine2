@@ -281,8 +281,9 @@
 
 		// Creates a new faction from a dictionary on elements -------------------------------------
 		var _create = function(elements) {
-			var faction = {};
+			var faction = angular.copy(_factionDefaults);
 			angular.merge(faction,elements);
+			console.log(faction);
 			_add(faction);
 		};
 
@@ -309,7 +310,7 @@
 				}
 
 				// Does the faction have an array of fleets (Optional)
-				if(typeof(faction.fleets) !== "undefined" && !Array.isArray(faction.fleets)) {
+				if(typeof(faction.fleets) !== "object") {
 					_logger.error("Faction has a fleet list that is not an array");
 					valid = false;
 				}

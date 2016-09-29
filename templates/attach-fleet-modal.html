@@ -11,7 +11,7 @@
 						<label for="attachFleetName" class="col-lg-2 control-label">Fleets</label>
 						<div class="col-lg-10">
 							<select class="form-control" id="attachFleetName">
-								<option ng-repeat="fleet in ui.fleets" ng-attr-value="{{fleet}}">{{fleet}}</option>
+								<option ng-repeat="fleet in ui.fleets" ng-attr-value="{{fleet}}">{{ui.data.fleets[fleet].name}} ({{fleet}})</option>
 							</select>
 						</div>
 					</div>

@@ -1274,6 +1274,8 @@
 		};
 		$scope.ui = ui;
 
+		_.chain(ui.fleets).each(function(key){ this[key] = false; },ui.state.show);
+
 		this.data = data.state;
 
 		// Mappings to Service factories -----------------------------------------------------------
@@ -1284,10 +1286,11 @@
 		this.initState = function() {
 			for(var i in ui.fleets) {
 				var fleet = ui.fleets[i];
-				ui.state.show[fleet] = false;
 				ui.units[fleet] = data.state.fleets[fleet].units;
 			}
 		}
+
+		$scope.$watch('ui.data.fleets',this.initState,true);
 
 		this.showAll = function() {
 			for(var i in ui.state.show) {
@@ -1345,7 +1348,7 @@
 		};
 
 		// Initialize the ui.state -----------------------------------------------------------------
-		this.initState();
+		//this.initState();
 
 		ui.export = function() {
 			var modalOptions = {

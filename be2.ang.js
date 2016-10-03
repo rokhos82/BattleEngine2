@@ -284,7 +284,6 @@
 		var _create = function(elements) {
 			var faction = angular.copy(_factionDefaults);
 			angular.merge(faction,elements);
-			console.log(faction);
 			_add(faction);
 		};
 
@@ -1047,19 +1046,27 @@
 			}
 		};
 
+		_.each(ui.factions,function(key){
+			this[key] = false;
+			console.log(key);
+			_.each(ui.fleets[key],function(f){
+				console.log(f);
+			},ui.state.show.fleets);
+		},ui.state.show.factions);
+
 		var _initState = function() {
 			ui.factions = FactionService.getList();
 			for(var i in ui.factions) {
 				var faction = ui.factions[i];
 				var fleets = FactionService.getFleets(faction);
-				ui.state.show.factions[faction] = false;
+				//ui.state.show.factions[faction] = false;
 				ui.fleets[faction] = fleets;
 				ui.units[faction] = {};
 				ui.state.show.fleets[faction] = {};
 				for(var f in fleets) {
 					var fleet = fleets[f];
 					ui.units[faction][fleet.uuid] = [];
-					ui.state.show.fleets[faction][fleet.uuid] = false;
+					//ui.state.show.fleets[faction][fleet.uuid] = false;
 					var units = FleetService.getUnits(fleet.uuid);
 					ui.units[faction][fleet.uuid] = units;
 				}
@@ -1068,6 +1075,8 @@
 		};
 
 		this.initState = _initState;
+
+		$scope.$watch('ui.data.factions',this.initState,true);
 
 		$rootScope.$on('be2.init.ui.state',function(event,args) {
 			_initState();

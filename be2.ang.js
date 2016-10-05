@@ -1423,31 +1423,45 @@
 			"Finished"
 		];
 
+		this.timeout = undefined;
+
 		ui.combat.max = ui.combat.statuses.length - 1;
 		ui.combat.current = 0;
 		ui.combat.status = ui.combat.statuses[ui.combat.current];
 		ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
+		ui.combat.paused = false;
 		
 		$scope.ui = ui;
 
-		$scope.startCombat = function() {
+		this.startCombat = function() {
 			ui.combat.current = 1;
 			ui.combat.status = ui.combat.statuses[ui.combat.current];
 			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
 
-			setTimeout(doCombat,1000);
+			this.timeout = setTimeout(this.doCombat,1000);
 		};
 
-		function doCombat() {
+		this.doCombat  = function() {
 			ui.combat.current++;
 			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
 			ui.combat.status = ui.combat.statuses[ui.combat.current];
 			$scope.$apply();
 
 			if(ui.combat.current < ui.combat.max) {
-				setTimeout(doCombat,1000);
+				this.timeout = setTimeout(this.doCombat,1000);
 			}
-		}
+		};
+
+		this.stopCombat = function() {
+			console.log("Stoping combat!");
+			console.log(this.timeout);
+			clearTimeout(this.timeout);
+			this.resetCombat();
+		};
+
+		this.pauseCombat = function() {};
+
+		this.resetCombat = function() {};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1407,11 +1407,11 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2CombatController - Combat controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2CombatController",["$scope","CombatService","DataStore",function($scope,$combat,$data) {
+	app.controller("be2CombatController",["$scope","CombatService","DataStore",function($scope,$combat,data) {
 		var ui = {
-			combat: $data.combat,
-			fleets: $data.state.fleets,
-			factions: $data.state.factions
+			combat: data.combat,
+			fleets: data.state.fleets,
+			factions: data.state.factions
 		};
 
 		ui.combat.statuses = [
@@ -1424,6 +1424,7 @@
 		];
 
 		this.timeout = undefined;
+		this.webworker = undefined;
 
 		ui.combat.max = ui.combat.statuses.length - 1;
 		ui.combat.current = 0;
@@ -1434,30 +1435,14 @@
 		$scope.ui = ui;
 
 		this.startCombat = function() {
-			ui.combat.current = 1;
-			ui.combat.status = ui.combat.statuses[ui.combat.current];
-			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
-
-			this.timeout = setTimeout(this.doCombat,1000);
+			this.webworker = new Worker("be2.combat.js");
+			this.webworker.onmessage = function(event) {
+				console.log(event.data);
+			};
+			this.webworker.postMessage(data.state);
 		};
 
-		this.doCombat  = function() {
-			ui.combat.current++;
-			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
-			ui.combat.status = ui.combat.statuses[ui.combat.current];
-			$scope.$apply();
-
-			if(ui.combat.current < ui.combat.max) {
-				this.timeout = setTimeout(this.doCombat,1000);
-			}
-		};
-
-		this.stopCombat = function() {
-			console.log("Stoping combat!");
-			console.log(this.timeout);
-			clearTimeout(this.timeout);
-			this.resetCombat();
-		};
+		this.stopCombat = function() {};
 
 		this.pauseCombat = function() {};
 

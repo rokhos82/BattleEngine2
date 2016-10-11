@@ -31,25 +31,14 @@
 				<div class="panel-heading"><h3 class="panel-title panel-title-lg">Combat Results</h3></div>
 				<div class="panel-body">
 					<p class="well well-sm">Combat Results go here</p>
-					<div class="well well-sm">
-						<h4>Round 1</h4>
-						<ul>
-							<li>Fleet A</li>
-							<ul>
-								<li>Unit A</li>
-								<li>Unit B</li>
-							</ul>
-							<li>Fleet 1</li>
-							<ul>
-								<li>Unit 1</li>
-								<li>Unit 2</li>
-								<li>Unit 3</li>
-							</ul>
-						</ul>
-						<ul>
-							<li>Unit A fires at Unit 3</li>
-							<li>Unit 3 fires at Unit A</li>
-						</ul>
+					<div class="well well-sm" ng-repeat="unit in ctl.logs">
+						<span class="pull-right"><code>{{unit.uuid}}</code></span>
+						<h4>{{unit.unit.name}}</h4>
+						<p ng-repeat="round in unit.combat">
+							<span ng-repeat="hit in round.hits">
+								{{hit.target}} ({{hit.hitRoll}}) for {{hit.damage}} ({{hit.damageRoll}}%) damage.
+							</span>
+						</p>
 					</div>
 				</div>
 			</div>

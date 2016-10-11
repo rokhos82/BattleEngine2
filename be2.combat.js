@@ -14,12 +14,22 @@
 		attackers.targets = defenders.units;
 		defenders.targets = attackers.units;
 
-		var target = simulator.getTarget(_.pluck(attackers.targets,"uuid"));
+		// Select targets
+		_.mapObject(attackers.units,function(obj) {
+			obj.target = simulator.getTarget(_.pluck(attackers.targets,"uuid"));
+			return obj;
+		});
+		_.mapObject(defenders.units,function(obj) {
+			obj.target = simulator.getTarget(_.pluck(defenders.targets,"uuid"));
+			return obj;
+		});
+
+		_.each(attackers.units,simulator.fire);
+		_.each(defenders.units,simulator.fire);
 		
 		var results = {
 			"defenders": defenders,
-			"attackers": attackers,
-			"target": target
+			"attackers": attackers
 		};
 		self.postMessage(results);
 	}

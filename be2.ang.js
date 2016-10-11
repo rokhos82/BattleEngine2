@@ -755,6 +755,44 @@
 				temp.template = data.state.templates[template];
 				temp.hull.current = temp.hull.max;
 				temp.shield.current = temp.shield.max;
+
+				var combat = {};
+				combat["direct-fire"] = [];
+				_.chain(temp["direct-fire"]).each(function(ele,index,list){
+					ele.target = ele.target ? ele.target : 0;
+					ele.target += _.chain(temp).filter(function(obj){return obj.target;}).map(function(obj){return obj.target;}).reduce(function(sum,num){return sum + num;},0).value();
+					ele.yield = ele.yield ? ele.yield : 0;
+					ele.yield += _.chain(temp).filter(function(obj){return obj.yield;}).map(function(obj){return obj.yield;}).reduce(function(sum,num){return sum + num;},0).value();
+					combat["direct-fire"].push(ele);
+				});
+
+				combat["packet-fire"] = [];
+				_.chain(temp["packet-fire"]).each(function(ele,index,list){
+					ele.target = ele.target ? ele.target : 0;
+					ele.target += _.chain(temp).filter(function(obj){return obj.target;}).map(function(obj){return obj.target;}).reduce(function(sum,num){return sum + num;},0).value();
+					ele.yield = ele.yield ? ele.yield : 0;
+					ele.yield += _.chain(temp).filter(function(obj){return obj.yield;}).map(function(obj){return obj.yield;}).reduce(function(sum,num){return sum + num;},0).value();
+					combat["packet-fire"].push(ele);
+				});
+
+				combat["shield"] = {
+					"defense": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.defense;}).map(function(obj){return obj.defense}).reduce(function(sum,num){return sum + num;},0).value(),
+					"resist": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.resist;}).map(function(obj){return obj.resist}).reduce(function(sum,num){return sum + num;},0).value(),
+					"deflect": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.deflect;}).map(function(obj){return obj.deflect}).reduce(function(sum,num){return sum + num;},0).value(),
+					"flicker": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.flicker;}).map(function(obj){return obj.flicker}).reduce(function(sum,num){return sum + num;},0).value(),
+					"regen": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.regen;}).map(function(obj){return obj.regen}).reduce(function(sum,num){return sum + num;},0).value()
+				};
+
+				combat["hull"] = {
+					"defense": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.defense;}).map(function(obj){return obj.defense}).reduce(function(sum,num){return sum + num;},0).value(),
+					"resist": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.resist;}).map(function(obj){return obj.resist}).reduce(function(sum,num){return sum + num;},0).value(),
+					"deflect": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.deflect;}).map(function(obj){return obj.deflect}).reduce(function(sum,num){return sum + num;},0).value(),
+					"flicker": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.flicker;}).map(function(obj){return obj.flicker}).reduce(function(sum,num){return sum + num;},0).value(),
+					"regen": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.regen;}).map(function(obj){return obj.regen}).reduce(function(sum,num){return sum + num;},0).value()
+				};
+
+				temp.combat = combat;
+
 				$be2Units.add(temp);
 			}
 			else {
@@ -1425,6 +1463,7 @@
 
 		this.timeout = undefined;
 		this.webworker = undefined;
+		var ctrl = this;
 
 		ui.combat.max = ui.combat.statuses.length - 1;
 		ui.combat.current = 0;
@@ -1434,10 +1473,23 @@
 		
 		$scope.ui = ui;
 
+		ctrl.logs = {};
+		this.combatRound = function(data) {
+			_.each(data.attackers.units,function(value,key,list){
+				this[key] = value;
+			},ctrl.logs);
+			_.each(data.defenders.units,function(value,key,list) {
+				this[key] = value;
+			},ctrl.logs);
+			this.webworker.terminate();
+			$scope.$apply();
+			console.log(data);
+		};
+
 		this.startCombat = function() {
 			this.webworker = new Worker("be2.combat.js");
 			this.webworker.onmessage = function(event) {
-				console.log(event.data);
+				ctrl.combatRound(event.data);
 			};
 			this.webworker.postMessage(data.state);
 		};

@@ -62,3 +62,9 @@ simulator.hitRoll = function(target) {
 	roll = Math.max(roll,simulator.setup.minHit);
 	return roll;
 };
+
+simulator.initialize = function(obj) {
+	obj.units = {};
+	obj.units.attackers = _.chain(obj.attackers).map(function(ele){ return _.keys(this.fleets[ele].units); },obj.state).flatten().value();
+	obj.units.defenders = _.chain(obj.defenders).map(function(ele){ return _.keys(this.fleets[ele].units); },obj.state).flatten().value();
+};

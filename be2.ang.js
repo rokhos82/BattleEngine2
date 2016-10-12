@@ -506,6 +506,8 @@
 				if(!_.isObject(f.units)) {
 					f.units = {};
 				}
+				u.fleet = fleet;
+				console.log(u);
 				f.units[unit] = u;
 				_logger.success("Attached unit '" + u.unit.name + "'' to fleet '" + f.name + "'.");
 			}
@@ -1465,33 +1467,53 @@
 		this.webworker = undefined;
 		var ctrl = this;
 
-		ui.combat.max = ui.combat.statuses.length - 1;
-		ui.combat.current = 0;
-		ui.combat.status = ui.combat.statuses[ui.combat.current];
-		ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
-		ui.combat.paused = false;
-		
 		$scope.ui = ui;
 
-		ctrl.logs = {};
 		this.combatRound = function(data) {
-			_.each(data.attackers.units,function(value,key,list){
+			/*_.each(data.attackers.units,function(value,key,list){
 				this[key] = value;
 			},ctrl.logs);
 			_.each(data.defenders.units,function(value,key,list) {
 				this[key] = value;
 			},ctrl.logs);
 			this.webworker.terminate();
-			$scope.$apply();
+			$scope.$apply();*/
 			console.log(data);
 		};
 
 		this.startCombat = function() {
+			// Get UUIDs
+			var combatID = window.uuid.v4();
+			var attackID = data.state.fleets.list[0];
+			var defendID = data.state.fleets.list[1];
+
+			// Setup the combat object
+			var obj = {
+				"uuid": combatID,
+				"state": {},
+				"attackers": [],
+				"defenders": [],
+				"status": {}
+			};
+			
+			// Attach the fleet info for the state object
+			obj.state.fleets = {};
+			obj.state.fleets[attackID] = data.state.fleets[attackID];
+			obj.state.fleets[defendID] = data.state.fleets[defendID];
+
+			// Set the attacker and defender fleet UUIDs.
+			obj.attackers.push(attackID);
+			obj.defenders.push(defendID);
+
+			// Build the units state.
+			obj.state.units = {};
+			_.chain(data.state.units).where({"fleet":attackID}).tap(console.log).value();
+
 			this.webworker = new Worker("be2.combat.js");
 			this.webworker.onmessage = function(event) {
 				ctrl.combatRound(event.data);
 			};
-			this.webworker.postMessage(data.state);
+			this.webworker.postMessage(obj);
 		};
 
 		this.stopCombat = function() {};

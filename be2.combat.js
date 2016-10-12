@@ -8,7 +8,9 @@
 	function doRound(event) {
 		var data = event.data;
 
-		var attackers = data.fleets[data.fleets.list[0]];
+		simulator.initialize(data);
+
+		/*var attackers = data.fleets[data.fleets.list[0]];
 		var defenders = data.fleets[data.fleets.list[1]];
 
 		attackers.targets = defenders.units;
@@ -30,8 +32,9 @@
 		var results = {
 			"defenders": defenders,
 			"attackers": attackers
-		};
-		self.postMessage(results);
+		};*/
+		
+		self.postMessage(data);
 	}
 
 	self.addEventListener('message',doRound,false);

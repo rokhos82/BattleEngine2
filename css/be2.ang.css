@@ -26,6 +26,18 @@
 	margin-bottom: 5px;
 }
 
+.buffer-lg {
+	margin: 20px;
+}
+
+.buffer-md {
+	margin: 10px;
+}
+
+.buffer-sm {
+	margin: 5px;
+}
+
 .panel-btn-right {
 	position: relative;
 	top: 0px;
@@ -42,6 +54,10 @@
 
 .top-padding-lg {
 	padding-top: 20px;
+}
+
+.padding-md {
+	padding: 10px;
 }
 
 .left-buffer-lg {

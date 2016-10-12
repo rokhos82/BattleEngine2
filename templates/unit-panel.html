@@ -31,8 +31,41 @@
 					</div>
 					<h3 class="panel-title panel-title-lg"><span editable-text="ctl.data.units[unit].unit.name"></span> - '{{ctl.data.units[unit].template.unit.name}}'-class {{ctl.data.units[unit].unit.type}}</h3>
 				</div>
-				<div class="panel-body" ng-show="ui.state.show[unit]">
-					<p class="well well-sm" ng-repeat="(key,component) in ctl.data.units[unit].combat">{{key}}: {{component}}</p>
+				<div class="panel-body" ng-show="ui.state.show[unit]" ng-init="combat = ctl.data.units[unit].combat">
+					<div class="row">
+						<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+							<div class="well well-sm">
+								<h4>Direct Fire</h4>
+								<p ng-repeat="direct in combat['direct-fire']">
+									<span class="left-buffer-md" ng-repeat="(key,value) in direct">{{key}}: {{value}}</span>
+								</p>
+							</div>
+						</div>
+						<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+							<div class="well well-sm">
+								<h4>Packet Fire</h4>
+								<p ng-repeat="packet in combat['packet-fire']">
+									<span class="left-buffer-md" ng-repeat="(key,value) in packet">{{key}}: {{value}}</span>
+								</p>
+							</div>
+						</div>
+						<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+							<div class="well well-sm">	
+								<h4>Hull</h4>
+								<p ng-repeat="(key,value) in combat.hull">
+									{{key}}: {{value}}
+								</p>
+							</div>
+						</div>
+						<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+							<div class="well well-sm">
+								<h4>Shield</h4>
+								<p ng-repeat="(key,value) in combat.shield">
+									{{key}}: {{value}}
+								</p>
+							</div>
+						</div>
+					</div>
 				</div>
 				<div class="panel-footer">
 					<span class="pull-right"><code>{{unit}}</code></span>

@@ -14,10 +14,12 @@ simulator.objects.hit = function(uuid,hit,dmgRoll,dmg,dmgMax) {
 	this.damage = dmg;
 	this.damageMax = dmgMax;
 };
-simulator.objects.damage = function(uuid,dmg,crit) {
+simulator.objects.damage = function(uuid) {
 	this.source = uuid;
-	this.damage = dmg;
+	this.damage = 0;
 	this.crit = {};
+	this.damageRoll = 0;
+	this.protection = "";
 };
 
 simulator.getTarget = function(targetList) {
@@ -28,32 +30,60 @@ simulator.getTarget = function(targetList) {
 simulator.buildTargetList = function(fleets) {
 };
 
-simulator.fire = function(unit) {
-	var targetUnit = unit.target;
+simulator.fireWeapons = function(unit,targetList) {
+	var stack = [];
+	_.each(unit.combat["direct-fire"],function(weapon){
+		var t = simulator.getTarget(targetList);
+		var hit = new simulator.objects.hit(t);
+		hit.hitRoll = _.random(1,100) + weapon.target;
+		hit.damageRoll = _.random(1,100) + weapon.yield;
+		hit.damageMax = weapon.volley;
+		hit.damage = Math.round(hit.damageMax * hit.damageRoll / 100);
+		this.push(hit);
+	},stack);
+	return stack;
+};
 
-	var target = _.chain(unit).filter(function(obj){ return _.has(obj,"target");}).pluck("target").reduce(function(sum,num){return sum+num;},0).value();
-	var log = {};
+simulator.resolveHit = function(hit,source,unitList) {
+	var target = unitList[hit.target];
+	var damage = new simulator.objects.damage(source);
+	
+	var hasShields = (target.shield.current > 0);
+	var barrier = hasShields ? target.combat.shield : target.combat.hull;
+	damage.protection = hasShields ? "shield" : "hull";
+	var hitRoll = hit.hitRoll - barrier.defense;
+	hitRoll = Math.min(hitRoll,100);
+	hitRoll = Math.max(hitRoll,10);
+	hit.hitRoll = hitRoll;
+	damage.hitRoll = hitRoll;
 
-	// Roll Hit
-	var direct = unit["direct-fire"];
-	log.hits = [];
-	_.map(direct,function(ele,index,list){
-		var hitRoll = simulator.hitRoll(target + (ele.target ? ele.target : 0));
-		var damageRoll = 0;
-		if(hitRoll > simulator.setup.toHit) {
-			damageRoll = _.random(1,100);
-		}
-		var damage = parseInt(ele.volley * (damageRoll / 100));
-		log.hits.push({"target":targetUnit,"hitRoll":hitRoll,"damageRoll":damageRoll,"damage":damage});
-	});
-
-	// Roll Damage
-
-	// Log the combat results into the unit's combat array
-	if(!_.isArray(unit.combat)) {
-		unit.combat = [];
+	if(hitRoll > simulator.setup.toHit) {
+		damage.hitRoll = hitRoll;
+		var damageRoll = hit.damageRoll - barrier.resist;
+		damage.deflect = barrier.deflect;
+		var dmg = Math.round(hit.damageMax * damageRoll / 100);
+		dmg -= barrier.deflect;
+		dmg = Math.max(dmg,0);
+		dmg = Math.min(dmg,hit.damageMax);
+		damage.damage = dmg;
+		hit.damage = dmg;
+		damage.damageRoll = damageRoll;
+		hit.damage = dmg;
 	}
-	unit.combat.push(log);
+
+	if(hasShields) {
+		target.shield.current -= damage.damage;
+	}
+	else {
+		target.hull.current -= damage.damage;
+	}
+
+	return damage;
+};
+
+simulator.combatCleanup = function(unit) {
+	unit.shield.current = Math.max(unit.shield.current,0);
+	unit.hull.current = Math.max(unit.hull.current,0);
 };
 
 simulator.hitRoll = function(target) {

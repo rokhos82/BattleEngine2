@@ -10,31 +10,45 @@
 
 		simulator.initialize(data);
 
-		/*var attackers = data.fleets[data.fleets.list[0]];
-		var defenders = data.fleets[data.fleets.list[1]];
-
-		attackers.targets = defenders.units;
-		defenders.targets = attackers.units;
-
-		// Select targets
-		_.mapObject(attackers.units,function(obj) {
-			obj.target = simulator.getTarget(_.pluck(attackers.targets,"uuid"));
-			return obj;
-		});
-		_.mapObject(defenders.units,function(obj) {
-			obj.target = simulator.getTarget(_.pluck(defenders.targets,"uuid"));
-			return obj;
-		});
-
-		_.each(attackers.units,simulator.fire);
-		_.each(defenders.units,simulator.fire);
+		var round = {
+			uuid: data.uuid,
+			units: {},
+			status: {},
+			state: data.state
+		};
 		
-		var results = {
-			"defenders": defenders,
-			"attackers": attackers
-		};*/
+		_.each(data.attackers,function(uuid,index,list){
+			var fleet = data.state.fleets[uuid];
+			_.chain(fleet.units).each(function(unit,key,list){
+				var hits = simulator.fireWeapons(unit,data.units.defenders);
+				round.units[key] = {
+					"hits": hits,
+					"damage": []
+				};
+			});
+		});
 		
-		self.postMessage(data);
+		_.each(data.defenders,function(uuid,index,list){
+			var fleet = data.state.fleets[uuid];
+			_.chain(fleet.units).each(function(unit,key,list){
+				var hits = simulator.fireWeapons(unit,data.units.attackers);
+				round.units[key] = {
+					"hits": hits,
+					"damage": []
+				};
+			});
+		});
+
+		_.each(round.units,function(unit,key) {
+			_.each(unit.hits,function(hit){
+				var damage = simulator.resolveHit(hit,key,data.state.units);
+				round.units[hit.target].damage.push(damage);
+			});
+		});
+
+		_.each(round.state.units,simulator.combatCleanup);
+		
+		self.postMessage(round);
 	}
 
 	self.addEventListener('message',doRound,false);

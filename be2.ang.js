@@ -256,7 +256,9 @@
 				main: {},
 				debug: true
 			},
-			combat: {}
+			combat: {
+				logs: {}
+			}
 		};
 
 		return _data;
@@ -507,7 +509,6 @@
 					f.units = {};
 				}
 				u.fleet = fleet;
-				console.log(u);
 				f.units[unit] = u;
 				_logger.success("Attached unit '" + u.unit.name + "'' to fleet '" + f.name + "'.");
 			}
@@ -906,7 +907,8 @@
 				var json = localStorage.getItem(_key);
 				if(typeof(json) === "string") {
 					var flat = JSON.parse(json);
-					data.state = _expand(flat);
+					data.state = _expand(flat.state);
+					data.combat = flat.combat;
 					_logger.success("Data loaded from localStorage.");
 				}
 				else {
@@ -920,7 +922,10 @@
 
 		var _save = function() {
 			if(typeof(localStorage) !== "undefined") {
-				var dat = _flatten(data.state);
+				var dat = {
+					state: _flatten(data.state),
+					combat: data.combat
+				};
 				var json = JSON.stringify(dat);
 				localStorage.setItem(_key,json);
 				_logger.success("Data stored in localStorage.");
@@ -1030,6 +1035,34 @@
 		};
 		ui.state = ui.states.factions;
 		$scope.ui = ui;
+
+		$scope.hitFilter = function(hit) {
+			return hit.hitRoll > 50 ? true : false;
+		};
+
+		$scope.missFilter = function(hit) {
+			return !$scope.hitFilter(hit);
+		}
+		
+		ui.counters = {
+			"units": data.state.units.list.length
+		};
+
+		function updateUnitCounter() {
+			ui.counters.units = data.state.units.list.length;
+		}
+
+		function updateTemplateCounter() {
+			ui.counters.templates = data.state.templates.list.length;
+		}
+
+		function updateFleetCounter() {
+			ui.counters.fleets = data.state.fleets.list.length;
+		}
+
+		$scope.$watch(data.state.units,updateUnitCounter,false);
+		$scope.$watch(data.state.templates,updateTemplateCounter,false);
+		$scope.$watch(data.state.fleets,updateFleetCounter,false);
 
 		this.saveData = storage.save;
 		this.loadData = storage.load;
@@ -1454,31 +1487,16 @@
 			factions: data.state.factions
 		};
 
-		ui.combat.statuses = [
-			"Uninitialized",
-			"Initializing Combat",
-			"Getting Combatants",
-			"Running Combat Simulation",
-			"Cleaning Up",
-			"Finished"
-		];
-
 		this.timeout = undefined;
 		this.webworker = undefined;
 		var ctrl = this;
 
 		$scope.ui = ui;
 
-		this.combatRound = function(data) {
-			/*_.each(data.attackers.units,function(value,key,list){
-				this[key] = value;
-			},ctrl.logs);
-			_.each(data.defenders.units,function(value,key,list) {
-				this[key] = value;
-			},ctrl.logs);
-			this.webworker.terminate();
-			$scope.$apply();*/
-			console.log(data);
+		this.combatRound = function(dat) {
+			var uuid = dat.uuid;
+			data.combat.logs[uuid].rounds.push(dat);
+			$scope.$apply();
 		};
 
 		this.startCombat = function() {
@@ -1486,6 +1504,11 @@
 			var combatID = window.uuid.v4();
 			var attackID = data.state.fleets.list[0];
 			var defendID = data.state.fleets.list[1];
+
+			data.combat.logs[combatID] = {
+				uuid: combatID,
+				rounds: []
+			};
 
 			// Setup the combat object
 			var obj = {
@@ -1507,8 +1530,22 @@
 
 			// Build the units state.
 			obj.state.units = {};
-			_.chain(data.state.units).where({"fleet":attackID}).tap(console.log).value();
-
+			var buildUnitState = function(ele) {
+				var uuid = ele.uuid;
+				this[uuid] = ele;
+			};
+			var unitFilter = function(unit) {
+				var valid = false;
+				for(var f in obj.state.fleets) {
+					if(unit.fleet === f) {
+						valid = true;
+						break;
+					}
+				}
+				return valid;
+			};
+			_.chain(data.state.units).filter(unitFilter).each(buildUnitState,obj.state.units);
+			
 			this.webworker = new Worker("be2.combat.js");
 			this.webworker.onmessage = function(event) {
 				ctrl.combatRound(event.data);

@@ -30,15 +30,22 @@
 			<div class="panel panel-primary">
 				<div class="panel-heading"><h3 class="panel-title panel-title-lg">Combat Results</h3></div>
 				<div class="panel-body">
-					<p class="well well-sm">Combat Results go here</p>
-					<div class="well well-sm" ng-repeat="unit in ctl.logs">
-						<span class="pull-right"><code>{{unit.uuid}}</code></span>
-						<h4>{{unit.unit.name}}</h4>
-						<p ng-repeat="round in unit.combat">
-							<span ng-repeat="hit in round.hits">
-								{{hit.target}} ({{hit.hitRoll}}) for {{hit.damage}} ({{hit.damageRoll}}%) damage.
-							</span>
-						</p>
+					<div class="well well-sm" ng-repeat="combat in ui.combat.logs">
+						<h4>{{combat.uuid}}</h4>
+						<ul>
+							<li ng-repeat="round in combat.rounds">
+								<h6>Round {{$index+1}}</h6>
+								<ul>
+									<li ng-repeat="(key,unit) in round.units">
+										<span ng-repeat="hit in unit.hits | filter: hitFilter">
+											{{key}} fired a {{hit.damageMax}}-pt volley at {{hit.target}} ({{hit.hitRoll}}%) for {{hit.damage}} of {{hit.damageMax}} ({{hit.damageRoll}}%) damage.</span>
+										<span ng-repeat="hit in unit.hits | filter: missFilter">
+											{{key}} fired at {{hit.target}} and missed ({{hit.hitRoll}}%)
+										</span>
+									</li>
+								</ul>
+							</li>
+						</ul>
 					</div>
 				</div>
 			</div>

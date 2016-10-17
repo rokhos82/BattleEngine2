@@ -59,9 +59,8 @@
 						</ul>
 						<h4>Destroyed Units</h4>
 						<ul>
-							{{combat.destroyed}}
 							<li ng-repeat="key in combat.destroyed">
-								{{key}} was destroyed.
+								{{ui.units[key].unit.name}} was destroyed.
 							</li>
 						</ul>
 					</div>

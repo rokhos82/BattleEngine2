@@ -1538,8 +1538,7 @@
 
 			var uuid = dat.uuid;
 			data.combat.logs[uuid].rounds.push(dat);
-			$scope.$apply();
-
+			
 			// Post combat round processing.
 
 
@@ -1550,6 +1549,7 @@
 				ctrl.webworker.terminate();
 				data.combat.logs[uuid].destroyed = dat.status.destroyed;
 			}
+			$scope.$apply();
 		};
 
 		this.startCombat = function() {

@@ -27,9 +27,6 @@ simulator.getTarget = function(targetList) {
 	return targetList[index];
 };
 
-simulator.buildTargetList = function(fleets) {
-};
-
 simulator.fireWeapons = function(unit,targetList) {
 	var stack = [];
 	_.each(unit.combat["direct-fire"],function(weapon){
@@ -48,7 +45,7 @@ simulator.resolveHit = function(hit,source,unitList) {
 	var target = unitList[hit.target];
 	var damage = new simulator.objects.damage(source);
 	
-	var hasShields = (target.shield.current > 0);
+	var hasShields = (target.shield.current && target.shield.current > 0);
 	var barrier = hasShields ? target.combat.shield : target.combat.hull;
 	damage.protection = hasShields ? "shield" : "hull";
 	var hitRoll = hit.hitRoll - barrier.defense;
@@ -78,23 +75,56 @@ simulator.resolveHit = function(hit,source,unitList) {
 		target.hull.current -= damage.damage;
 	}
 
+	hit.targetName = target.unit.name;
+	damage.sourceName = unitList[damage.source].unit.name;
+
 	return damage;
 };
 
 simulator.combatCleanup = function(unit) {
 	unit.shield.current = Math.max(unit.shield.current,0);
 	unit.hull.current = Math.max(unit.hull.current,0);
-};
 
-simulator.hitRoll = function(target) {
-	var roll = _.random(1,100) + target;
-	roll = Math.min(roll,simulator.setup.maxHit);
-	roll = Math.max(roll,simulator.setup.minHit);
-	return roll;
+	if(unit.hull.current == 0) {
+		this.status.destroyed.push(unit.uuid);
+		unit.combat.status = "destroyed";
+	}
+	else if(unit.hull.current < unit.hull.max * unit.unit.breakOff) {
+		this.status.fleeing.push(unit.uuid);
+	}
 };
 
 simulator.initialize = function(obj) {
 	obj.units = {};
-	obj.units.attackers = _.chain(obj.attackers).map(function(ele){ return _.keys(this.fleets[ele].units); },obj.state).flatten().value();
-	obj.units.defenders = _.chain(obj.defenders).map(function(ele){ return _.keys(this.fleets[ele].units); },obj.state).flatten().value();
+
+	obj.units.attackers = _.chain(obj.attackers)
+		.map(function(ele){return _.values(this.fleets[ele].units);},obj.state)
+		.flatten()
+		.filter(function(unit){ return !_.contains(obj.status.destroyed,unit.uuid); })
+		.pluck("uuid")
+		.value();
+
+	obj.units.defenders = _.chain(obj.defenders)
+		.map(function(ele){return _.values(this.fleets[ele].units);},obj.state)
+		.flatten()
+		.filter(function(unit){ return !_.contains(obj.status.destroyed,unit.uuid); })
+		.pluck("uuid")
+		.value();
+};
+
+simulator.endOfCombat = function(round) {
+	var attackers = _.chain(round.attackers)
+		.map(function(uuid){return _.keys(round.state.fleets[uuid].units);})
+		.flatten()
+		.difference(round.status.destroyed)
+		.value();
+	
+	var defenders = _.chain(round.defenders)
+		.map(function(uuid){return _.keys(round.state.fleets[uuid].units);})
+		.flatten()
+		.difference(round.status.destroyed)
+		.value();
+
+	round.status.finished = (attackers.length <= 0 || defenders.length <= 0);
+	round.test = round.status.finished;
 };

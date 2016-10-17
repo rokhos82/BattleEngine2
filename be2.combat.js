@@ -13,7 +13,15 @@
 		var round = {
 			uuid: data.uuid,
 			units: {},
-			status: {},
+			status: {
+				fleeing: [],
+				fled: [],
+				destroyed: [],
+				finished: false,
+				round: data.status.round + 1
+			},
+			attackers: data.attackers,
+			defenders: data.defenders,
 			state: data.state
 		};
 		
@@ -46,7 +54,9 @@
 			});
 		});
 
-		_.each(round.state.units,simulator.combatCleanup);
+		_.each(round.state.units,simulator.combatCleanup,round);
+
+		simulator.endOfCombat(round);
 		
 		self.postMessage(round);
 	}

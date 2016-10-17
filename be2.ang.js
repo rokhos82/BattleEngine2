@@ -794,6 +794,8 @@
 					"regen": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.regen;}).map(function(obj){return obj.regen}).reduce(function(sum,num){return sum + num;},0).value()
 				};
 
+				combat["status"] = "active";
+
 				temp.combat = combat;
 
 				$be2Units.add(temp);
@@ -1035,14 +1037,6 @@
 		};
 		ui.state = ui.states.factions;
 		$scope.ui = ui;
-
-		$scope.hitFilter = function(hit) {
-			return hit.hitRoll > 50 ? true : false;
-		};
-
-		$scope.missFilter = function(hit) {
-			return !$scope.hitFilter(hit);
-		}
 		
 		ui.counters = {
 			"units": data.state.units.list.length
@@ -1483,6 +1477,7 @@
 	app.controller("be2CombatController",["$scope","CombatService","DataStore",function($scope,$combat,data) {
 		var ui = {
 			combat: data.combat,
+			units: data.state.units,
 			fleets: data.state.fleets,
 			factions: data.state.factions
 		};
@@ -1493,10 +1488,68 @@
 
 		$scope.ui = ui;
 
+		$scope.hitFilter = function(hit) {
+			return hit.hitRoll > 50 ? true : false;
+		};
+
+		$scope.missFilter = function(hit) {
+			return !$scope.hitFilter(hit);
+		};
+
+		$scope.hasHits = function(units) {
+			var result = {};
+			angular.forEach(units,function(unit,key){
+				if (unit.hits.length > 0) {
+					result[key] = unit;
+				}
+			});
+			return result;
+		};
+
+		$scope.destroyedUnits = function(round) {
+			var i = round.status.round - 2;
+			var destroyed = undefined;
+			if(i < 0) {
+				destroyed = round.status.destroyed;
+			}
+			else {
+				var prevRound = data.combat.logs[round.uuid].rounds[i];
+				destroyed = _.difference(round.status.destroyed,prevRound.status.destroyed);
+			}
+			return destroyed;
+		}
+
+		this.purgeCombat = function(uuid) {
+			delete data.combat.logs[uuid];
+		};
+
+		this.test = function() {
+			console.log(_.difference([1,3,5],[1,2,3,4,5]));
+		};
+
 		this.combatRound = function(dat) {
+			var obj = {
+				"uuid": dat.uuid,
+				"state": dat.state,
+				"attackers": dat.attackers,
+				"defenders": dat.defenders,
+				"status": dat.status
+			};
+
 			var uuid = dat.uuid;
 			data.combat.logs[uuid].rounds.push(dat);
 			$scope.$apply();
+
+			// Post combat round processing.
+
+
+			if(obj.status.round <= 20 && !dat.status.finished) {
+				ctrl.webworker.postMessage(obj);
+			}
+			else {
+				ctrl.webworker.terminate();
+				data.combat.logs[uuid].destroyed = dat.status.destroyed;
+			}
 		};
 
 		this.startCombat = function() {
@@ -1507,6 +1560,7 @@
 
 			data.combat.logs[combatID] = {
 				uuid: combatID,
+				name: "Test Combat",
 				rounds: []
 			};
 
@@ -1516,7 +1570,9 @@
 				"state": {},
 				"attackers": [],
 				"defenders": [],
-				"status": {}
+				"status": {
+					"round": 0
+				}
 			};
 			
 			// Attach the fleet info for the state object

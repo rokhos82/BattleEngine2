@@ -16,6 +16,9 @@
 					<button class="btn btn-default disabled">Pause Combat</button>
 					<button class="btn btn-default disabled">Reset Combat</button>
 				</div>
+				<div class="btn-group">
+					<button class="btn btn-default" ng-click="ctl.test()">Test</button>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -31,19 +34,34 @@
 				<div class="panel-heading"><h3 class="panel-title panel-title-lg">Combat Results</h3></div>
 				<div class="panel-body">
 					<div class="well well-sm" ng-repeat="combat in ui.combat.logs">
-						<h4>{{combat.uuid}}</h4>
+						<button class="pull-right btn btn-danger" ng-click="ctl.purgeCombat(combat.uuid)">Purge</button>
+						<h3>{{combat.name}}</h3>
 						<ul>
 							<li ng-repeat="round in combat.rounds">
 								<h6>Round {{$index+1}}</h6>
 								<ul>
-									<li ng-repeat="(key,unit) in round.units">
-										<span ng-repeat="hit in unit.hits | filter: hitFilter">
-											{{key}} fired a {{hit.damageMax}}-pt volley at {{hit.target}} ({{hit.hitRoll}}%) for {{hit.damage}} of {{hit.damageMax}} ({{hit.damageRoll}}%) damage.</span>
-										<span ng-repeat="hit in unit.hits | filter: missFilter">
-											{{key}} fired at {{hit.target}} and missed ({{hit.hitRoll}}%)
+									<li ng-repeat="(key,unit) in hasHits(round.units)">
+										<span class="text-success" ng-repeat="hit in unit.hits | filter: hitFilter">
+											{{ui.units[key].unit.name}} fired at {{hit.targetName}} ({{hit.hitRoll}}%) for {{hit.damage}} of {{hit.damageMax}} ({{hit.damageRoll}}%) damage.
+										</span>
+										<span class="text-warning" ng-repeat="hit in unit.hits | filter: missFilter">
+											{{ui.units[key].unit.name}} fired at {{hit.targetName}} and missed ({{hit.hitRoll}}%).
 										</span>
 									</li>
+									<li ng-repeat="key in destroyedUnits(round)">
+										<span class="text-danger">{{ui.units[key].unit.name}} has been destroyed!</span>
+									</li>
+									<li ng-repeat="key in round.status.fled">
+										<span class="text-info">{{ui.units[key].unit.name}} has fled!
+									</li>
 								</ul>
+							</li>
+						</ul>
+						<h4>Destroyed Units</h4>
+						<ul>
+							{{combat.destroyed}}
+							<li ng-repeat="key in combat.destroyed">
+								{{key}} was destroyed.
 							</li>
 						</ul>
 					</div>

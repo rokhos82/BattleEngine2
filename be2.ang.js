@@ -766,6 +766,8 @@
 					ele.target += _.chain(temp).filter(function(obj){return obj.target;}).map(function(obj){return obj.target;}).reduce(function(sum,num){return sum + num;},0).value();
 					ele.yield = ele.yield ? ele.yield : 0;
 					ele.yield += _.chain(temp).filter(function(obj){return obj.yield;}).map(function(obj){return obj.yield;}).reduce(function(sum,num){return sum + num;},0).value();
+					ele.eccm = ele.eccm ? ele.eccm : 0;
+					ele.eccm += _.chain(temp).filter(function(obj){return obj.eccm;}).map(function(obj){return obj.eccm}).reduce(function(sum,num){return sum + num;},0).value();
 					combat["direct-fire"].push(ele);
 				});
 
@@ -775,6 +777,8 @@
 					ele.target += _.chain(temp).filter(function(obj){return obj.target;}).map(function(obj){return obj.target;}).reduce(function(sum,num){return sum + num;},0).value();
 					ele.yield = ele.yield ? ele.yield : 0;
 					ele.yield += _.chain(temp).filter(function(obj){return obj.yield;}).map(function(obj){return obj.yield;}).reduce(function(sum,num){return sum + num;},0).value();
+					ele.eccm = ele.eccm ? ele.eccm : 0;
+					ele.eccm += _.chain(temp).filter(function(obj){return obj.eccm;}).map(function(obj){return obj.eccm}).reduce(function(sum,num){return sum + num;},0).value();
 					combat["packet-fire"].push(ele);
 				});
 
@@ -783,7 +787,8 @@
 					"resist": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.resist;}).map(function(obj){return obj.resist}).reduce(function(sum,num){return sum + num;},0).value(),
 					"deflect": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.deflect;}).map(function(obj){return obj.deflect}).reduce(function(sum,num){return sum + num;},0).value(),
 					"flicker": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.flicker;}).map(function(obj){return obj.flicker}).reduce(function(sum,num){return sum + num;},0).value(),
-					"regen": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.regen;}).map(function(obj){return obj.regen}).reduce(function(sum,num){return sum + num;},0).value()
+					"regen": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.regen;}).map(function(obj){return obj.regen}).reduce(function(sum,num){return sum + num;},0).value(),
+					"ecm": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.ecm;}).map(function(obj){return obj.ecm}).reduce(function(sum,num){return sum + num;},0).value()
 				};
 
 				combat["hull"] = {
@@ -791,7 +796,8 @@
 					"resist": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.resist;}).map(function(obj){return obj.resist}).reduce(function(sum,num){return sum + num;},0).value(),
 					"deflect": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.deflect;}).map(function(obj){return obj.deflect}).reduce(function(sum,num){return sum + num;},0).value(),
 					"flicker": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.flicker;}).map(function(obj){return obj.flicker}).reduce(function(sum,num){return sum + num;},0).value(),
-					"regen": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.regen;}).map(function(obj){return obj.regen}).reduce(function(sum,num){return sum + num;},0).value()
+					"regen": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.regen;}).map(function(obj){return obj.regen}).reduce(function(sum,num){return sum + num;},0).value(),
+					"ecm": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.ecm;}).map(function(obj){return obj.ecm}).reduce(function(sum,num){return sum + num;},0).value()
 				};
 
 				combat["status"] = "active";

@@ -32,13 +32,20 @@ simulator.getTarget = function(targetList) {
 simulator.fireWeapons = function(unit,targetList) {
 	var stack = [];
 	_.each(unit.combat["direct-fire"],function(weapon){
-		var t = simulator.getTarget(targetList);
-		var hit = new simulator.objects.hit(t);
-		hit.hitRoll = _.random(1,100) + weapon.target;
-		hit.damageRoll = _.random(1,100) + weapon.yield;
-		hit.damageMax = weapon.volley;
-		hit.damage = Math.round(hit.damageMax * hit.damageRoll / 100);
-		this.push(hit);
+		if(_.isUndefined(weapon.ammo) || weapon.ammo > 0) {
+			var t = simulator.getTarget(targetList);
+			var hit = new simulator.objects.hit(t);
+			hit.hitRoll = _.random(1,100) + weapon.target;
+			hit.damageRoll = _.random(1,100) + weapon.yield;
+			hit.damageMax = weapon.volley;
+			hit.damage = Math.round(hit.damageMax * hit.damageRoll / 100);
+			hit.eccm = weapon.eccm;
+			hit.yield = weapon.yield;
+			this.push(hit);
+		}
+		if(!_.isUndefined(weapon.ammo)) {
+			weapon.ammo--;
+		}
 	},stack);
 	_.each(unit.combat["packet-fire"],function(weapon){
 		for(var i = 0;i < weapon.volley;i++) {
@@ -48,10 +55,11 @@ simulator.fireWeapons = function(unit,targetList) {
 				hit.hitRoll = _.random(1,100) + weapon.target;
 				hit.damageRoll = _.random(1,100) + weapon.yield;
 				hit.damageMax = weapon.packet;
+				hit.eccm = weapon.eccm;
 				this.push(hit);
-				weapon.ammo--;
 			}
 		}
+		weapon.ammo--;
 	},stack);
 	return stack;
 };
@@ -64,7 +72,9 @@ simulator.resolveHit = function(hit,source,unitList) {
 	var barrier = hasShields ? target.combat.shield : target.combat.hull;
 	damage.protection = hasShields ? "shields" : "hull";
 	hit.protection = damage.protection;
-	var hitRoll = hit.hitRoll - barrier.defense;
+	hit.ecm = barrier.ecm;
+	hit.resist = barrier.resist;
+	var hitRoll = hit.hitRoll - barrier.defense - Math.max(barrier.ecm-hit.eccm,0);
 	hitRoll = Math.min(hitRoll,100);
 	hitRoll = Math.max(hitRoll,10);
 	hit.hitRoll = hitRoll;
@@ -92,18 +102,17 @@ simulator.resolveHit = function(hit,source,unitList) {
 		target.hull.current -= damage.damage;
 	}
 
-	hit.targetName = target.unit.name;
-	damage.sourceName = unitList[damage.source].unit.name;
-
 	return damage;
 };
 
 simulator.combatCleanup = function(unit) {
-	if(unit.shield.regen) {
-		unit.shield.current += unit.shield.regen;
+	if(unit.combat.shield.regen) {
+		unit.shield.current += unit.combat.shield.regen;
+		this.specials.push({"unit":unit.uuid,"effect": unit.unit.name + " has regenerated " + unit.combat.shield.regen + " shields!"});
 	}
-	if(unit.hull.regen) {
-		unit.hull.current += unit.hull.regen;
+	if(unit.combat.hull.regen) {
+		unit.hull.current += unit.combat.hull.regen;
+		this.specials.push({"unit":unit.uuid,"effect": unit.unit.name + " has regenerated " + unit.combat.hull.regen + " hull!"});
 	}
 
 	unit.shield.current = Math.max(unit.shield.current,0);

@@ -18,11 +18,12 @@
 				fled: [],
 				destroyed: data.status.destroyed ? data.status.destroyed : [],
 				finished: false,
-				round: data.status.round + 1
+				round: data.status.round + 1,
 			},
 			attackers: data.attackers,
 			defenders: data.defenders,
-			state: data.state
+			state: data.state,
+			specials: []
 		};
 		
 		_.each(data.attackers,function(uuid,index,list){

@@ -42,10 +42,10 @@
 								<ul>
 									<li ng-repeat="(key,unit) in hasHits(round.units)">
 										<span class="text-success center-block" ng-repeat="hit in unit.hits | filter: hitFilter">
-											{{ui.units[key].unit.name}} fired at {{hit.targetName}} ({{hit.hitRoll}}%) for {{hit.damage}} of {{hit.damageMax}} ({{hit.damageRoll}}%) damage to the {{hit.protection}}, {{hit.deflect}} damage deflected.
+											{{ui.units[key].unit.name}} fired at {{ui.units[hit.target].unit.name}} ({{hit.hitRoll}}%) for {{hit.damage}} of {{hit.damageMax}} ({{hit.damageRoll}}%) damage to the {{hit.protection}}, {{hit.deflect}} damage deflected.
 										</span>
 										<span class="text-warning center-block" ng-repeat="hit in unit.hits | filter: missFilter">
-											{{ui.units[key].unit.name}} fired at {{hit.targetName}} and missed ({{hit.hitRoll}}%).
+											{{ui.units[key].unit.name}} fired at {{ui.units[hit.target].unit.name}} and missed ({{hit.hitRoll}}%).
 										</span>
 									</li>
 									<li ng-repeat="key in destroyedUnits(round)">
@@ -53,6 +53,11 @@
 									</li>
 									<li ng-repeat="key in round.status.fled">
 										<span class="text-info">{{ui.units[key].unit.name}} has fled!
+									</li>
+								</ul>
+								<ul>
+									<li ng-repeat="special in round.specials">
+										<span class="text-info">{{special.effect}}</span>
 									</li>
 								</ul>
 							</li>

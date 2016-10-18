@@ -3,7 +3,8 @@ var simulator = {};
 simulator.setup = {
 	"toHit": 50,
 	"maxHit": 100,
-	"minHit": 10
+	"minHit": 10,
+	"minDamage": 1
 };
 
 simulator.objects = {};
@@ -14,6 +15,7 @@ simulator.objects.hit = function(uuid,hit,dmgRoll,dmg,dmgMax) {
 	this.damage = dmg;
 	this.damageMax = dmgMax;
 };
+
 simulator.objects.damage = function(uuid) {
 	this.source = uuid;
 	this.damage = 0;
@@ -38,6 +40,19 @@ simulator.fireWeapons = function(unit,targetList) {
 		hit.damage = Math.round(hit.damageMax * hit.damageRoll / 100);
 		this.push(hit);
 	},stack);
+	_.each(unit.combat["packet-fire"],function(weapon){
+		for(var i = 0;i < weapon.volley;i++) {
+			if(weapon.ammo > 0) {
+				var t = simulator.getTarget(targetList);
+				var hit = new simulator.objects.hit(t);
+				hit.hitRoll = _.random(1,100) + weapon.target;
+				hit.damageRoll = _.random(1,100) + weapon.yield;
+				hit.damageMax = weapon.packet;
+				this.push(hit);
+				weapon.ammo--;
+			}
+		}
+	},stack);
 	return stack;
 };
 
@@ -60,7 +75,7 @@ simulator.resolveHit = function(hit,source,unitList) {
 		damage.deflect = barrier.deflect;
 		var dmg = Math.round(hit.damageMax * damageRoll / 100);
 		dmg -= barrier.deflect;
-		dmg = Math.max(dmg,0);
+		dmg = Math.max(dmg,simulator.setup.minDamage);
 		dmg = Math.min(dmg,hit.damageMax);
 		damage.damage = dmg;
 		hit.damage = dmg;
@@ -97,6 +112,7 @@ simulator.combatCleanup = function(unit) {
 simulator.initialize = function(obj) {
 	obj.units = {};
 
+	// Create attacker target list
 	obj.units.attackers = _.chain(obj.attackers)
 		.map(function(ele){return _.values(this.fleets[ele].units);},obj.state)
 		.flatten()
@@ -104,6 +120,7 @@ simulator.initialize = function(obj) {
 		.pluck("uuid")
 		.value();
 
+	// Create defender target list
 	obj.units.defenders = _.chain(obj.defenders)
 		.map(function(ele){return _.values(this.fleets[ele].units);},obj.state)
 		.flatten()
@@ -113,18 +130,32 @@ simulator.initialize = function(obj) {
 };
 
 simulator.endOfCombat = function(round) {
+	// Check to see what attacking units remain.
 	var attackers = _.chain(round.attackers)
 		.map(function(uuid){return _.keys(round.state.fleets[uuid].units);})
 		.flatten()
 		.difference(round.status.destroyed)
 		.value();
 	
+	// Check to see what defending units remain.
 	var defenders = _.chain(round.defenders)
 		.map(function(uuid){return _.keys(round.state.fleets[uuid].units);})
 		.flatten()
 		.difference(round.status.destroyed)
 		.value();
 
+	// If one side is completely destroyed/fled, end combat.
 	round.status.finished = (attackers.length <= 0 || defenders.length <= 0);
-	round.test = round.status.finished;
+	//round.test = round.status.destroyed;
+
+	// Cleanup units to exclude destroyed units.
+	_.each(round.state.fleets,function(fleet){
+		_.each(fleet.units,function(unit){
+			var uuid = unit.uuid;
+			if(_.contains(round.status.destroyed,uuid)) {
+				delete fleet.units[unit.uuid];
+				delete round.state.units[unit.uuid];
+			}
+		});
+	});
 };

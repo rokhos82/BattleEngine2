@@ -16,7 +16,7 @@
 			status: {
 				fleeing: [],
 				fled: [],
-				destroyed: [],
+				destroyed: data.status.destroyed ? data.status.destroyed : [],
 				finished: false,
 				round: data.status.round + 1
 			},

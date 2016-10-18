@@ -1517,6 +1517,12 @@
 				destroyed = _.difference(round.status.destroyed,prevRound.status.destroyed);
 			}
 			return destroyed;
+			//return round.status.destroyed;
+		}
+
+		this.survivingUnits = function(combat) {
+			var last = _.last(combat.rounds);
+			return last ? last.state.units : undefined;
 		}
 
 		this.purgeCombat = function(uuid) {
@@ -1524,10 +1530,37 @@
 		};
 
 		this.test = function() {
-			console.log(_.difference([1,3,5],[1,2,3,4,5]));
+			var obj = {
+				"fleets": {
+					"fleetA": {
+						"units": {
+							"unitA": {
+								"uuid": "unitA"
+							}
+						}
+					}
+				},
+				"units": {
+					"unitA": {
+						"uuid": "unitA"
+					},
+					"unitB": {
+						"uuid": "unitB"
+					}
+				},
+				"destroy": ["unitA"]
+			}
+
+			var unit = obj.units["unitA"];
+
+			//delete obj.fleets["fleetA"].units["unitA"];
+			//delete obj.units["unitA"];
+			delete unit;
+			console.log(obj);
 		};
 
 		this.combatRound = function(dat) {
+			//console.log(dat.test);
 			var obj = {
 				"uuid": dat.uuid,
 				"state": dat.state,
@@ -1601,6 +1634,14 @@
 				return valid;
 			};
 			_.chain(data.state.units).filter(unitFilter).each(buildUnitState,obj.state.units);
+
+			// Cleanup template references.
+			_.chain(obj.state.units).mapObject(function(obj) {
+				if(_.isObject(obj.template)) {
+					obj.template = obj.template.uuid;
+				}
+				return obj;
+			});
 			
 			this.webworker = new Worker("be2.combat.js");
 			this.webworker.onmessage = function(event) {

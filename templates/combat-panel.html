@@ -41,10 +41,10 @@
 								<h6>Round {{$index+1}}</h6>
 								<ul>
 									<li ng-repeat="(key,unit) in hasHits(round.units)">
-										<span class="text-success" ng-repeat="hit in unit.hits | filter: hitFilter">
+										<span class="text-success center-block" ng-repeat="hit in unit.hits | filter: hitFilter">
 											{{ui.units[key].unit.name}} fired at {{hit.targetName}} ({{hit.hitRoll}}%) for {{hit.damage}} of {{hit.damageMax}} ({{hit.damageRoll}}%) damage.
 										</span>
-										<span class="text-warning" ng-repeat="hit in unit.hits | filter: missFilter">
+										<span class="text-warning center-block" ng-repeat="hit in unit.hits | filter: missFilter">
 											{{ui.units[key].unit.name}} fired at {{hit.targetName}} and missed ({{hit.hitRoll}}%).
 										</span>
 									</li>
@@ -61,6 +61,12 @@
 						<ul>
 							<li ng-repeat="key in combat.destroyed">
 								{{ui.units[key].unit.name}} was destroyed.
+							</li>
+						</ul>
+						<h4>Surviving Units</h4>
+						<ul>
+							<li ng-repeat="unit in ctl.survivingUnits(combat)">
+								{{unit.unit.name}}
 							</li>
 						</ul>
 					</div>

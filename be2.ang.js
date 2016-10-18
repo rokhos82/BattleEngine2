@@ -465,7 +465,7 @@
 
 		// Add a fleet object to the dictionary ----------------------------------------------------
 		var _add = function(fleet) {
-			if(_validate(fleet) && !_exists(fleet)) {
+			if(_validate(fleet)) {
 				var id = window.uuid.v4();
 				fleet.uuid = id;
 				data.state.fleets[id] = fleet;
@@ -1092,27 +1092,13 @@
 			logs: "logs"
 		};
 		ui.state = ui.states.factions;
-		$scope.ui = ui;
-		
 		ui.counters = {
-			"units": data.state.units.list.length
+			"units": 0,
+			"templates": 0,
+			"fleets": 0
 		};
-
-		function updateUnitCounter() {
-			ui.counters.units = data.state.units.list.length;
-		}
-
-		function updateTemplateCounter() {
-			ui.counters.templates = data.state.templates.list.length;
-		}
-
-		function updateFleetCounter() {
-			ui.counters.fleets = data.state.fleets.list.length;
-		}
-
-		$scope.$watch(data.state.units,updateUnitCounter,false);
-		$scope.$watch(data.state.templates,updateTemplateCounter,false);
-		$scope.$watch(data.state.fleets,updateFleetCounter,false);
+		
+		$scope.ui = ui;
 
 		this.saveData = storage.save;
 		this.loadData = storage.load;
@@ -1182,14 +1168,18 @@
 			for(var i in ui.factions) {
 				var faction = ui.factions[i];
 				var fleets = FactionService.getFleets(faction);
-				//ui.state.show.factions[faction] = false;
+				if(_.isUndefined(ui.state.show.factions[faction])) {
+					ui.state.show.factions[faction] = false;
+				}
 				ui.fleets[faction] = fleets;
 				ui.units[faction] = {};
 				ui.state.show.fleets[faction] = {};
 				for(var f in fleets) {
 					var fleet = fleets[f];
 					ui.units[faction][fleet.uuid] = [];
-					//ui.state.show.fleets[faction][fleet.uuid] = false;
+					if(_.isUndefined(ui.state.show.fleets[faction][fleet.uuid])) {
+						ui.state.show.fleets[faction][fleet.uuid] = false;
+					}
 					var units = FleetService.getUnits(fleet.uuid);
 					ui.units[faction][fleet.uuid] = units;
 				}
@@ -1419,6 +1409,9 @@
 			for(var i in ui.fleets) {
 				var fleet = ui.fleets[i];
 				ui.units[fleet] = data.state.fleets[fleet].units;
+				if(_.isUndefined(ui.state.show[fleet])) {
+					ui.state.show[fleet] = false;
+				}
 			}
 		}
 

@@ -3,6 +3,9 @@
 
 	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex","list"];
 
+	var be2ArrayRemove = function(list,value) {
+	};
+
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// ImportModal - this is the service object for a generic import modal.
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -517,6 +520,14 @@
 			}
 		};
 
+		var _detachUnit = function(fleet,unit) {
+			if(_exists(fleet)) {
+				var f = data.state.fleets[fleet];
+				delete f.units[unit];
+				data.state.units[unit].fleet = undefined;
+			}
+		};
+
 		// Get all the units from the passed fleet object ------------------------------------------
 		var _getUnits = function(fleet) {
 			return _exists(fleet) ? data.state.fleets[fleet].units : undefined;
@@ -524,6 +535,23 @@
 
 		var _getList = function() {
 			return data.state.fleets.list;
+		};
+
+		// Remove a fleet ------------------------------------------------------------------------
+		var _remove = function(fleet) {
+			if(_exists(fleet)) {
+				_logger.warning("Removing fleet '" + fleet + "'");
+				delete data.state.fleets[fleet];
+				var i = data.state.fleets.list.indexOf(fleet);
+				data.state.fleets.list.splice(i,1);
+			}
+		};
+
+		// Purge all fleets from the data store --------------------------------------------------
+		var _purge = function() {
+			data.state.fleets.list.length = 0;
+			data.state.fleets = {};
+			data.state.fleets.list = [];
 		};
 
 		return {
@@ -536,7 +564,10 @@
 			getList: _getList,
 			validate: _validate,
 			getUnits: _getUnits,
-			combatInfo: function() {return {"fleets":fleets,"index":fleetIndex}}
+			combatInfo: function() {return {"fleets":fleets,"index":fleetIndex}},
+			purge: _purge,
+			remove: _remove,
+			detachUnit: _detachUnit
 		}
 	}]);
 
@@ -618,6 +649,23 @@
 			},data.state.units).value();
 		};
 
+		// Remove a unit ------------------------------------------------------------------------
+		var _remove = function(unit) {
+			if(_exists(unit)) {
+				_logger.warning("Removing unit '" + unit + "'");
+				delete data.state.units[unit];
+				var i = data.state.units.list.indexOf(unit);
+				data.state.units.list.splice(i,1);
+			}
+		};
+
+		// Purge all units from the data store --------------------------------------------------
+		var _purge = function() {
+			data.state.units.list.length = 0;
+			data.state.units = {};
+			data.state.units.list = [];
+		};
+
 		return {
 			validate: _validate,
 			add: _add,
@@ -625,7 +673,9 @@
 			get: _getUnit,
 			getList: _getList,
 			getMultiple: _getMultiple,
-			getOptions: _getOptions
+			getOptions: _getOptions,
+			remove: _remove,
+			purge: _purge
 		}
 	}]);
 
@@ -1372,6 +1422,10 @@
 			}
 		}
 
+		this.purge = FleetService.purge;
+		this.remove = FleetService.remove;
+		this.detachUnit = FleetService.detachUnit;
+
 		$scope.$watch('ui.data.fleets',this.initState,true);
 
 		this.showAll = function() {
@@ -1669,7 +1723,7 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2UnitController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2UnitController",["$rootScope","$scope","UnitService","DataStore","be2InfoModal",function($rootScope,$scope,$be2Units,$be2Data,$infoModal){
+	app.controller("be2UnitController",["$rootScope","$scope","UnitService","FleetService","DataStore","be2InfoModal",function($rootScope,$scope,$be2Units,FleetService,$be2Data,$infoModal){
 		var ui = $be2Data.ui.unit;
 		ui.units = $be2Units.getList();
 		ui.state = {
@@ -1682,9 +1736,26 @@
 		$scope.ui = ui;
 
 		this.data = $be2Data.state;
+		var ctl = this;
 
 		// Service Mappings ------------------------------------------------------------------------
 		this.getUnitInfo = $be2Units.get;
+
+		this.remove = function(unit) {
+			if(unit !== "list" && $be2Data.state.units[unit].fleet) {
+				var fleet = ctl.data.units[unit].fleet;
+				FleetService.detachUnit(fleet,unit);
+			}
+			$be2Units.remove(unit);
+		};
+
+		this.purge = function() {
+			_.chain(ctl.data.units).each(function(unit){
+				if(unit.uuid) {
+					ctl.remove(unit.uuid);
+				}
+			});
+		};
 
 		// UI State Actions ------------------------------------------------------------------------
 		this.showAll = function() {

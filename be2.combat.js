@@ -29,7 +29,10 @@
 		_.each(data.attackers,function(uuid,index,list){
 			var fleet = data.state.fleets[uuid];
 			_.chain(fleet.units).each(function(unit,key,list){
-				var hits = simulator.fireWeapons(unit,data.units.defenders);
+				var lhits = simulator.fireLongWeapons(unit,data.units.defenders);
+				var nhits = simulator.fireWeapons(unit,data.units.defenders);
+
+				var hits = _.union(lhits,nhits);
 				round.units[key] = {
 					"hits": hits,
 					"damage": []
@@ -40,7 +43,10 @@
 		_.each(data.defenders,function(uuid,index,list){
 			var fleet = data.state.fleets[uuid];
 			_.chain(fleet.units).each(function(unit,key,list){
-				var hits = simulator.fireWeapons(unit,data.units.attackers);
+				var lhits = simulator.fireLongWeapons(unit,data.units.attackers);
+				var nhits = simulator.fireWeapons(unit,data.units.attackers);
+
+				var hits = _.union(lhits,nhits);
 				round.units[key] = {
 					"hits": hits,
 					"damage": []
@@ -51,7 +57,7 @@
 		_.each(round.units,function(unit,key) {
 			_.each(unit.hits,function(hit){
 				var damage = simulator.resolveHit(hit,key,data.state.units);
-				round.units[hit.target].damage.push(damage);
+				//round.units[hit.target].damage.push(damage);
 			});
 		});
 

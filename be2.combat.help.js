@@ -4,7 +4,7 @@ simulator.setup = {
 	"toHit": 50,
 	"maxHit": 100,
 	"minHit": 10,
-	"minDamage": 1
+	"minDamage": 0
 };
 
 simulator.objects = {};
@@ -29,6 +29,45 @@ simulator.getTarget = function(targetList) {
 	return targetList[index];
 };
 
+simulator.fireLongWeapons = function(unit,targetList) {
+	var stack = [];
+	_.each(unit.combat["direct-fire"],function(weapon){
+		if((_.isUndefined(weapon.ammo) || weapon.ammo > 0) && (!_.isUndefined(weapon.long) || weapon.long > 0)) {
+			for(var i = 0;i < weapon.long;i++) {
+				var t = simulator.getTarget(targetList);
+				var hit = new simulator.objects.hit(t);
+				hit.hitRoll = _.random(1,100) + weapon.target;
+				hit.damageRoll = _.random(1,100) + weapon.yield;
+				hit.damageMax = weapon.volley;
+				hit.damage = Math.round(hit.damageMax * hit.damageRoll / 100);
+				hit.eccm = weapon.eccm;
+				hit.yield = weapon.yield;
+				this.push(hit);
+			}
+		}
+		weapon.ammo = _.isNumber(weapon.ammo) ? weapon.ammo - weapon.long : weapon.ammo;
+		weapon.long = 0;
+	},stack);
+	_.each(unit.combat["packet-fire"],function(weapon){
+		for(var i = 0;i < weapon.volley;i++) {
+			if((_.isUndefined(weapon.ammo) || weapon.ammo > 0) && (!_.isUndefined(weapon.long) || weapon.long > 0)) {
+				for(var i = 0;i < weapon.long;i++) {
+					var t = simulator.getTarget(targetList);
+					var hit = new simulator.objects.hit(t);
+					hit.hitRoll = _.random(1,100) + weapon.target;
+					hit.damageRoll = _.random(1,100) + weapon.yield;
+					hit.damageMax = weapon.packet;
+					hit.eccm = weapon.eccm;
+					this.push(hit);
+				}
+				weapon.long = 0;
+				weapon.ammo = _.isNumber(weapon.ammo) ? weapon.ammo - weapon.long : weapon.ammo;
+			}
+		}
+	},stack);
+	return stack;
+};
+
 simulator.fireWeapons = function(unit,targetList) {
 	var stack = [];
 	_.each(unit.combat["direct-fire"],function(weapon){
@@ -42,14 +81,12 @@ simulator.fireWeapons = function(unit,targetList) {
 			hit.eccm = weapon.eccm;
 			hit.yield = weapon.yield;
 			this.push(hit);
-		}
-		if(!_.isUndefined(weapon.ammo)) {
-			weapon.ammo--;
+			weapon.ammo = _.isNumber(weapon.ammo) ? weapon.ammo - 1 : weapon.ammo;
 		}
 	},stack);
 	_.each(unit.combat["packet-fire"],function(weapon){
-		for(var i = 0;i < weapon.volley;i++) {
-			if(weapon.ammo > 0) {
+		if(_.isUndefined(weapon.ammo) || weapon.ammo > 0) {
+			for(var i = 0;i < weapon.volley;i++) {
 				var t = simulator.getTarget(targetList);
 				var hit = new simulator.objects.hit(t);
 				hit.hitRoll = _.random(1,100) + weapon.target;
@@ -58,8 +95,8 @@ simulator.fireWeapons = function(unit,targetList) {
 				hit.eccm = weapon.eccm;
 				this.push(hit);
 			}
+			weapon.ammo = _.isNumber(weapon.ammo) ? weapon.ammo - 1 : weapon.ammo;
 		}
-		weapon.ammo--;
 	},stack);
 	return stack;
 };

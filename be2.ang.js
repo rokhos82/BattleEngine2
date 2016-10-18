@@ -1484,6 +1484,9 @@
 
 		this.timeout = undefined;
 		this.webworker = undefined;
+		this.setup = {
+			combatLimit: 200
+		};
 		var ctrl = this;
 
 		$scope.ui = ui;
@@ -1575,7 +1578,7 @@
 			// Post combat round processing.
 
 
-			if(obj.status.round <= 20 && !dat.status.finished) {
+			if(obj.status.round <= ctrl.setup.combatLimit && !dat.status.finished) {
 				ctrl.webworker.postMessage(obj);
 			}
 			else {

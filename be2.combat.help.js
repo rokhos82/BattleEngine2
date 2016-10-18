@@ -62,7 +62,8 @@ simulator.resolveHit = function(hit,source,unitList) {
 	
 	var hasShields = (target.shield.current && target.shield.current > 0);
 	var barrier = hasShields ? target.combat.shield : target.combat.hull;
-	damage.protection = hasShields ? "shield" : "hull";
+	damage.protection = hasShields ? "shields" : "hull";
+	hit.protection = damage.protection;
 	var hitRoll = hit.hitRoll - barrier.defense;
 	hitRoll = Math.min(hitRoll,100);
 	hitRoll = Math.max(hitRoll,10);
@@ -81,6 +82,7 @@ simulator.resolveHit = function(hit,source,unitList) {
 		hit.damage = dmg;
 		damage.damageRoll = damageRoll;
 		hit.damage = dmg;
+		hit.deflect = barrier.deflect;
 	}
 
 	if(hasShields) {
@@ -97,6 +99,13 @@ simulator.resolveHit = function(hit,source,unitList) {
 };
 
 simulator.combatCleanup = function(unit) {
+	if(unit.shield.regen) {
+		unit.shield.current += unit.shield.regen;
+	}
+	if(unit.hull.regen) {
+		unit.hull.current += unit.hull.regen;
+	}
+
 	unit.shield.current = Math.max(unit.shield.current,0);
 	unit.hull.current = Math.max(unit.hull.current,0);
 

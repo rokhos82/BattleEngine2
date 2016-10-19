@@ -11,45 +11,72 @@
 		<div class="col-lg-12 col-md-12 col-sm-12">
 			<div class="btn-toolbar">
 				<div class="btn-group">
-					<button class="btn btn-default" ng-click="startCombat()">Start Combat</button>
-					<button class="btn btn-default disabled">Stop Combat</button>
+					<button class="btn btn-default" ng-click="ctl.startCombat()">Start Combat</button>
+					<button class="btn btn-default" ng-click="ctl.stopCombat()">Stop Combat</button>
 					<button class="btn btn-default disabled">Pause Combat</button>
 					<button class="btn btn-default disabled">Reset Combat</button>
+				</div>
+				<div class="btn-group">
+					<button class="btn btn-default" ng-click="ctl.test()">Test</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-sm-12 col-md-12 col-lg-12">
+	<!--<div class="row">
+		<!--<div class="col-sm-12 col-md-12 col-lg-12">
 			<h4>Combat Progress: {{ui.combat.status}}</h4>
 			<uib-progressbar class="progress-striped active" value="ui.combat.progress" type="info"><span ng-show="ui.combat.current > 0">{{ui.combat.current}}/{{ui.combat.max}}</span></uib-progressbar>
 		</div>
-	</div>
-	<div class="row">
+	</div>-->
+	<div class="row top-buffer-md">
 		<div class="col-sm-12 col-md-12 col-lg-12">
 			<div class="panel panel-primary">
 				<div class="panel-heading"><h3 class="panel-title panel-title-lg">Combat Results</h3></div>
 				<div class="panel-body">
-					<p class="well well-sm">Combat Results go here</p>
-					<div class="well well-sm">
-						<h4>Round 1</h4>
+					<div class="well well-sm" ng-repeat="combat in ui.combat.logs">
+						<button class="pull-right btn btn-danger" ng-click="ctl.purgeCombat(combat.uuid)">Purge</button>
+						<h3>{{combat.name}}</h3>
 						<ul>
-							<li>Fleet A</li>
-							<ul>
-								<li>Unit A</li>
-								<li>Unit B</li>
-							</ul>
-							<li>Fleet 1</li>
-							<ul>
-								<li>Unit 1</li>
-								<li>Unit 2</li>
-								<li>Unit 3</li>
-							</ul>
+							<li ng-repeat="round in combat.rounds">
+								<h6>Round {{$index+1}}</h6>
+								<ul>
+									<li ng-repeat="(key,unit) in hasHits(round.units)">
+										<span class="text-success center-block" ng-repeat="hit in unit.hits | filter: hitFilter">
+											{{ui.units[key].unit.name}} fired at {{ui.units[hit.target].unit.name}} ({{hit.hitRoll}}%) for {{hit.damage}} of {{hit.damageMax}} ({{hit.damageRoll}}%) damage to the {{hit.protection}}, {{hit.deflect}} damage deflected.
+										</span>
+										<span class="text-warning center-block" ng-repeat="hit in unit.hits | filter: missFilter">
+											{{ui.units[key].unit.name}} fired at {{ui.units[hit.target].unit.name}} and missed ({{hit.hitRoll}}%).
+										</span>
+									</li>
+									<li ng-repeat="key in destroyedUnits(round)">
+										<span class="text-danger">{{ui.units[key].unit.name}} has been destroyed!</span>
+									</li>
+									<li ng-repeat="key in round.status.fled">
+										<span class="text-info">{{ui.units[key].unit.name}} has fled!
+									</li>
+								</ul>
+								<ul>
+									<li ng-repeat="special in round.specials">
+										<span class="text-info">{{special.effect}}</span>
+									</li>
+								</ul>
+							</li>
 						</ul>
+						<h4>Destroyed Units</h4>
 						<ul>
-							<li>Unit A fires at Unit 3</li>
-							<li>Unit 3 fires at Unit A</li>
+							<li ng-repeat="key in combat.destroyed">
+								{{ui.units[key].unit.name}} was destroyed.
+							</li>
 						</ul>
+						<h4>Surviving Units</h4>
+						<table class="table table-bordered table-hover">
+							<thead>
+								<tr><th>Unit</th><th>Type</th><th>Size</th><th>Hull</th><th>Shield</th></tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="unit in ctl.survivingUnits(combat)" ng-class="{'text-danger':unit.unit.type === 'Starship','text-warning':unit.unit.type === 'Gunboat','text-info':unit.unit.type === 'Fighter'}"><td>{{unit.unit.name}}</td><td>{{unit.unit.type}}</td><td>{{unit.unit.size}}</td><td>{{unit.hull.current}} ({{unit.hull.max}})</td><td>{{unit.shield.current}} ({{unit.shield.max}})</td></tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>

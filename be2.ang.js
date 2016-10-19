@@ -3,6 +3,9 @@
 
 	var reservedNames = ["factions","factions","factionIndex","fleet","fleets","fleetIndex","list"];
 
+	var be2ArrayRemove = function(list,value) {
+	};
+
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// ImportModal - this is the service object for a generic import modal.
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -256,7 +259,9 @@
 				main: {},
 				debug: true
 			},
-			combat: {}
+			combat: {
+				logs: {}
+			}
 		};
 
 		return _data;
@@ -284,7 +289,6 @@
 		var _create = function(elements) {
 			var faction = angular.copy(_factionDefaults);
 			angular.merge(faction,elements);
-			console.log(faction);
 			_add(faction);
 		};
 
@@ -461,7 +465,7 @@
 
 		// Add a fleet object to the dictionary ----------------------------------------------------
 		var _add = function(fleet) {
-			if(_validate(fleet) && !_exists(fleet)) {
+			if(_validate(fleet)) {
 				var id = window.uuid.v4();
 				fleet.uuid = id;
 				data.state.fleets[id] = fleet;
@@ -507,11 +511,20 @@
 				if(!_.isObject(f.units)) {
 					f.units = {};
 				}
+				u.fleet = fleet;
 				f.units[unit] = u;
 				_logger.success("Attached unit '" + u.unit.name + "'' to fleet '" + f.name + "'.");
 			}
 			else {
 				_logger.error("Unable to attach unit to a fleet.  Either the unit or the fleet does not exist.");
+			}
+		};
+
+		var _detachUnit = function(fleet,unit) {
+			if(_exists(fleet)) {
+				var f = data.state.fleets[fleet];
+				delete f.units[unit];
+				data.state.units[unit].fleet = undefined;
 			}
 		};
 
@@ -524,6 +537,23 @@
 			return data.state.fleets.list;
 		};
 
+		// Remove a fleet ------------------------------------------------------------------------
+		var _remove = function(fleet) {
+			if(_exists(fleet)) {
+				_logger.warning("Removing fleet '" + fleet + "'");
+				delete data.state.fleets[fleet];
+				var i = data.state.fleets.list.indexOf(fleet);
+				data.state.fleets.list.splice(i,1);
+			}
+		};
+
+		// Purge all fleets from the data store --------------------------------------------------
+		var _purge = function() {
+			data.state.fleets.list.length = 0;
+			data.state.fleets = {};
+			data.state.fleets.list = [];
+		};
+
 		return {
 			all: function() { return fleets;},
 			add: _add,
@@ -534,7 +564,10 @@
 			getList: _getList,
 			validate: _validate,
 			getUnits: _getUnits,
-			combatInfo: function() {return {"fleets":fleets,"index":fleetIndex}}
+			combatInfo: function() {return {"fleets":fleets,"index":fleetIndex}},
+			purge: _purge,
+			remove: _remove,
+			detachUnit: _detachUnit
 		}
 	}]);
 
@@ -616,6 +649,23 @@
 			},data.state.units).value();
 		};
 
+		// Remove a unit ------------------------------------------------------------------------
+		var _remove = function(unit) {
+			if(_exists(unit)) {
+				_logger.warning("Removing unit '" + unit + "'");
+				delete data.state.units[unit];
+				var i = data.state.units.list.indexOf(unit);
+				data.state.units.list.splice(i,1);
+			}
+		};
+
+		// Purge all units from the data store --------------------------------------------------
+		var _purge = function() {
+			data.state.units.list.length = 0;
+			data.state.units = {};
+			data.state.units.list = [];
+		};
+
 		return {
 			validate: _validate,
 			add: _add,
@@ -623,7 +673,9 @@
 			get: _getUnit,
 			getList: _getList,
 			getMultiple: _getMultiple,
-			getOptions: _getOptions
+			getOptions: _getOptions,
+			remove: _remove,
+			purge: _purge
 		}
 	}]);
 
@@ -756,6 +808,52 @@
 				temp.template = data.state.templates[template];
 				temp.hull.current = temp.hull.max;
 				temp.shield.current = temp.shield.max;
+
+				var combat = {};
+				combat["direct-fire"] = [];
+				_.chain(temp["direct-fire"]).each(function(ele,index,list){
+					ele.target = ele.target ? ele.target : 0;
+					ele.target += _.chain(temp).filter(function(obj){return obj.target;}).map(function(obj){return obj.target;}).reduce(function(sum,num){return sum + num;},0).value();
+					ele.yield = ele.yield ? ele.yield : 0;
+					ele.yield += _.chain(temp).filter(function(obj){return obj.yield;}).map(function(obj){return obj.yield;}).reduce(function(sum,num){return sum + num;},0).value();
+					ele.eccm = ele.eccm ? ele.eccm : 0;
+					ele.eccm += _.chain(temp).filter(function(obj){return obj.eccm;}).map(function(obj){return obj.eccm}).reduce(function(sum,num){return sum + num;},0).value();
+					combat["direct-fire"].push(ele);
+				});
+
+				combat["packet-fire"] = [];
+				_.chain(temp["packet-fire"]).each(function(ele,index,list){
+					ele.target = ele.target ? ele.target : 0;
+					ele.target += _.chain(temp).filter(function(obj){return obj.target;}).map(function(obj){return obj.target;}).reduce(function(sum,num){return sum + num;},0).value();
+					ele.yield = ele.yield ? ele.yield : 0;
+					ele.yield += _.chain(temp).filter(function(obj){return obj.yield;}).map(function(obj){return obj.yield;}).reduce(function(sum,num){return sum + num;},0).value();
+					ele.eccm = ele.eccm ? ele.eccm : 0;
+					ele.eccm += _.chain(temp).filter(function(obj){return obj.eccm;}).map(function(obj){return obj.eccm}).reduce(function(sum,num){return sum + num;},0).value();
+					combat["packet-fire"].push(ele);
+				});
+
+				combat["shield"] = {
+					"defense": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.defense;}).map(function(obj){return obj.defense}).reduce(function(sum,num){return sum + num;},0).value(),
+					"resist": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.resist;}).map(function(obj){return obj.resist}).reduce(function(sum,num){return sum + num;},0).value(),
+					"deflect": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.deflect;}).map(function(obj){return obj.deflect}).reduce(function(sum,num){return sum + num;},0).value(),
+					"flicker": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.flicker;}).map(function(obj){return obj.flicker}).reduce(function(sum,num){return sum + num;},0).value(),
+					"regen": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.regen;}).map(function(obj){return obj.regen}).reduce(function(sum,num){return sum + num;},0).value(),
+					"ecm": _.chain(temp).filter(function(obj,key){return key !== "hull";}).filter(function(obj){return obj.ecm;}).map(function(obj){return obj.ecm}).reduce(function(sum,num){return sum + num;},0).value()
+				};
+
+				combat["hull"] = {
+					"defense": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.defense;}).map(function(obj){return obj.defense}).reduce(function(sum,num){return sum + num;},0).value(),
+					"resist": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.resist;}).map(function(obj){return obj.resist}).reduce(function(sum,num){return sum + num;},0).value(),
+					"deflect": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.deflect;}).map(function(obj){return obj.deflect}).reduce(function(sum,num){return sum + num;},0).value(),
+					"flicker": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.flicker;}).map(function(obj){return obj.flicker}).reduce(function(sum,num){return sum + num;},0).value(),
+					"regen": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.regen;}).map(function(obj){return obj.regen}).reduce(function(sum,num){return sum + num;},0).value(),
+					"ecm": _.chain(temp).filter(function(obj,key){return key !== "shield";}).filter(function(obj){return obj.ecm;}).map(function(obj){return obj.ecm}).reduce(function(sum,num){return sum + num;},0).value()
+				};
+
+				combat["status"] = "active";
+
+				temp.combat = combat;
+
 				$be2Units.add(temp);
 			}
 			else {
@@ -867,7 +965,8 @@
 				var json = localStorage.getItem(_key);
 				if(typeof(json) === "string") {
 					var flat = JSON.parse(json);
-					data.state = _expand(flat);
+					data.state = _expand(flat.state);
+					data.combat = flat.combat;
 					_logger.success("Data loaded from localStorage.");
 				}
 				else {
@@ -881,7 +980,10 @@
 
 		var _save = function() {
 			if(typeof(localStorage) !== "undefined") {
-				var dat = _flatten(data.state);
+				var dat = {
+					state: _flatten(data.state),
+					combat: data.combat
+				};
 				var json = JSON.stringify(dat);
 				localStorage.setItem(_key,json);
 				_logger.success("Data stored in localStorage.");
@@ -990,6 +1092,12 @@
 			logs: "logs"
 		};
 		ui.state = ui.states.factions;
+		ui.counters = {
+			"units": 0,
+			"templates": 0,
+			"fleets": 0
+		};
+		
 		$scope.ui = ui;
 
 		this.saveData = storage.save;
@@ -1047,19 +1155,31 @@
 			}
 		};
 
+		_.each(ui.factions,function(key){
+			this[key] = false;
+			console.log(key);
+			_.each(ui.fleets[key],function(f){
+				console.log(f);
+			},ui.state.show.fleets);
+		},ui.state.show.factions);
+
 		var _initState = function() {
 			ui.factions = FactionService.getList();
 			for(var i in ui.factions) {
 				var faction = ui.factions[i];
 				var fleets = FactionService.getFleets(faction);
-				ui.state.show.factions[faction] = false;
+				if(_.isUndefined(ui.state.show.factions[faction])) {
+					ui.state.show.factions[faction] = false;
+				}
 				ui.fleets[faction] = fleets;
 				ui.units[faction] = {};
 				ui.state.show.fleets[faction] = {};
 				for(var f in fleets) {
 					var fleet = fleets[f];
 					ui.units[faction][fleet.uuid] = [];
-					ui.state.show.fleets[faction][fleet.uuid] = false;
+					if(_.isUndefined(ui.state.show.fleets[faction][fleet.uuid])) {
+						ui.state.show.fleets[faction][fleet.uuid] = false;
+					}
 					var units = FleetService.getUnits(fleet.uuid);
 					ui.units[faction][fleet.uuid] = units;
 				}
@@ -1068,6 +1188,8 @@
 		};
 
 		this.initState = _initState;
+
+		$scope.$watch('ui.data.factions',this.initState,true);
 
 		$rootScope.$on('be2.init.ui.state',function(event,args) {
 			_initState();
@@ -1274,6 +1396,8 @@
 		};
 		$scope.ui = ui;
 
+		_.chain(ui.fleets).each(function(key){ this[key] = false; },ui.state.show);
+
 		this.data = data.state;
 
 		// Mappings to Service factories -----------------------------------------------------------
@@ -1284,10 +1408,18 @@
 		this.initState = function() {
 			for(var i in ui.fleets) {
 				var fleet = ui.fleets[i];
-				ui.state.show[fleet] = false;
 				ui.units[fleet] = data.state.fleets[fleet].units;
+				if(_.isUndefined(ui.state.show[fleet])) {
+					ui.state.show[fleet] = false;
+				}
 			}
 		}
+
+		this.purge = FleetService.purge;
+		this.remove = FleetService.remove;
+		this.detachUnit = FleetService.detachUnit;
+
+		$scope.$watch('ui.data.fleets',this.initState,true);
 
 		this.showAll = function() {
 			for(var i in ui.state.show) {
@@ -1345,7 +1477,7 @@
 		};
 
 		// Initialize the ui.state -----------------------------------------------------------------
-		this.initState();
+		//this.initState();
 
 		ui.export = function() {
 			var modalOptions = {
@@ -1395,53 +1527,196 @@
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2CombatController - Combat controller for BattleEngine2
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2CombatController",["$scope","CombatService","DataStore",function($scope,$combat,$data) {
+	app.controller("be2CombatController",["$scope","CombatService","DataStore",function($scope,$combat,data) {
 		var ui = {
-			combat: $data.combat,
-			fleets: $data.state.fleets,
-			factions: $data.state.factions
+			combat: data.combat,
+			units: data.state.units,
+			fleets: data.state.fleets,
+			factions: data.state.factions
 		};
 
-		ui.combat.statuses = [
-			"Uninitialized",
-			"Initializing Combat",
-			"Getting Combatants",
-			"Running Combat Simulation",
-			"Cleaning Up",
-			"Finished"
-		];
+		this.timeout = undefined;
+		this.webworker = undefined;
+		this.setup = {
+			combatLimit: 200
+		};
+		var ctrl = this;
 
-		ui.combat.max = ui.combat.statuses.length - 1;
-		ui.combat.current = 0;
-		ui.combat.status = ui.combat.statuses[ui.combat.current];
-		ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
-		
 		$scope.ui = ui;
 
-		$scope.startCombat = function() {
-			ui.combat.current = 1;
-			ui.combat.status = ui.combat.statuses[ui.combat.current];
-			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
-
-			setTimeout(doCombat,1000);
+		$scope.hitFilter = function(hit) {
+			return hit.hitRoll > 50 ? true : false;
 		};
 
-		function doCombat() {
-			ui.combat.current++;
-			ui.combat.progress = Math.ceil(ui.combat.current/ui.combat.max*100);
-			ui.combat.status = ui.combat.statuses[ui.combat.current];
-			$scope.$apply();
+		$scope.missFilter = function(hit) {
+			return !$scope.hitFilter(hit);
+		};
 
-			if(ui.combat.current < ui.combat.max) {
-				setTimeout(doCombat,1000);
+		$scope.hasHits = function(units) {
+			var result = {};
+			angular.forEach(units,function(unit,key){
+				if (unit.hits.length > 0) {
+					result[key] = unit;
+				}
+			});
+			return result;
+		};
+
+		$scope.destroyedUnits = function(round) {
+			var i = round.status.round - 2;
+			var destroyed = undefined;
+			if(i < 0) {
+				destroyed = round.status.destroyed;
 			}
+			else {
+				var prevRound = data.combat.logs[round.uuid].rounds[i];
+				destroyed = _.difference(round.status.destroyed,prevRound.status.destroyed);
+			}
+			return destroyed;
+			//return round.status.destroyed;
 		}
+
+		this.survivingUnits = function(combat) {
+			var last = _.last(combat.rounds);
+			return last ? last.state.units : undefined;
+		}
+
+		this.purgeCombat = function(uuid) {
+			delete data.combat.logs[uuid];
+		};
+
+		this.test = function() {
+			var obj = {
+				"fleets": {
+					"fleetA": {
+						"units": {
+							"unitA": {
+								"uuid": "unitA"
+							}
+						}
+					}
+				},
+				"units": {
+					"unitA": {
+						"uuid": "unitA"
+					},
+					"unitB": {
+						"uuid": "unitB"
+					}
+				},
+				"destroy": ["unitA"]
+			}
+
+			var unit = obj.units["unitA"];
+
+			//delete obj.fleets["fleetA"].units["unitA"];
+			//delete obj.units["unitA"];
+			delete unit;
+			console.log(obj);
+		};
+
+		this.combatRound = function(dat) {
+			//console.log(dat.test);
+			var obj = {
+				"uuid": dat.uuid,
+				"state": dat.state,
+				"attackers": dat.attackers,
+				"defenders": dat.defenders,
+				"status": dat.status
+			};
+
+			var uuid = dat.uuid;
+			data.combat.logs[uuid].rounds.push(dat);
+			
+			// Post combat round processing.
+
+
+			if(obj.status.round <= ctrl.setup.combatLimit && !dat.status.finished) {
+				ctrl.webworker.postMessage(obj);
+			}
+			else {
+				ctrl.webworker.terminate();
+				data.combat.logs[uuid].destroyed = dat.status.destroyed;
+			}
+			$scope.$apply();
+		};
+
+		this.startCombat = function() {
+			// Get UUIDs
+			var combatID = window.uuid.v4();
+			var attackID = data.state.fleets.list[0];
+			var defendID = data.state.fleets.list[1];
+
+			data.combat.logs[combatID] = {
+				uuid: combatID,
+				name: "Test Combat",
+				rounds: []
+			};
+
+			// Setup the combat object
+			var obj = {
+				"uuid": combatID,
+				"state": {},
+				"attackers": [],
+				"defenders": [],
+				"status": {
+					"round": 0
+				}
+			};
+			
+			// Attach the fleet info for the state object
+			obj.state.fleets = {};
+			obj.state.fleets[attackID] = data.state.fleets[attackID];
+			obj.state.fleets[defendID] = data.state.fleets[defendID];
+
+			// Set the attacker and defender fleet UUIDs.
+			obj.attackers.push(attackID);
+			obj.defenders.push(defendID);
+
+			// Build the units state.
+			obj.state.units = {};
+			var buildUnitState = function(ele) {
+				var uuid = ele.uuid;
+				this[uuid] = ele;
+			};
+			var unitFilter = function(unit) {
+				var valid = false;
+				for(var f in obj.state.fleets) {
+					if(unit.fleet === f) {
+						valid = true;
+						break;
+					}
+				}
+				return valid;
+			};
+			_.chain(data.state.units).filter(unitFilter).each(buildUnitState,obj.state.units);
+
+			// Cleanup template references.
+			_.chain(obj.state.units).mapObject(function(obj) {
+				if(_.isObject(obj.template)) {
+					obj.template = obj.template.uuid;
+				}
+				return obj;
+			});
+			
+			this.webworker = new Worker("be2.combat.js");
+			this.webworker.onmessage = function(event) {
+				ctrl.combatRound(event.data);
+			};
+			this.webworker.postMessage(obj);
+		};
+
+		this.stopCombat = function() {};
+
+		this.pauseCombat = function() {};
+
+		this.resetCombat = function() {};
 	}]);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// be2UnitController
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	app.controller("be2UnitController",["$rootScope","$scope","UnitService","DataStore","be2InfoModal",function($rootScope,$scope,$be2Units,$be2Data,$infoModal){
+	app.controller("be2UnitController",["$rootScope","$scope","UnitService","FleetService","DataStore","be2InfoModal",function($rootScope,$scope,$be2Units,FleetService,$be2Data,$infoModal){
 		var ui = $be2Data.ui.unit;
 		ui.units = $be2Units.getList();
 		ui.state = {
@@ -1454,9 +1729,26 @@
 		$scope.ui = ui;
 
 		this.data = $be2Data.state;
+		var ctl = this;
 
 		// Service Mappings ------------------------------------------------------------------------
 		this.getUnitInfo = $be2Units.get;
+
+		this.remove = function(unit) {
+			if(unit !== "list" && $be2Data.state.units[unit].fleet) {
+				var fleet = ctl.data.units[unit].fleet;
+				FleetService.detachUnit(fleet,unit);
+			}
+			$be2Units.remove(unit);
+		};
+
+		this.purge = function() {
+			_.chain(ctl.data.units).each(function(unit){
+				if(unit.uuid) {
+					ctl.remove(unit.uuid);
+				}
+			});
+		};
 
 		// UI State Actions ------------------------------------------------------------------------
 		this.showAll = function() {

@@ -15,7 +15,7 @@
 					<button class="btn btn-default" ng-click="ui.export()"><span class="glyphicon glyphicon-export"></span> Export Fleets</button>
 					<button class="btn btn-default" ng-click="fleetCtl.showAll()"><span class="glyphicon glyphicon-eye-open"></span> Show All</button>
 					<button class="btn btn-default" ng-click="fleetCtl.hideAll()"><span class="glyphicon glyphicon-eye-close"></span> Hide All</button>
-					<button class="btn btn-danger disabled"><span class="glyphicon glyphicon-remove-sign"></span> Purge Fleets</button>
+					<button class="btn btn-danger" ng-click="fleetCtl.purge()"><span class="glyphicon glyphicon-remove-sign"></span> Purge Fleets</button>
 				</div>
 			</div>
 		</div>
@@ -32,7 +32,7 @@
 						<div class="btn-group">
 							<button class="btn btn-default btn-sm" ng-class="{active:ui.state.show[fleet]}" ng-click="fleetCtl.toggleVisible(fleet)"><span class="glyphicon glyphicon-eye-open"></span></button>
 							<button class="btn btn-default btn-sm" ng-click="fleetCtl.toggleEdit()"><span class="glyphicon glyphicon-edit" aria-hidden="true"></button>
-							<button class="btn btn-danger btn-sm disabled"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+							<button class="btn btn-danger btn-sm" ng-click="fleetCtl.remove(fleet)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
 						</div>
 					</div>
 					<h3 class="panel-title panel-title-lg"><span editable-text="fleetCtl.data.fleets[fleet].name"></span> - <span editable-text="fleetCtl.data.fleets[fleet].nickname"></span></h3>
@@ -41,7 +41,14 @@
 					<div class="well well-sm" ng-show="fleetCtl.data.fleets[fleet].description || fleetCtl.editable" editable-text="fleetCtl.data.fleets[fleet].description" place-holder="Enter a description here!">
 					</div>
 				</div>
-				<unit-table ng-show="ui.state.show[fleet]" ng-init="units = ui.units[fleet]"></unit-table>
+				<table class="table table-hover" ng-show="ui.state.show[fleet]" ng-init="units = ui.units[fleet]">
+					<thead>
+						<tr><th>Unit</th><th>Type</th><th>Size</th><th>Hull</th><th>Shield</th><th>Detach</th></tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="unit in units" ng-class="{'text-danger':unit.unit.type === 'Starship','text-warning':unit.unit.type === 'Gunboat','text-info':unit.unit.type === 'Fighter'}"><td>{{unit.unit.name}}</td><td>{{unit.unit.type}}</td><td>{{unit.unit.size}}</td><td>{{unit.hull.current}} ({{unit.hull.max}})</td><td>{{unit.shield.current}} ({{unit.shield.max}})</td><td><button class="btn btn-sm btn-danger" ng-click="fleetCtl.detachUnit(fleet,unit.uuid)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></td></tr>
+					</tbody>
+				</table>
 				<div class="panel-footer">
 					<span class="pull-right"><code>{{fleet}}</code></span>
 					<span class="label label-primary">Units: {{fleetCtl.countUnits(fleet)}}</span>

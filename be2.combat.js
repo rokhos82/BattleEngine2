@@ -5,7 +5,55 @@
 	self.importScripts("js/underscore.js");
 	self.importScripts("be2.combat.help.js");
 
-	function doRound(event) {
+	function buildTargetLists(obj) {
+		if(!_.isObject(obj.units) || _.isArray(obj.units) || _.isString(obj.units))
+			obj.units = {};
+
+		// Create attacker target list
+		obj.units.attackers = _.chain(obj.attackers)
+			.map(function(ele){return _.values(this.fleets[ele].units);},obj.state)
+			.flatten()
+			.filter(function(unit){ return !_.contains(obj.status.destroyed,unit.uuid); })
+			.pluck("uuid")
+			.value();
+
+		// Create defender target list
+		obj.units.defenders = _.chain(obj.defenders)
+			.map(function(ele){return _.values(this.fleets[ele].units);},obj.state)
+			.flatten()
+			.filter(function(unit){ return !_.contains(obj.status.destroyed,unit.uuid); })
+			.pluck("uuid")
+			.value();
+	}
+
+	function initializeCombatState(initialState) {
+		// Setup the state object
+		var state = initialState;
+
+		// Build Target Lists
+		buildTargetLists(state);
+
+		// Setup event queue for round actions
+		state.queue = [];
+
+		// Check for tags that need to be processed on turn 0.
+
+		// Return a deep copy of the state object.
+		return state;
+	}
+
+	function doCombat(event) {
+		// Initialize Combat State
+		var state = initializeCombatState(event.data);
+
+		// Do Combat Rounds
+
+		// Cleanup Combat State, etc.
+	}
+
+	self.addEventListener('message',doCombat,false);
+
+	/*function doRound(event) {
 		var data = event.data;
 
 		simulator.initialize(data);
@@ -68,5 +116,5 @@
 		self.postMessage(round);
 	}
 
-	self.addEventListener('message',doRound,false);
+	self.addEventListener('message',doRound,false);*/
 })();

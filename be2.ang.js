@@ -1658,10 +1658,7 @@
 				"uuid": combatID,
 				"state": {},
 				"attackers": [],
-				"defenders": [],
-				"status": {
-					"round": 0
-				}
+				"defenders": []
 			};
 			
 			// Attach the fleet info for the state object
@@ -1675,19 +1672,13 @@
 
 			// Build the units state.
 			obj.state.units = {};
+			var fleetList = _.keys(obj.state.fleets);
 			var buildUnitState = function(ele) {
 				var uuid = ele.uuid;
 				this[uuid] = ele;
 			};
 			var unitFilter = function(unit) {
-				var valid = false;
-				for(var f in obj.state.fleets) {
-					if(unit.fleet === f) {
-						valid = true;
-						break;
-					}
-				}
-				return valid;
+				return _.contains(fleetList,unit.fleet);
 			};
 			_.chain(data.state.units).filter(unitFilter).each(buildUnitState,obj.state.units);
 

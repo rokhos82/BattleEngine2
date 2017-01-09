@@ -1670,6 +1670,11 @@
 			obj.attackers.push(attackID);
 			obj.defenders.push(defendID);
 
+			obj.state.fleets = {};
+			_.map(obj.attackers,function(val,key){
+				this[val] = data.state.fleets[val];
+			},obj.state.fleets);
+
 			// Build the units state.
 			obj.state.units = {};
 			var fleetList = _.keys(obj.state.fleets);
